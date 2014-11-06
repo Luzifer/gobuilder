@@ -1,0 +1,16 @@
+{% extends "global.html" %}
+
+{% block content %}
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-3 text-center">
+                <h1>Start a new build...</h1>
+                <form role="form" action="/build" method="post">
+                  <div class="form-group">
+                    <input type="text" class="form-control" name="repository" placeholder="github.com/luzifer/gobuild">
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-block">Start Build!</button>
+                </form>
+            </div>
+        </div>
+        <!-- /.row -->
+{% endblock %}

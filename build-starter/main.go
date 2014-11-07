@@ -23,6 +23,12 @@ func main() {
 	dockerClient, err := docker.NewClient("unix:///var/run/docker.sock")
 	orFail(err)
 
+	err = dockerClient.PullImage(docker.PullImageOptions{
+		Repository: os.Getenv("BUILD_IMAGE"),
+		Tag:        "latest",
+	}, docker.AuthConfiguration{})
+	orFail(err)
+
 	conn, err := beanstalk.Dial("tcp", os.Getenv("BEANSTALK_ADDR"))
 	if err != nil {
 		log.Error("Beanstalk-Connect", loggly.Message{
@@ -62,6 +68,7 @@ func main() {
 		container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{
 			Config: cfg,
 		})
+		orFail(err)
 		err = dockerClient.StartContainer(container.ID, &docker.HostConfig{
 			Binds:        []string{},
 			Privileged:   false,

@@ -62,7 +62,6 @@ func main() {
 		container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{
 			Config: cfg,
 		})
-		fmt.Println(container.ID)
 		err = dockerClient.StartContainer(container.ID, &docker.HostConfig{
 			Binds:        []string{},
 			Privileged:   false,

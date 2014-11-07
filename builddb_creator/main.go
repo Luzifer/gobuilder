@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -63,6 +64,8 @@ func main() {
 				FileName: f.Name(),
 			})
 		}
+
+		sort.Sort(builddb.ByFilename(tmp.Assets))
 
 		buildDB[branch] = tmp
 	}

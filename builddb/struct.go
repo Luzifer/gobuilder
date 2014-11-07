@@ -17,3 +17,9 @@ type BuildDBAsset struct {
 	Size     int64  `json:"size"`
 	FileName string `json:"file_name"`
 }
+
+type ByFilename []BuildDBAsset
+
+func (f ByFilename) Len() int           { return len(f) }
+func (f ByFilename) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
+func (f ByFilename) Less(i, j int) bool { return f[i].FileName < f[j].FileName }

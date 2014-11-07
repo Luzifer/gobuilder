@@ -36,7 +36,7 @@ func main() {
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), ".zip") {
 			tmp := strings.Split(f.Name(), "_")
-			buildName := tmp[1]
+			buildName := tmp[len(tmp)-2]
 
 			if _, ok := cache[buildName]; !ok {
 				cache[buildName] = make(map[string]os.FileInfo)

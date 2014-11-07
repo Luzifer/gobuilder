@@ -6,7 +6,7 @@
                 <h1>Start a new build...</h1>
                 <form role="form" action="/build" method="post">
                   <div class="form-group">
-                    <input type="text" class="form-control" name="repository" placeholder="github.com/luzifer/gobuild">
+                    <input type="text" class="form-control" name="repository" placeholder="github.com/luzifer/gobuilder" {% if value %}value="{{ value }}"{% endif %}>
                   </div>
                   <button type="submit" class="btn btn-primary btn-block">Start Build!</button>
                 </form>

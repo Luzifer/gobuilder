@@ -1,0 +1,62 @@
+{% extends "global.html" %}
+
+{% block content %}
+        <div class="row">
+            <div class="col-lg-12">
+                <h2>{{ repo }}</h2>
+                <hr>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-3">
+              <div class="panel panel-default">
+                <div class="panel-heading">Labels</div>
+                <div class="list-group">
+                  {% for k,v in builddb %}
+                    <a class="{% if k == branch %}active{% endif %} list-group-item" href="?branch={{ k }}">{{ k }}</a>
+                  {% endfor %}
+                </div>
+              </div>
+
+
+              <form role="form" action="/build" method="post">
+                <input type="hidden" name="repository" value="{{ repo }}">
+                <button type="submit" class="btn btn-success btn-block">Queue Build Now...</button>
+              </form>
+            </div>
+            <div class="col-lg-9">
+              <div class="panel panel-default">
+                <div class="panel-heading">Properties</div>
+                <div class="panel-body">
+                  <p>
+                    Last built <strong>{{ mybranch.BuildDate|timesince }}</strong> 
+                    using <strong>{{ mybranch.GoVersion }}</strong>
+                  </p>
+                </div>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">Downloads</div>
+                <table class="table">
+                  <tr>
+                    <th class="col-lg-8">Filename</th>
+                    <th class="col-lg-2">File Size</th>
+                    <th class="col-lg-2">&nbsp;</th>
+                  </tr>
+                  {% for properties in mybranch.Assets %}
+                    <tr>
+                      <td>{{ properties.FileName }}</td>
+                      <td>{{ properties.Size|filesizeformat }}</td>
+                      <td>
+                        <a href="#" class="btn btn-default" role="button">
+                          <span class="glyphicon glyphicon-save"></span>
+                          Download
+                        </a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </table>
+              </div>
+            </div>
+        </div>
+        <!-- /.row -->
+{% endblock %}

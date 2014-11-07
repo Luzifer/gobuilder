@@ -47,21 +47,24 @@ func main() {
 	}
 
 	for branch, files := range cache {
-		buildDB[branch] = builddb.BuildDBBranch{
+		tmp := builddb.BuildDBBranch{
 			GoVersion: os.Getenv("GO_VERSION"),
 			BuildDate: time.Now(),
-			Assets:    make(map[string]builddb.BuildDBAsset),
+			Assets:    []builddb.BuildDBAsset{},
 		}
 
 		for _, f := range files {
 			md5sum, sha1sum, sha256sum := buildHashes(f.Name())
-			buildDB[branch].Assets[f.Name()] = builddb.BuildDBAsset{
-				Size:   f.Size(),
-				SHA1:   sha1sum,
-				SHA256: sha256sum,
-				MD5:    md5sum,
-			}
+			tmp.Assets = append(buildDB[branch].Assets, builddb.BuildDBAsset{
+				Size:     f.Size(),
+				SHA1:     sha1sum,
+				SHA256:   sha256sum,
+				MD5:      md5sum,
+				FileName: f.Name(),
+			})
 		}
+
+		buildDB[branch] = tmp
 	}
 
 	db, err := json.Marshal(buildDB)

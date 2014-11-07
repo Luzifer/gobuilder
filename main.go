@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"launchpad.net/goamz/aws"
@@ -99,8 +100,21 @@ func main() {
 		}
 	})
 
-	m.Post("/webhook/bitbucket", func() {
-		// TODO: Handle BitBucket Hooks
+	m.Post("/webhook/bitbucket", func(res http.ResponseWriter, r *http.Request) {
+		data := r.FormValue("payload")
+
+		var tmp interface{}
+		json.Unmarshal([]byte(data), &tmp)
+		repoName := tmp.(map[string]interface{})["repository"].(map[string]interface{})["absolute_url"].(string)
+		repoName = strings.Trim(repoName, "/")
+
+		repo := fmt.Sprintf("bitbucket.org/%s", repoName)
+		err := sendToQueue(repo)
+		if err != nil {
+			http.Error(res, "Could not submit build job", http.StatusInternalServerError)
+		} else {
+			http.Error(res, "OK", http.StatusOK)
+		}
 	})
 
 	m.Get("/get/(?P<file>.*)$", func(params martini.Params, res http.ResponseWriter, r *http.Request) {

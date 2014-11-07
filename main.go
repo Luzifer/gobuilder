@@ -34,6 +34,26 @@ func main() {
 		template.ExecuteWriter(pongo2.Context{}, res)
 	})
 
+	m.Get("/contact", func(res http.ResponseWriter) {
+		template := pongo2.Must(pongo2.FromFile("frontend/imprint.html"))
+		template.ExecuteWriter(pongo2.Context{}, res)
+	})
+
+	m.Get("/help", func(res http.ResponseWriter) {
+		content, err := ioutil.ReadFile("frontend/help.md")
+		if err != nil {
+			log.Error("HelpText Load", loggly.Message{
+				"error": fmt.Sprintf("%v", err),
+			})
+			http.Error(res, "An unknown error occured.", http.StatusInternalServerError)
+			return
+		}
+		template := pongo2.Must(pongo2.FromFile("frontend/help.html"))
+		template.ExecuteWriter(pongo2.Context{
+			"helptext": string(content),
+		}, res)
+	})
+
 	m.Post("/build", func(res http.ResponseWriter, r *http.Request) {
 		repo := r.FormValue("repository")
 		template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))

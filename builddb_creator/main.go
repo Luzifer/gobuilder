@@ -56,7 +56,7 @@ func main() {
 
 		for _, f := range files {
 			md5sum, sha1sum, sha256sum := buildHashes(f.Name())
-			tmp.Assets = append(buildDB[branch].Assets, builddb.BuildDBAsset{
+			tmp.Assets = append(tmp.Assets, builddb.BuildDBAsset{
 				Size:     f.Size(),
 				SHA1:     sha1sum,
 				SHA256:   sha256sum,

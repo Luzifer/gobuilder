@@ -86,7 +86,7 @@ func main() {
 		} else {
 			conn.Release(id, 1, 120*time.Second)
 			log.Error("Failed build", loggly.Message{
-				"repository":  body,
+				"repository":  string(body),
 				"exit_status": status,
 			})
 		}

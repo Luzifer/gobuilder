@@ -12,7 +12,7 @@
               <div class="panel panel-default">
                 <div class="panel-heading">Labels</div>
                 <div class="list-group">
-                  {% for k,v in builddb %}
+                  {% for k in branches %}
                     <a class="{% if k == branch %}active{% endif %} list-group-item" href="?branch={{ k }}">{{ k }}</a>
                   {% endfor %}
                 </div>

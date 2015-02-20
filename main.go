@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -187,9 +188,14 @@ func main() {
 		}
 
 		template := pongo2.Must(pongo2.FromFile("frontend/repository.html"))
+		branches := []string{}
+		for k, _ := range buildDB {
+			branches = append(branches, k)
+		}
+		sort.Strings(branches)
 		template.ExecuteWriter(pongo2.Context{
 			"branch":   branch,
-			"builddb":  buildDB,
+			"branches": branches,
 			"repo":     params["repo"],
 			"mybranch": buildDB[branch],
 		}, res)

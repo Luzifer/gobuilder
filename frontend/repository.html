@@ -13,7 +13,7 @@
                 <div class="panel-heading">Labels</div>
                 <div class="list-group">
                   {% for k in branches %}
-                    <a class="{% if k == branch %}active{% endif %} list-group-item" href="?branch={{ k }}">{{ k }}</a>
+                    <a class="{% if k.Branch == branch %}active{% endif %} list-group-item" href="?branch={{ k.Branch }}">{{ k.Branch }}</a>
                   {% endfor %}
                 </div>
               </div>

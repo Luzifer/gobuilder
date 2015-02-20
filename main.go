@@ -188,11 +188,11 @@ func main() {
 		}
 
 		template := pongo2.Must(pongo2.FromFile("frontend/repository.html"))
-		branches := []string{}
-		for k, _ := range buildDB {
-			branches = append(branches, k)
+		branches := []builddb.BranchSortEntry{}
+		for k, v := range buildDB {
+			branches = append(branches, builddb.BranchSortEntry{Branch: k, BuildDate: v.BuildDate})
 		}
-		sort.Strings(branches)
+		sort.Sort(sort.Reverse(builddb.BranchSortEntryByBuildDate(branches)))
 		template.ExecuteWriter(pongo2.Context{
 			"branch":   branch,
 			"branches": branches,

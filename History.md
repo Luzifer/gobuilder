@@ -1,4 +1,10 @@
 
+1.1.0 / 2015-02-20
+==================
+
+  * Added sorted displaying of branches
+  * Submit reponame as string to get it displayed in loggly
+
 1.0.1 / 2014-11-07
 ==================
 

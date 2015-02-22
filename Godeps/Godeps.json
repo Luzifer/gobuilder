@@ -1,0 +1,75 @@
+{
+	"ImportPath": "github.com/Luzifer/gobuilder",
+	"GoVersion": "go1.4.2",
+	"Deps": [
+		{
+			"ImportPath": "code.google.com/p/go.text/unicode/norm",
+			"Comment": "null-116",
+			"Rev": "5b2527008a4c8988ca9dc6f010ebfb9dae67150b"
+		},
+		{
+			"ImportPath": "github.com/codegangsta/inject",
+			"Comment": "v1.0-rc1-10-g33e0aa1",
+			"Rev": "33e0aa1cb7c019ccc3fbe049a8262a6403d30504"
+		},
+		{
+			"ImportPath": "github.com/extemporalgenome/slug",
+			"Rev": "de70af6e24d0e6bdd6eaef276d2e9910e68a1397"
+		},
+		{
+			"ImportPath": "github.com/flosch/go-humanize",
+			"Rev": "3ba51eabe50663842d569003bab93fc256883173"
+		},
+		{
+			"ImportPath": "github.com/flosch/pongo2",
+			"Comment": "v1.0-rc1-154-g40edabd",
+			"Rev": "40edabd47a6af304367c79b67afaa57faf1b79c8"
+		},
+		{
+			"ImportPath": "github.com/flosch/pongo2-addons",
+			"Rev": "bb4da1901facc08b4edd9261050143b95e36d0a1"
+		},
+		{
+			"ImportPath": "github.com/go-martini/martini",
+			"Comment": "v1.0-107-g627d985",
+			"Rev": "627d985ef9f202fbfc53531f1da96ef92ae3fb3e"
+		},
+		{
+			"ImportPath": "github.com/kr/beanstalk",
+			"Rev": "4011ceaa3ceeeeb8f38e541d2e8efceba6d0b86e"
+		},
+		{
+			"ImportPath": "github.com/russross/blackfriday",
+			"Comment": "v1.2-42-g77efab5",
+			"Rev": "77efab57b2f74dd3f9051c79752b2e8995c8b789"
+		},
+		{
+			"ImportPath": "github.com/segmentio/go-loggly",
+			"Comment": "v0.4.3",
+			"Rev": "7c4f9c95707ab46d8ab21393f8cb41857a5e333e"
+		},
+		{
+			"ImportPath": "github.com/shurcooL/sanitized_anchor_name",
+			"Rev": "9a8b7d4e8f347bfa230879db9d7d4e4d9e19f962"
+		},
+		{
+			"ImportPath": "github.com/visionmedia/go-debug",
+			"Comment": "v2.0.0",
+			"Rev": "ff4a55a20a86994118644bbddc6a216da193cc13"
+		},
+		{
+			"ImportPath": "golang.org/x/text/transform",
+			"Rev": "dadbda34c6a86c65cacce7b470b5d838d660c347"
+		},
+		{
+			"ImportPath": "launchpad.net/goamz/aws",
+			"Comment": "49",
+			"Rev": "martin.packman@canonical.com-20140813150539-umttn7s536u85eiz"
+		},
+		{
+			"ImportPath": "launchpad.net/goamz/s3",
+			"Comment": "49",
+			"Rev": "martin.packman@canonical.com-20140813150539-umttn7s536u85eiz"
+		}
+	]
+}

@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
+
+	"launchpad.net/goamz/aws"
+	"launchpad.net/goamz/s3"
 
 	"github.com/fsouza/go-dockerclient"
 	"github.com/kr/beanstalk"
@@ -62,7 +66,14 @@ func waitForBuild(conn *beanstalk.Conn) {
 			panic(err)
 		}
 
-		if build(string(body)) {
+		tmpDir, err := ioutil.TempDir("", "gobuild")
+		orFail(err)
+		buildResult := build(string(body), tmpDir)
+
+		if buildResult {
+			uploadAssets(string(body), tmpDir)
+			_ = os.RemoveAll(tmpDir)
+
 			_ = conn.Delete(id)
 			_ = log.Info("Finished build", loggly.Message{
 				"repository": string(body),
@@ -77,7 +88,7 @@ func waitForBuild(conn *beanstalk.Conn) {
 	}
 }
 
-func build(repo string) bool {
+func build(repo, tmpDir string) bool {
 	fmt.Printf("Beginning to process %s\n", repo)
 
 	cfg := &docker.Config{
@@ -86,7 +97,7 @@ func build(repo string) bool {
 		AttachStderr: true,
 		Image:        os.Getenv("BUILD_IMAGE"),
 		Env: []string{
-			fmt.Sprintf("GIT_URL=%s", repo),
+			fmt.Sprintf("REPO=%s", repo),
 		},
 	}
 	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{
@@ -94,7 +105,7 @@ func build(repo string) bool {
 	})
 	orFail(err)
 	err = dockerClient.StartContainer(container.ID, &docker.HostConfig{
-		Binds:        []string{},
+		Binds:        []string{fmt.Sprintf("%s:/artifacts/", tmpDir)},
 		Privileged:   false,
 		PortBindings: make(map[docker.Port][]docker.PortBinding),
 	})
@@ -102,8 +113,39 @@ func build(repo string) bool {
 	status, err := dockerClient.WaitContainer(container.ID)
 	orFail(err)
 
+	logFile, err := os.Create(fmt.Sprintf("%s/build.log", tmpDir))
+	orFail(err)
+	defer func() {
+		_ = logFile.Close()
+	}()
+
+	err = dockerClient.Logs(docker.LogsOptions{
+		Container:    container.ID,
+		Stdout:       true,
+		OutputStream: logFile,
+	})
+	orFail(err)
+
 	if status == 0 {
 		return true
 	}
 	return false
+}
+
+func uploadAssets(repo, tmpDir string) {
+	awsAuth, err := aws.EnvAuth()
+	orFail(err)
+	s3Bucket := s3.New(awsAuth, aws.EUWest).Bucket("gobuild.luzifer.io")
+
+	assets, err := ioutil.ReadDir(tmpDir)
+	orFail(err)
+	for _, f := range assets {
+		originalPath := fmt.Sprintf("%s/%s", tmpDir, f.Name())
+		path := fmt.Sprintf("%s/%s", repo, f.Name())
+		fileContent, err := ioutil.ReadFile(originalPath)
+		orFail(err)
+
+		err = s3Bucket.Put(path, fileContent, "", s3.PublicRead)
+		orFail(err)
+	}
 }

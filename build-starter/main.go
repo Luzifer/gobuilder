@@ -87,7 +87,6 @@ func build(repo string) bool {
 		Image:        os.Getenv("BUILD_IMAGE"),
 		Env: []string{
 			fmt.Sprintf("GIT_URL=%s", repo),
-			"GIT_BRANCH=master",
 		},
 	}
 	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{

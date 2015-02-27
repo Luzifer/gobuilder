@@ -10,6 +10,8 @@ import (
 	"github.com/segmentio/go-loggly"
 )
 
+var dockerClient *docker.Client
+
 func orFail(err error) {
 	if err != nil {
 		panic(err)
@@ -31,13 +33,15 @@ func main() {
 
 	conn, err := beanstalk.Dial("tcp", os.Getenv("BEANSTALK_ADDR"))
 	if err != nil {
-		log.Error("Beanstalk-Connect", loggly.Message{
+		_ = log.Error("Beanstalk-Connect", loggly.Message{
 			"error": fmt.Sprintf("%v", err),
 		})
 		panic(err)
 	}
 
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	ts := beanstalk.NewTubeSet(conn, "gobuild.luzifer.io")
 	for {
@@ -47,49 +51,55 @@ func main() {
 			fmt.Println("timed out")
 			continue
 		} else if err != nil {
-			log.Error("Tube-Reserve", loggly.Message{
+			_ = log.Error("Tube-Reserve", loggly.Message{
 				"error": fmt.Sprintf("%v", err),
 			})
 			panic(err)
 		}
 
-		fmt.Printf("Beginning to process %s\n", body)
-
-		cfg := &docker.Config{
-			AttachStdin:  false,
-			AttachStdout: true,
-			AttachStderr: true,
-			Image:        os.Getenv("BUILD_IMAGE"),
-			Env: []string{
-				fmt.Sprintf("GIT_URL=%s", body),
-				"GIT_BRANCH=master",
-			},
-		}
-		container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{
-			Config: cfg,
-		})
-		orFail(err)
-		err = dockerClient.StartContainer(container.ID, &docker.HostConfig{
-			Binds:        []string{},
-			Privileged:   false,
-			PortBindings: make(map[docker.Port][]docker.PortBinding),
-		})
-		orFail(err)
-		status, err := dockerClient.WaitContainer(container.ID)
-		orFail(err)
-
-		if status == 0 {
-			conn.Delete(id)
-			log.Info("Finished build", loggly.Message{
+		if build(string(body)) {
+			_ = conn.Delete(id)
+			_ = log.Info("Finished build", loggly.Message{
 				"repository": string(body),
 			})
 		} else {
-			conn.Release(id, 1, 120*time.Second)
-			log.Error("Failed build", loggly.Message{
-				"repository":  string(body),
-				"exit_status": status,
+			_ = conn.Release(id, 1, 120*time.Second)
+			_ = log.Error("Failed build", loggly.Message{
+				"repository": string(body),
 			})
 		}
 
 	}
+}
+
+func build(repo string) bool {
+	fmt.Printf("Beginning to process %s\n", repo)
+
+	cfg := &docker.Config{
+		AttachStdin:  false,
+		AttachStdout: true,
+		AttachStderr: true,
+		Image:        os.Getenv("BUILD_IMAGE"),
+		Env: []string{
+			fmt.Sprintf("GIT_URL=%s", repo),
+			"GIT_BRANCH=master",
+		},
+	}
+	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{
+		Config: cfg,
+	})
+	orFail(err)
+	err = dockerClient.StartContainer(container.ID, &docker.HostConfig{
+		Binds:        []string{},
+		Privileged:   false,
+		PortBindings: make(map[docker.Port][]docker.PortBinding),
+	})
+	orFail(err)
+	status, err := dockerClient.WaitContainer(container.ID)
+	orFail(err)
+
+	if status == 0 {
+		return true
+	}
+	return false
 }

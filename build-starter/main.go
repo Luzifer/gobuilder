@@ -27,8 +27,9 @@ func main() {
 	log = loggly.New(os.Getenv("LOGGLY_TOKEN"))
 	log.Tag("GoBuild-Starter")
 
-	dockerClient, err := docker.NewClient("unix:///var/run/docker.sock")
+	dockerClientTmp, err := docker.NewClient("unix:///var/run/docker.sock")
 	orFail(err)
+	dockerClient = dockerClientTmp
 
 	err = dockerClient.PullImage(docker.PullImageOptions{
 		Repository: os.Getenv("BUILD_IMAGE"),
@@ -105,7 +106,7 @@ func build(repo, tmpDir string) bool {
 	})
 	orFail(err)
 	err = dockerClient.StartContainer(container.ID, &docker.HostConfig{
-		Binds:        []string{fmt.Sprintf("%s:/artifacts/", tmpDir)},
+		Binds:        []string{fmt.Sprintf("%s:/artifacts", tmpDir)},
 		Privileged:   false,
 		PortBindings: make(map[docker.Port][]docker.PortBinding),
 	})
@@ -133,13 +134,16 @@ func build(repo, tmpDir string) bool {
 }
 
 func uploadAssets(repo, tmpDir string) {
+	fmt.Printf("ASSETS\n")
 	awsAuth, err := aws.EnvAuth()
 	orFail(err)
 	s3Bucket := s3.New(awsAuth, aws.EUWest).Bucket("gobuild.luzifer.io")
 
 	assets, err := ioutil.ReadDir(tmpDir)
 	orFail(err)
+	fmt.Printf("%+v", assets)
 	for _, f := range assets {
+		fmt.Printf("Uploading asset %s...\n", f.Name())
 		originalPath := fmt.Sprintf("%s/%s", tmpDir, f.Name())
 		path := fmt.Sprintf("%s/%s", repo, f.Name())
 		fileContent, err := ioutil.ReadFile(originalPath)

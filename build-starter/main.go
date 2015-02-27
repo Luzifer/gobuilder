@@ -11,6 +11,7 @@ import (
 )
 
 var dockerClient *docker.Client
+var log *loggly.Client
 
 func orFail(err error) {
 	if err != nil {
@@ -19,7 +20,7 @@ func orFail(err error) {
 }
 
 func main() {
-	log := loggly.New(os.Getenv("LOGGLY_TOKEN"))
+	log = loggly.New(os.Getenv("LOGGLY_TOKEN"))
 	log.Tag("GoBuild-Starter")
 
 	dockerClient, err := docker.NewClient("unix:///var/run/docker.sock")
@@ -43,6 +44,10 @@ func main() {
 		_ = conn.Close()
 	}()
 
+	waitForBuild(conn)
+}
+
+func waitForBuild(conn *beanstalk.Conn) {
 	ts := beanstalk.NewTubeSet(conn, "gobuild.luzifer.io")
 	for {
 		fmt.Printf("Starting waitcycle...\n")

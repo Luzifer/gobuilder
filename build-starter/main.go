@@ -132,7 +132,7 @@ func build(repo, tmpDir string) (bool, bool) {
 
 	if status == 0 {
 		return true, true
-	} else if status == 256 {
+	} else if status == 130 {
 		// Special case: Build was aborted due to redundant build request
 		return true, false
 	}

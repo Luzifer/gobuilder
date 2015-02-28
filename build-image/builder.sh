@@ -35,7 +35,7 @@ curl -s https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build.db
 
 if [ "$(cat /tmp/go-build/build_${branch})" == "${short_commit}" ]; then
   log "Commit ${short_commit} was already built. Skipping."
-  exit 256
+  exit 130
 fi
 
 echo ${short_commit} > /tmp/go-build/build_${branch}

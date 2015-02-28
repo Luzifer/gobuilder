@@ -56,7 +56,7 @@ for platform in ${GOLANG_CROSSPLATFORMS}; do
 
   if [ -e .artifact_files ]; then
     log "Collecting artifacts..."
-    rsync -ar --progress --files-from=.artifact_files ./ /tmp/go-build/${product}/
+    rsync -arv --files-from=.artifact_files ./ /tmp/go-build/${product}/
   fi
 
   log "Compressing artifacts..."
@@ -75,7 +75,7 @@ cd /tmp/go-build
 /go/bin/builddb_creator
 
 log "Uploading assets..."
-rsync -ar --progress /tmp/go-build/ /artifacts/
+rsync -arv /tmp/go-build/ /artifacts/
 
 log "Cleaning up..."
 rm -rf /tmp/go-build

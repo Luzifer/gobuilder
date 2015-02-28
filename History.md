@@ -1,4 +1,12 @@
 
+1.2.0 / 2015-02-28
+==================
+
+  * Added build-image Dockerfile / script
+  * Added asset upload to build-starter
+  * GIT_BRANCH is not longer supported
+  * Published all parts of the builder on GitHub
+
 1.1.1 / 2015-02-20
 ==================
 

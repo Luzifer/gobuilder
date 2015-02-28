@@ -13,9 +13,20 @@
                 <div class="panel-heading">Labels</div>
                 <div class="list-group">
                   {% for k in branches %}
-                    <a class="{% if k.Branch == branch %}active{% endif %} list-group-item" href="?branch={{ k.Branch }}">{{ k.Branch }}</a>
+                    <a class="{% if k.Branch == branch %}active{% endif %} list-group-item" href="?branch={{ k.Branch }}">
+                      {{ k.Branch }}
+                    </a>
+                    {% if forloop.Counter == 5 %}
+                      </div>
+                      <div class="list-group collapse" id="allbuilds" aria-expanded="false">
+                    {% endif %}
                   {% endfor %}
                 </div>
+                {% if branches|length > 5 %}
+                <a class="btn btn-block" data-toggle="collapse" href="#allbuilds" aria-expanded="false" aria-controls="allbuilds">
+                  Show all builds
+                </a>
+                {% endif %}
               </div>
 
 

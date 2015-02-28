@@ -149,6 +149,10 @@ func uploadAssets(repo, tmpDir string) {
 	orFail(err)
 	fmt.Printf("%+v", assets)
 	for _, f := range assets {
+		if f.IsDir() {
+			// Some repos are creating directories. Don't know why. Ignore them.
+			continue
+		}
 		fmt.Printf("Uploading asset %s...\n", f.Name())
 		originalPath := fmt.Sprintf("%s/%s", tmpDir, f.Name())
 		path := fmt.Sprintf("%s/%s", repo, f.Name())

@@ -1,4 +1,10 @@
 
+1.3.0 / 2015-02-28
+==================
+
+  * Removed progress display from rsync
+  * Added buildlog display
+
 1.2.2 / 2015-02-28
 ==================
 

@@ -1,4 +1,9 @@
 
+1.2.2 / 2015-02-28
+==================
+
+  * Fix: Do not try to publish directories in asset dir
+
 1.2.1 / 2015-02-28
 ==================
 

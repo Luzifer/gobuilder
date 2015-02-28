@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>{% if title %}{{ title }} - {% endif %}GoBuilder @ luzifer.io</title>
+    <title>{% if repo %}{{ repo }} - {% endif %}GoBuilder @ luzifer.io</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">
@@ -20,6 +20,7 @@
         padding-top: 70px;
         /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
     }
+    {% block customcss %}{% endblock %}
     </style>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->

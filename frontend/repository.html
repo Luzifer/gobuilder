@@ -20,9 +20,17 @@
 
 
               <form role="form" action="/build" method="post">
-                <input type="hidden" name="repository" value="{{ repo }}">
-                <button type="submit" class="btn btn-success btn-block">Queue Build Now...</button>
+                <p>
+                  <input type="hidden" name="repository" value="{{ repo }}">
+                  <button type="submit" class="btn btn-success btn-block">Queue Build Now...</button>
+                </p>
               </form>
+              <p>
+                <a class="btn btn-default btn-block" href="/{{ repo }}/build.log" role="button">
+                  <span class="glyphicon glyphicon-th-list"></span>
+                  Open BuildLog
+                </a>
+              </p>
             </div>
             <div class="col-lg-9">
               <div class="panel panel-default">

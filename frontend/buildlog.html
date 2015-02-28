@@ -1,0 +1,53 @@
+{% extends "global.html" %}
+
+{% block customcss %}
+ol.buildlog {
+  display: block;
+  padding: 9.5px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.42857143;
+  color: #333;
+  word-break: break-all;
+  word-wrap: break-word;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  list-style-type: none;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+ol.buildlog li {
+  white-space: pre;
+}
+li.buildcomment {
+  color: #f00;
+}
+{% endblock %}
+
+{% block content %}
+        <div class="row">
+            <div class="col-lg-12">
+                <h2>{{ repo }}</h2>
+                <hr>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+              <div class="panel panel-default">
+                <div class="panel-heading">Build-Log</div>
+                <div class="panel-body">
+                  <ol class="buildlog">
+                    {% for v in log %}
+                      {% if v.BuildComment %}
+                        <li class="buildcomment">{{ v.Line }}</li>
+                      {% else %}
+                        <li>{{ v.Line }}</li>
+                      {% endif %}
+                    {% endfor %}
+                  </ol>
+                </div>
+              </div>
+            </div>
+        </div>
+        <!-- /.row -->
+{% endblock %}

@@ -69,10 +69,13 @@ func waitForBuild(conn *beanstalk.Conn) {
 
 		tmpDir, err := ioutil.TempDir("", "gobuild")
 		orFail(err)
-		buildResult := build(string(body), tmpDir)
+		buildResult, triggerUpload := build(string(body), tmpDir)
+
+		if triggerUpload {
+			uploadAssets(string(body), tmpDir)
+		}
 
 		if buildResult {
-			uploadAssets(string(body), tmpDir)
 			_ = os.RemoveAll(tmpDir)
 
 			_ = conn.Delete(id)
@@ -89,7 +92,7 @@ func waitForBuild(conn *beanstalk.Conn) {
 	}
 }
 
-func build(repo, tmpDir string) bool {
+func build(repo, tmpDir string) (bool, bool) {
 	fmt.Printf("Beginning to process %s\n", repo)
 
 	cfg := &docker.Config{
@@ -128,9 +131,12 @@ func build(repo, tmpDir string) bool {
 	orFail(err)
 
 	if status == 0 {
-		return true
+		return true, true
+	} else if status == 256 {
+		// Special case: Build was aborted due to redundant build request
+		return true, false
 	}
-	return false
+	return false, false
 }
 
 func uploadAssets(repo, tmpDir string) {

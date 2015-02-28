@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+exec 2>&1
+
 function log {
   echo "[$(date +%H:%M:%S.%N)] $@"
 }
@@ -28,12 +30,12 @@ fi
 go fmt ./...
 
 mkdir -p /tmp/go-build
-curl https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build_${branch} -o /tmp/go-build/build_${branch} || touch /tmp/go-build/build_${branch}
-curl https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build.db -o /tmp/go-build/build.db || bash -c 'echo "{}" > /tmp/go-build/build.db'
+curl -s https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build_${branch} -o /tmp/go-build/build_${branch} || touch /tmp/go-build/build_${branch}
+curl -s https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build.db -o /tmp/go-build/build.db || bash -c 'echo "{}" > /tmp/go-build/build.db'
 
 if [ "$(cat /tmp/go-build/build_${branch})" == "${short_commit}" ]; then
   log "Commit ${short_commit} was already built. Skipping."
-  exit 0
+  exit 256
 fi
 
 echo ${short_commit} > /tmp/go-build/build_${branch}
@@ -79,3 +81,4 @@ log "Cleaning up..."
 rm -rf /tmp/go-build
 
 log "Build finished."
+exit 0

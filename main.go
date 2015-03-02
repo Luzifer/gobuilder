@@ -19,10 +19,13 @@ import (
 )
 
 var log *loggly.Client
+var s3bucket *s3.Bucket
 
 func main() {
 	log = loggly.New(os.Getenv("LOGGLY_TOKEN"))
 	log.Tag("GoBuild-Frontend")
+
+	connectS3()
 
 	m := martini.Classic()
 	m.Use(martini.Static("frontend"))
@@ -52,22 +55,7 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 	}
 	buildDBFile := fmt.Sprintf("%s/build.db", params["repo"])
 
-	s3auth, err := aws.EnvAuth()
-	if err != nil {
-		log.Error("AWS Authentication Error", loggly.Message{
-			"error": fmt.Sprintf("%v", err),
-		})
-		template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-		template.ExecuteWriter(pongo2.Context{
-			"error": "An unknown error occured while getting your build.",
-		}, res)
-		return
-	}
-
-	s3conn := s3.New(s3auth, aws.Regions["eu-west-1"])
-	bucket := s3conn.Bucket("gobuild.luzifer.io")
-
-	file, err := bucket.Get(buildDBFile)
+	file, err := s3bucket.Get(buildDBFile)
 	if err != nil {
 		log.Error("AWS S3 Get Error", loggly.Message{
 			"error": fmt.Sprintf("%v", err),
@@ -105,4 +93,16 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 		"repo":     params["repo"],
 		"mybranch": buildDB[branch],
 	}, res)
+}
+
+func connectS3() {
+	s3auth, err := aws.EnvAuth()
+	if err != nil {
+		panic(err)
+	}
+
+	s3conn := s3.New(s3auth, aws.Regions["eu-west-1"])
+	bucket := s3conn.Bucket("gobuild.luzifer.io")
+
+	s3bucket = bucket
 }

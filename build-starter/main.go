@@ -16,6 +16,7 @@ import (
 
 var dockerClient *docker.Client
 var log *loggly.Client
+var s3Bucket *s3.Bucket
 
 func orFail(err error) {
 	if err != nil {
@@ -26,6 +27,10 @@ func orFail(err error) {
 func main() {
 	log = loggly.New(os.Getenv("LOGGLY_TOKEN"))
 	log.Tag("GoBuild-Starter")
+
+	awsAuth, err := aws.EnvAuth()
+	orFail(err)
+	s3Bucket = s3.New(awsAuth, aws.EUWest).Bucket("gobuild.luzifer.io")
 
 	dockerClientTmp, err := docker.NewClient("unix:///var/run/docker.sock")
 	orFail(err)
@@ -67,25 +72,29 @@ func waitForBuild(conn *beanstalk.Conn) {
 			panic(err)
 		}
 
+		repo := string(body)
+
 		tmpDir, err := ioutil.TempDir("", "gobuild")
 		orFail(err)
-		buildResult, triggerUpload := build(string(body), tmpDir)
+		buildResult, triggerUpload := build(repo, tmpDir)
 
 		if triggerUpload {
-			uploadAssets(string(body), tmpDir)
+			uploadAssets(repo, tmpDir)
 		}
 
 		if buildResult {
+			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("finished"), "text/plain", s3.PublicRead))
 			_ = os.RemoveAll(tmpDir)
 
 			_ = conn.Delete(id)
 			_ = log.Info("Finished build", loggly.Message{
-				"repository": string(body),
+				"repository": repo,
 			})
 		} else {
+			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("queued"), "text/plain", s3.PublicRead))
 			_ = conn.Release(id, 1, 120*time.Second)
 			_ = log.Error("Failed build", loggly.Message{
-				"repository": string(body),
+				"repository": repo,
 			})
 		}
 
@@ -114,6 +123,8 @@ func build(repo, tmpDir string) (bool, bool) {
 		PortBindings: make(map[docker.Port][]docker.PortBinding),
 	})
 	orFail(err)
+
+	orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("building"), "text/plain", s3.PublicRead))
 	status, err := dockerClient.WaitContainer(container.ID)
 	orFail(err)
 
@@ -141,9 +152,6 @@ func build(repo, tmpDir string) (bool, bool) {
 
 func uploadAssets(repo, tmpDir string) {
 	fmt.Printf("ASSETS\n")
-	awsAuth, err := aws.EnvAuth()
-	orFail(err)
-	s3Bucket := s3.New(awsAuth, aws.EUWest).Bucket("gobuild.luzifer.io")
 
 	assets, err := ioutil.ReadDir(tmpDir)
 	orFail(err)

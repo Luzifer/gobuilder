@@ -19,7 +19,7 @@ import (
 )
 
 var log *loggly.Client
-var s3bucket *s3.Bucket
+var s3Bucket *s3.Bucket
 
 func main() {
 	log = loggly.New(os.Getenv("LOGGLY_TOKEN"))
@@ -55,7 +55,7 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 	}
 	buildDBFile := fmt.Sprintf("%s/build.db", params["repo"])
 
-	file, err := s3bucket.Get(buildDBFile)
+	file, err := s3Bucket.Get(buildDBFile)
 	if err != nil {
 		log.Error("AWS S3 Get Error", loggly.Message{
 			"error": fmt.Sprintf("%v", err),
@@ -66,6 +66,11 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 			"value": params["repo"],
 		}, res)
 		return
+	}
+
+	build_status, err := s3Bucket.Get(fmt.Sprintf("%s/build.status", params["repo"]))
+	if err != nil {
+		build_status = []byte("unknown")
 	}
 
 	var buildDB builddb.BuildDB
@@ -88,10 +93,11 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 	}
 	sort.Sort(sort.Reverse(builddb.BranchSortEntryByBuildDate(branches)))
 	template.ExecuteWriter(pongo2.Context{
-		"branch":   branch,
-		"branches": branches,
-		"repo":     params["repo"],
-		"mybranch": buildDB[branch],
+		"branch":       branch,
+		"branches":     branches,
+		"repo":         params["repo"],
+		"mybranch":     buildDB[branch],
+		"build_status": string(build_status),
 	}, res)
 }
 
@@ -104,5 +110,5 @@ func connectS3() {
 	s3conn := s3.New(s3auth, aws.Regions["eu-west-1"])
 	bucket := s3conn.Bucket("gobuild.luzifer.io")
 
-	s3bucket = bucket
+	s3Bucket = bucket
 }

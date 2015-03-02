@@ -8,6 +8,22 @@
             </div>
         </div>
         <div class="row">
+          <div class="col-lg-12">
+            {% if build_status == "queued" %}
+            <div class="alert alert-info">
+              <span class="glyphicon glyphicon-calendar"></span>
+              This repository is currently in build queue&hellip;
+            </div>
+            {% endif %}
+            {% if build_status == "building" %}
+            <div class="alert alert-info">
+              <span class="glyphicon glyphicon-fire"></span>
+              This repository is currently building&hellip;
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="row">
             <div class="col-lg-3">
               <div class="panel panel-default">
                 <div class="panel-heading">Labels</div>

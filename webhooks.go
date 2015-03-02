@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"launchpad.net/goamz/s3"
+
 	"github.com/flosch/pongo2"
 	"github.com/kr/beanstalk"
 	"github.com/segmentio/go-loggly"
@@ -96,6 +98,11 @@ func sendToQueue(repository string) error {
 	if err != nil {
 		log.Error(fmt.Sprintf("%q", err))
 		return err
+	}
+
+	err = s3Bucket.Put(fmt.Sprintf("%s/build.status", repository), []byte("queued"), "text/plain", s3.PublicRead)
+	if err != nil {
+		fmt.Printf("%+v", err)
 	}
 
 	return nil

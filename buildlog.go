@@ -10,7 +10,7 @@ import (
 )
 
 func handlerBuildLog(params martini.Params, res http.ResponseWriter, r *http.Request) {
-	file, err := s3bucket.Get(fmt.Sprintf("%s/build.log", params["repo"]))
+	file, err := s3Bucket.Get(fmt.Sprintf("%s/build.log", params["repo"]))
 	if err != nil {
 		file = []byte("No build log was found for this build.")
 	}

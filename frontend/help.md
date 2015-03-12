@@ -6,14 +6,14 @@ At the time I wrote this build system no existing system did satisfy my requirem
 
 # How To Use
 
-The most simple usage is to take the package of your code (for example `github.com/Luzifer/gobuilder`) and put it into the build box on the start page of my [GoBuilder][gob]. After you submit your package to the queue it may need some time to build (also depends on how full the queue currently is) and after this you just visit `http://gobuild.luzifer.io/[package]` to view and download the build results. Following my example you can use [http://gobuild.luzifer.io/github.com/Luzifer/gobuilder](http://gobuild.luzifer.io/github.com/Luzifer/gobuilder) to download the build results of my GoBuilder itself.
+The most simple usage is to take the package of your code (for example `github.com/Luzifer/gobuilder`) and put it into the build box on the start page of my [GoBuilder][gob]. After you submit your package to the queue it may need some time to build (also depends on how full the queue currently is) and after this you just visit `https://gobuilder.me/[package]` to view and download the build results. Following my example you can use [https://gobuilder.me/github.com/Luzifer/gobuilder](https://gobuilder.me/github.com/Luzifer/gobuilder) to download the build results of my GoBuilder itself.
 
 ## Using a webhook
 
 There are currently two kinds of webhooks supported for automatically building your projects as soon as you push new code to the `master` branch. Currently only GitHub and BitBucket are supported:
 
-- GitHub - `http://gobuild.luzifer.io/webhook/github`
-- BitBucket - `http://gobuild.luzifer.io/webhook/bitbucket`
+- GitHub - `https://gobuilder.me/webhook/github`
+- BitBucket - `https://gobuilder.me/webhook/bitbucket`
 
 You just put the URL into the webhook section of your repository configuration and your project will be built automatically.
 
@@ -27,4 +27,4 @@ If you want to add files from your repository to the zip-file you just have to c
 [gh]: https://github.com/
 [bitbucket]: https://bitbucket.org/
 [gobuilder]: https://github.com/luzifer/gobuilder
-[gob]: http://gobuild.luzifer.io/
+[gob]: https://gobuilder.me/

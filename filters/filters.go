@@ -12,7 +12,8 @@ func init() {
 
 func checkMainArch(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 	str := in.String()
-	s := strings.Split(strings.Split(str, "-")[0], "_")
+	s := strings.Split(str, "-")
+	s = strings.Split(s[len(s)-2], "_")
 
 	for _, v := range []string{"linux", "darwin", "windows"} {
 		if s[len(s)-1] == v {

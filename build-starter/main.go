@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 
 	"launchpad.net/goamz/aws"
@@ -161,6 +162,10 @@ func uploadAssets(repo, tmpDir string) {
 	for _, f := range assets {
 		if f.IsDir() {
 			// Some repos are creating directories. Don't know why. Ignore them.
+			continue
+		}
+		if strings.HasPrefix(f.Name(), ".") {
+			// Dotfiles are used to transport metadata from the container
 			continue
 		}
 		fmt.Printf("Uploading asset %s...\n", f.Name())

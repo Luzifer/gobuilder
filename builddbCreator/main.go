@@ -1,4 +1,4 @@
-package main
+package builddbCreator
 
 import (
 	"crypto/md5"
@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"sort"
 	"strings"
@@ -16,23 +15,26 @@ import (
 	"github.com/Luzifer/gobuilder/builddb"
 )
 
-func perror(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func main() {
+func GenerateBuildDB(basedir string) error {
 	var buildDB builddb.BuildDB
 
-	content, err := ioutil.ReadFile("build.db")
-	perror(err)
+	content, err := ioutil.ReadFile(fmt.Sprintf("%s/build.db", basedir))
+	if err != nil {
+		return err
+	}
 
 	err = json.Unmarshal(content, &buildDB)
-	perror(err)
+	if err != nil {
+		return err
+	}
+
+	goBuildVersion, err := ioutil.ReadFile(fmt.Sprintf("%s/.goversion", basedir))
+	if err != nil {
+		return err
+	}
 
 	cache := make(map[string]map[string]os.FileInfo)
-	files, _ := ioutil.ReadDir("./")
+	files, _ := ioutil.ReadDir(fmt.Sprintf("%s/", basedir))
 
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), ".zip") {
@@ -49,7 +51,7 @@ func main() {
 
 	for branch, files := range cache {
 		tmp := builddb.BuildDBBranch{
-			GoVersion: os.Getenv("GO_VERSION"),
+			GoVersion: string(goBuildVersion),
 			BuildDate: time.Now(),
 			Assets:    []builddb.BuildDBAsset{},
 		}
@@ -71,7 +73,9 @@ func main() {
 	}
 
 	db, err := json.Marshal(buildDB)
-	ioutil.WriteFile("build.db", db, 0664)
+	ioutil.WriteFile(fmt.Sprintf("%s/build.db", basedir), db, 0664)
+
+	return nil
 }
 
 func buildHashes(filename string) (string, string, string) {

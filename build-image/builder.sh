@@ -6,8 +6,6 @@ function log {
   echo "[$(date +%H:%M:%S.%N)] $@"
 }
 
-export GO_VERSION=$(go version)
-
 branch=${GIT_BRANCH}
 product=${REPO##*/}; product=${product%\.*}
 
@@ -39,6 +37,7 @@ if [ "$(cat /tmp/go-build/build_${branch})" == "${short_commit}" ]; then
 fi
 
 echo ${short_commit} > /tmp/go-build/build_${branch}
+go version > /tmp/go-build/.goversion
 
 for platform in ${GOLANG_CROSSPLATFORMS}; do
   export GOOS=${platform%/*}
@@ -69,10 +68,6 @@ for platform in ${GOLANG_CROSSPLATFORMS}; do
 
   rm -rf /tmp/go-build/${product}/
 done
-
-log "Creating builddb..."
-cd /tmp/go-build
-/go/bin/builddb_creator
 
 log "Uploading assets..."
 rsync -arv /tmp/go-build/ /artifacts/

@@ -6,9 +6,7 @@ ENV GIT_BRANCH master
 VOLUME /artifacts
 
 RUN apt-get update && \
-    apt-get install -y openssh-client rsync zip wget && \
-    go get github.com/Luzifer/gobuilder/builddb_creator && \
-    go install github.com/Luzifer/gobuilder/builddb_creator
+    apt-get install -y openssh-client rsync zip wget
 
 ADD ./builder.sh /usr/bin/builder.sh
 

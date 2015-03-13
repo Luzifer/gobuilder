@@ -9,6 +9,7 @@ import (
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
 
+	"github.com/Luzifer/gobuilder/builddbCreator"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/kr/beanstalk"
 	"github.com/segmentio/go-loggly"
@@ -79,6 +80,7 @@ func waitForBuild(conn *beanstalk.Conn) {
 		buildResult, triggerUpload := build(repo, tmpDir)
 
 		if triggerUpload {
+			orFail(builddbCreator.GenerateBuildDB(tmpDir))
 			uploadAssets(repo, tmpDir)
 		}
 

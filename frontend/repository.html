@@ -1,5 +1,11 @@
 {% extends "global.html" %}
 
+{% block customscript %}
+<script>
+
+</script>
+{% endblock %}
+
 {% block content %}
         <div class="row">
             <div class="col-lg-12">
@@ -78,7 +84,7 @@
                     <th class="col-lg-2">&nbsp;</th>
                   </tr>
                   {% for properties in mybranch.Assets %}
-                    <tr>
+                    <tr {% if !properties.FileName|is_mainarch %}class="subarch collapse"{% endif %}>
                       <td>{{ properties.FileName }}</td>
                       <td>{{ properties.Size|filesizeformat }}</td>
                       <td>
@@ -90,6 +96,9 @@
                     </tr>
                   {% endfor %}
                 </table>
+                <a class="btn btn-block" data-toggle="collapse" href=".subarch" aria-expanded="false" aria-controls="allbuilds">
+                  Show all assets
+                </a>
               </div>
             </div>
         </div>

@@ -15,6 +15,7 @@ import (
 	"github.com/go-martini/martini"
 	"github.com/segmentio/go-loggly"
 
+	_ "github.com/Luzifer/gobuilder/filters"
 	_ "github.com/flosch/pongo2-addons"
 )
 

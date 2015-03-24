@@ -36,8 +36,16 @@ if [ "$(cat /tmp/go-build/build_${branch})" == "${short_commit}" ]; then
   exit 130
 fi
 
-echo ${short_commit} > /tmp/go-build/build_${branch}
-go version > /tmp/go-build/.goversion
+if [ ! -f .gobuilder.yml ]; then
+  # Ensure .gobuilder.yml is present to prevent tools failing later
+  echo "---" > .gobuilder.yml
+fi
+# Upload .gobuilder.yml to enable notifications even when script fails while build
+cp .gobuilder.yml /artifacts/
+
+if ! ( configreader checkEmpty artifacts ); then
+  configreader read artifacts > /tmp/go-build/.artifact_files
+fi
 
 for platform in ${GOLANG_CROSSPLATFORMS}; do
   export GOOS=${platform%/*}
@@ -53,9 +61,15 @@ for platform in ${GOLANG_CROSSPLATFORMS}; do
     mv ./${product} /tmp/go-build/${product}/${product}
   fi
 
-  if [ -e .artifact_files ]; then
+  if [ -e /tmp/go-build/.artifact_files ]; then
     log "Collecting artifacts..."
-    rsync -arv --files-from=.artifact_files ./ /tmp/go-build/${product}/
+    rsync -arv --files-from=/tmp/go-build/.artifact_files ./ /tmp/go-build/${product}/
+  fi
+
+  if ! ( configreader checkEmpty version_file ); then
+    version_file="/tmp/go-build/${product}/$(configreader read version_file)"
+    mkdir -p $(dirname $version_file)
+    git rev-parse HEAD >> ${version_file}
   fi
 
   log "Compressing artifacts..."
@@ -68,6 +82,26 @@ for platform in ${GOLANG_CROSSPLATFORMS}; do
 
   rm -rf /tmp/go-build/${product}/
 done
+
+log "Checking README-File..."
+if ! ( configreader checkEmpty readme_file ) && [ -f "$(configreader read readme_file)" ]; then
+  cp "$(configreader read readme_file)" /tmp/go-build/${branch}_README.md
+else
+  if [ -f README.md ]; then
+    cp README.md /tmp/go-build/${branch}_README.md
+  fi
+fi
+if [ -f /tmp/go-build/${branch}_README.md ]; then
+  cd /tmp/go-build/
+  for tag in ${tags}; do
+    ln ${branch}_README.md ${tag/\//_}_README.md
+  done
+  cd -
+fi
+
+log "Preparing metadata..."
+echo ${short_commit} > /tmp/go-build/build_${branch}
+go version > /tmp/go-build/.goversion
 
 log "Uploading assets..."
 rsync -arv /tmp/go-build/ /artifacts/

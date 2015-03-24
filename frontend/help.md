@@ -17,9 +17,32 @@ There are currently two kinds of webhooks supported for automatically building y
 
 You just put the URL into the webhook section of your repository configuration and your project will be built automatically.
 
-## Packaging assets into the zip-file
+## Using the `.gobuilder.yml` file
 
-If you want to add files from your repository to the zip-file you just have to create a file named `.artifact_files` and add each asset as an extra line to that file. For example if you have a file called `LICENSE` in the root of your repository and want this to get included into the build result you just add a line with the content `LICENSE` to your `.artifact_files`.
+To configure some aspects of your build you will need to create a `.gobuilder.yml` file in your repository root. This file currently has these options:
+
+- `readme_file`: The markdown file to display on the repository page in the web frontend. (Defaults to `README.md`)
+- `triggers`: A list of repositories to build after a successful build of your repository. This could be used to generate some CLI utilities sitting in subdirs of your repository.
+- `artifacts`: In this option you can list assets to include into the zip file created from the build. For example if you have a file called `LICENSE` in the root of your repository and want this to get included into the build result you just add a item with the content `LICENSE` to this array.
+- `version_file`: If you provide a file name to this option the hash of the compiled commit will get written in this file and added to the result ZIP file.
+- `notify`: You can ping some services after a successful / failed build. The notification can be filtered only to get sent on specific events by providing a `filter` value with `success` or `error`. Currently these services are supported:
+    - `dockerhub`: Fill the whole URL you got as a "Build Trigger" as the target.
+
+An example configuration file:
+
+```
+---
+readme_file: frontend/help.md
+triggers:
+  - github.com/Luzifer/gobuilder/cmd/starter
+artifacts:
+  - frontend/*
+version_file: VERSION
+notify:
+  - type: dockerhub
+    target: https://registry.hub.docker.com[...]d59f8a5ab895/
+    filter: success
+```
 
 
 [golang]: http://golang.org/

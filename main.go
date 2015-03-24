@@ -93,6 +93,11 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 		build_status = []byte("unknown")
 	}
 
+	readmeContent, err := s3Bucket.Get(fmt.Sprintf("%s/%s_README.md", params["repo"], branch))
+	if err != nil {
+		readmeContent = []byte("Project provided no README.md file.")
+	}
+
 	var buildDB builddb.BuildDB
 	err = json.Unmarshal(file, &buildDB)
 	if err != nil {
@@ -118,6 +123,7 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 		"repo":         params["repo"],
 		"mybranch":     buildDB[branch],
 		"build_status": string(build_status),
+		"readme":       string(readmeContent),
 	}, res)
 }
 

@@ -1,0 +1,6 @@
+---
+readme_file: frontend/help.md
+triggers:
+  - github.com/Luzifer/gobuilder/cmd/starter
+artifacts:
+  - frontend

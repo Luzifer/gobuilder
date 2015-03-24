@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -11,8 +13,10 @@ import (
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
 
+	"github.com/Luzifer/gobuilder/buildconfig"
 	"github.com/Luzifer/gobuilder/builddbCreator"
 	"github.com/Luzifer/gobuilder/buildjob"
+	"github.com/Luzifer/gobuilder/notifier"
 	"github.com/Sirupsen/logrus"
 	"github.com/Sirupsen/logrus/hooks/papertrail"
 	"github.com/fsouza/go-dockerclient"
@@ -103,7 +107,7 @@ func waitForBuild(conn *beanstalk.Conn) {
 
 		tmpDir, err := ioutil.TempDir("", "gobuild")
 		orFail(err)
-		buildResult, triggerUpload := build(repo, tmpDir)
+		buildOK, triggerUpload := build(repo, tmpDir)
 		_ = conn.Delete(id)
 
 		if triggerUpload {
@@ -111,18 +115,33 @@ func waitForBuild(conn *beanstalk.Conn) {
 			uploadAssets(repo, tmpDir)
 		}
 
-		if buildResult {
+		config, err := buildconfig.LoadFromFile(fmt.Sprintf("%s/.gobuilder.yml", tmpDir))
+		orFail(err)
+
+		if buildOK {
 			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("finished"), "text/plain", s3.PublicRead))
 			_ = os.RemoveAll(tmpDir)
 
 			log.WithFields(logrus.Fields{
 				"repository": repo,
 			}).Info("Finished build")
+
+			orFail(config.Notify.Execute(notifier.NotifyMetaData{
+				EventType:  "success",
+				Repository: repo,
+			}))
+
+			triggerSubBuilds(repo, config.Triggers)
 		} else {
 			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("queued"), "text/plain", s3.PublicRead))
 			log.WithFields(logrus.Fields{
 				"repository": repo,
 			}).Error("Failed build")
+
+			orFail(config.Notify.Execute(notifier.NotifyMetaData{
+				EventType:  "error",
+				Repository: repo,
+			}))
 
 			// Try to build the job only 5 times not to clutter the queue
 			if job.NumberOfExecutions < maxJobRetries-1 {
@@ -216,5 +235,33 @@ func uploadAssets(repo, tmpDir string) {
 
 		err = s3Bucket.Put(path, fileContent, "", s3.PublicRead)
 		orFail(err)
+	}
+}
+
+func triggerSubBuilds(sourcerepo string, repos []string) {
+	if len(repos) > 20 {
+		// Flood / DDoS protection
+		log.WithFields(logrus.Fields{
+			"repository":         sourcerepo,
+			"number_of_triggers": len(repos),
+		}).Error("Too many triggers passed")
+		return
+	}
+
+	for _, repo := range repos {
+		go func(repo string) {
+			resp, err := http.PostForm("https://gobuilder.me/build", url.Values{
+				"repository": []string{repo},
+			})
+			if err != nil {
+				log.WithFields(logrus.Fields{
+					"repository": sourcerepo,
+					"subrepo":    repo,
+					"error":      fmt.Sprintf("%v", err),
+				}).Error("Could not queue SubBuild")
+			} else {
+				defer resp.Body.Close()
+			}
+		}(repo)
 	}
 }

@@ -6,7 +6,8 @@ ENV GIT_BRANCH master
 VOLUME /artifacts
 
 RUN apt-get update && \
-    apt-get install -y openssh-client rsync zip wget
+    apt-get install -y openssh-client rsync zip wget && \
+    go install github.com/Luzifer/gobuilder/cmd/configreader
 
 ADD ./builder.sh /usr/bin/builder.sh
 

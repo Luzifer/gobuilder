@@ -11,6 +11,7 @@ import (
 	"launchpad.net/goamz/s3"
 
 	"github.com/Luzifer/gobuilder/builddbCreator"
+	"github.com/Luzifer/gobuilder/buildjob"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/kr/beanstalk"
 	"github.com/segmentio/go-loggly"
@@ -19,6 +20,8 @@ import (
 var dockerClient *docker.Client
 var log *loggly.Client
 var s3Bucket *s3.Bucket
+
+const maxJobRetries int = 5
 
 func orFail(err error) {
 	if err != nil {
@@ -74,11 +77,18 @@ func waitForBuild(conn *beanstalk.Conn) {
 			panic(err)
 		}
 
-		repo := string(body)
+		job, err := buildjob.FromBytes(body)
+		if err != nil {
+			// there was a job we could not parse throw it away and continue
+			_ = conn.Delete(id)
+			continue
+		}
+		repo := job.Repository
 
 		tmpDir, err := ioutil.TempDir("", "gobuild")
 		orFail(err)
 		buildResult, triggerUpload := build(repo, tmpDir)
+		_ = conn.Delete(id)
 
 		if triggerUpload {
 			orFail(builddbCreator.GenerateBuildDB(tmpDir))
@@ -89,16 +99,30 @@ func waitForBuild(conn *beanstalk.Conn) {
 			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("finished"), "text/plain", s3.PublicRead))
 			_ = os.RemoveAll(tmpDir)
 
-			_ = conn.Delete(id)
 			_ = log.Info("Finished build", loggly.Message{
 				"repository": repo,
 			})
 		} else {
 			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("queued"), "text/plain", s3.PublicRead))
-			_ = conn.Release(id, 1, 120*time.Second)
 			_ = log.Error("Failed build", loggly.Message{
 				"repository": repo,
 			})
+
+			// Try to build the job only 5 times not to clutter the queue
+			if job.NumberOfExecutions < maxJobRetries-1 {
+				job.NumberOfExecutions = job.NumberOfExecutions + 1
+				queueEntry, err := job.ToByte()
+				orFail(err)
+
+				_, err = conn.Put([]byte(queueEntry), 1, 0, 900*time.Second)
+				orFail(err)
+			} else {
+				_ = log.Error("Finally failed build", loggly.Message{
+					"repository":         repo,
+					"numberOfBuildTries": maxJobRetries,
+				})
+				orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("failed"), "text/plain", s3.PublicRead))
+			}
 		}
 
 	}

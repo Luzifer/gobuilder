@@ -11,6 +11,7 @@ import (
 
 	"launchpad.net/goamz/s3"
 
+	"github.com/Luzifer/gobuilder/buildjob"
 	"github.com/flosch/pongo2"
 	"github.com/kr/beanstalk"
 	"github.com/segmentio/go-loggly"
@@ -93,8 +94,19 @@ func sendToQueue(repository string) error {
 		Conn: conn,
 		Name: "gobuild.luzifer.io",
 	}
-	// Put the job into the queue and give it a time to run of 300 secs
-	_, err = t.Put([]byte(repository), 1, 0, 300*time.Second)
+
+	job := buildjob.BuildJob{
+		Repository:         repository,
+		NumberOfExecutions: 0,
+	}
+	queueEntry, err := job.ToByte()
+	if err != nil {
+		log.Error(fmt.Sprintf("%q", err))
+		return err
+	}
+
+	// Put the job into the queue and give it a time to run of 900 secs
+	_, err = t.Put([]byte(queueEntry), 1, 0, 900*time.Second)
 	if err != nil {
 		log.Error(fmt.Sprintf("%q", err))
 		return err

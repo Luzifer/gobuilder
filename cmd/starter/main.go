@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,13 +13,14 @@ import (
 
 	"github.com/Luzifer/gobuilder/builddbCreator"
 	"github.com/Luzifer/gobuilder/buildjob"
+	"github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus/hooks/papertrail"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/kr/beanstalk"
-	"github.com/segmentio/go-loggly"
 )
 
 var dockerClient *docker.Client
-var log *loggly.Client
+var log = logrus.New()
 var s3Bucket *s3.Bucket
 
 const maxJobRetries int = 5
@@ -29,10 +31,24 @@ func orFail(err error) {
 	}
 }
 
-func main() {
-	log = loggly.New(os.Getenv("LOGGLY_TOKEN"))
-	log.Tag("GoBuild-Starter")
+func init() {
+	log.Out = os.Stderr
 
+	papertrail_port, err := strconv.Atoi(os.Getenv("papertrail_port"))
+	if err != nil {
+		log.Info("Failed to read papertrail_port, using only STDERR")
+		return
+	}
+	hook, err := logrus_papertrail.NewPapertrailHook(os.Getenv("papertrail_host"), papertrail_port, "GoBuilder Starter")
+	if err != nil {
+		log.Panic("Unable to create papertrail connection")
+		os.Exit(1)
+	}
+
+	log.Hooks.Add(hook)
+}
+
+func main() {
 	awsAuth, err := aws.EnvAuth()
 	orFail(err)
 	s3Bucket = s3.New(awsAuth, aws.EUWest).Bucket("gobuild.luzifer.io")
@@ -49,9 +65,9 @@ func main() {
 
 	conn, err := beanstalk.Dial("tcp", os.Getenv("BEANSTALK_ADDR"))
 	if err != nil {
-		_ = log.Error("Beanstalk-Connect", loggly.Message{
+		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("%v", err),
-		})
+		}).Error("Beanstalk-Connect")
 		panic(err)
 	}
 
@@ -71,9 +87,9 @@ func waitForBuild(conn *beanstalk.Conn) {
 			fmt.Println("timed out")
 			continue
 		} else if err != nil {
-			_ = log.Error("Tube-Reserve", loggly.Message{
+			log.WithFields(logrus.Fields{
 				"error": fmt.Sprintf("%v", err),
-			})
+			}).Error("Tube-Reserve")
 			panic(err)
 		}
 
@@ -99,14 +115,14 @@ func waitForBuild(conn *beanstalk.Conn) {
 			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("finished"), "text/plain", s3.PublicRead))
 			_ = os.RemoveAll(tmpDir)
 
-			_ = log.Info("Finished build", loggly.Message{
+			log.WithFields(logrus.Fields{
 				"repository": repo,
-			})
+			}).Info("Finished build")
 		} else {
 			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("queued"), "text/plain", s3.PublicRead))
-			_ = log.Error("Failed build", loggly.Message{
+			log.WithFields(logrus.Fields{
 				"repository": repo,
-			})
+			}).Error("Failed build")
 
 			// Try to build the job only 5 times not to clutter the queue
 			if job.NumberOfExecutions < maxJobRetries-1 {
@@ -117,10 +133,10 @@ func waitForBuild(conn *beanstalk.Conn) {
 				_, err = conn.Put([]byte(queueEntry), 1, 0, 900*time.Second)
 				orFail(err)
 			} else {
-				_ = log.Error("Finally failed build", loggly.Message{
+				log.WithFields(logrus.Fields{
 					"repository":         repo,
 					"numberOfBuildTries": maxJobRetries,
-				})
+				}).Error("Finally failed build")
 				orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("failed"), "text/plain", s3.PublicRead))
 			}
 		}

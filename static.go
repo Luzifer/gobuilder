@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/flosch/pongo2"
-	"github.com/segmentio/go-loggly"
 )
 
 func handleFrontPage(res http.ResponseWriter) {
@@ -22,9 +22,9 @@ func handleImprint(res http.ResponseWriter) {
 func handleHelpPage(res http.ResponseWriter) {
 	content, err := ioutil.ReadFile("frontend/help.md")
 	if err != nil {
-		log.Error("HelpText Load", loggly.Message{
+		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("%v", err),
-		})
+		}).Error("HelpText Load")
 		http.Error(res, "An unknown error occured.", http.StatusInternalServerError)
 		return
 	}

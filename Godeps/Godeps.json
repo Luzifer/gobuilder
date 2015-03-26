@@ -8,6 +8,11 @@
 			"Rev": "5b2527008a4c8988ca9dc6f010ebfb9dae67150b"
 		},
 		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.6.5",
+			"Rev": "c0f7e35ed2e48f188c37581b4b743cf7383f85c6"
+		},
+		{
 			"ImportPath": "github.com/codegangsta/inject",
 			"Comment": "v1.0-rc1-10-g33e0aa1",
 			"Rev": "33e0aa1cb7c019ccc3fbe049a8262a6403d30504"
@@ -44,18 +49,8 @@
 			"Rev": "77efab57b2f74dd3f9051c79752b2e8995c8b789"
 		},
 		{
-			"ImportPath": "github.com/segmentio/go-loggly",
-			"Comment": "v0.4.3",
-			"Rev": "7c4f9c95707ab46d8ab21393f8cb41857a5e333e"
-		},
-		{
 			"ImportPath": "github.com/shurcooL/sanitized_anchor_name",
 			"Rev": "9a8b7d4e8f347bfa230879db9d7d4e4d9e19f962"
-		},
-		{
-			"ImportPath": "github.com/visionmedia/go-debug",
-			"Comment": "v2.0.0",
-			"Rev": "ff4a55a20a86994118644bbddc6a216da193cc13"
 		},
 		{
 			"ImportPath": "golang.org/x/text/transform",

@@ -12,17 +12,17 @@ import (
 	"launchpad.net/goamz/s3"
 
 	"github.com/Luzifer/gobuilder/buildjob"
+	"github.com/Sirupsen/logrus"
 	"github.com/flosch/pongo2"
 	"github.com/kr/beanstalk"
-	"github.com/segmentio/go-loggly"
 )
 
 func webhookGitHub(res http.ResponseWriter, r *http.Request) {
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Error("GitHub Hook Error", loggly.Message{
+		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("%v", err),
-		})
+		}).Error("GitHub Hook Error")
 		http.Error(res, "GitHub request could not be read.", http.StatusInternalServerError)
 		return
 	}
@@ -82,9 +82,9 @@ func webhookInterface(res http.ResponseWriter, r *http.Request) {
 func sendToQueue(repository string) error {
 	conn, err := beanstalk.Dial("tcp", os.Getenv("BEANSTALK_ADDR"))
 	if err != nil {
-		log.Error("Beanstalk-Connect", loggly.Message{
+		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("%v", err),
-		})
+		}).Error("Beanstalk-Connect")
 		return err
 	}
 

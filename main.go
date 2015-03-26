@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -13,19 +14,35 @@ import (
 	"github.com/Luzifer/gobuilder/builddb"
 	"github.com/flosch/pongo2"
 	"github.com/go-martini/martini"
-	"github.com/segmentio/go-loggly"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus/hooks/papertrail"
 
 	_ "github.com/Luzifer/gobuilder/filters"
 	_ "github.com/flosch/pongo2-addons"
 )
 
-var log *loggly.Client
 var s3Bucket *s3.Bucket
+var log = logrus.New()
+
+func init() {
+	log.Out = os.Stderr
+
+	papertrail_port, err := strconv.Atoi(os.Getenv("papertrail_port"))
+	if err != nil {
+		log.Info("Failed to read papertrail_port, using only STDERR")
+		return
+	}
+	hook, err := logrus_papertrail.NewPapertrailHook(os.Getenv("papertrail_host"), papertrail_port, "GoBuilder Frontend")
+	if err != nil {
+		log.Panic("Unable to create papertrail connection")
+		os.Exit(1)
+	}
+
+	log.Hooks.Add(hook)
+}
 
 func main() {
-	log = loggly.New(os.Getenv("LOGGLY_TOKEN"))
-	log.Tag("GoBuild-Frontend")
-
 	connectS3()
 
 	m := martini.Classic()
@@ -58,9 +75,10 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 
 	file, err := s3Bucket.Get(buildDBFile)
 	if err != nil {
-		log.Error("AWS S3 Get Error", loggly.Message{
+		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("%v", err),
-		})
+			"repo":  params["repo"],
+		}).Warn("AWS S3 Get Error")
 		template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
 		template.ExecuteWriter(pongo2.Context{
 			"error": "Your build is not yet known to us...",
@@ -77,9 +95,9 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 	var buildDB builddb.BuildDB
 	err = json.Unmarshal(file, &buildDB)
 	if err != nil {
-		log.Error("AWS DB Unmarshal Error", loggly.Message{
+		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("%v", err),
-		})
+		}).Error("AWS DB Unmarshal Error")
 		template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
 		template.ExecuteWriter(pongo2.Context{
 			"error": "An unknown error occured while getting your build.",

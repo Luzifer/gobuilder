@@ -1,4 +1,16 @@
 
+1.6.0 / 2015-03-26
+==================
+
+  * Fix: Permanent failing jobs should be removed from the queue
+  * Moved commands to cmd namespace
+  * Do not upload dotfiles
+  * Moved BuildDB creation to build-starter
+  * Hide assets not for main operating systems
+  * Build gobuilder-frontend on top of golang:latest
+  * Changed URL to gobuilder.me
+  * Replaced curl as it lacks a return state
+
 1.5.0 / 2015-03-02
 ==================
 

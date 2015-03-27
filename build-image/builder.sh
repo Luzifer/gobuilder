@@ -37,6 +37,7 @@ if [ ! -f .gobuilder.yml ]; then
 fi
 # Upload .gobuilder.yml to enable notifications even when script fails while build
 cp .gobuilder.yml /artifacts/
+sync
 
 if [ "$(cat /tmp/go-build/build_${branch})" == "${short_commit}" ]; then
   log "Commit ${short_commit} was already built. Skipping."

@@ -85,10 +85,8 @@ func main() {
 func waitForBuild(conn *beanstalk.Conn) {
 	ts := beanstalk.NewTubeSet(conn, "gobuild.luzifer.io")
 	for {
-		fmt.Printf("Starting waitcycle...\n")
 		id, body, err := ts.Reserve(10 * time.Second)
 		if cerr, ok := err.(beanstalk.ConnError); ok && cerr.Err == beanstalk.ErrTimeout {
-			fmt.Println("timed out")
 			continue
 		} else if err != nil {
 			log.WithFields(logrus.Fields{
@@ -164,7 +162,7 @@ func waitForBuild(conn *beanstalk.Conn) {
 }
 
 func build(repo, tmpDir string) (bool, bool) {
-	fmt.Printf("Beginning to process %s\n", repo)
+	log.Debugf("Beginning to process %s\n", repo)
 
 	cfg := &docker.Config{
 		AttachStdin:  false,
@@ -213,11 +211,8 @@ func build(repo, tmpDir string) (bool, bool) {
 }
 
 func uploadAssets(repo, tmpDir string) {
-	fmt.Printf("ASSETS\n")
-
 	assets, err := ioutil.ReadDir(tmpDir)
 	orFail(err)
-	fmt.Printf("%+v", assets)
 	for _, f := range assets {
 		if f.IsDir() {
 			// Some repos are creating directories. Don't know why. Ignore them.
@@ -227,7 +222,7 @@ func uploadAssets(repo, tmpDir string) {
 			// Dotfiles are used to transport metadata from the container
 			continue
 		}
-		fmt.Printf("Uploading asset %s...\n", f.Name())
+		log.Debugf("Uploading asset %s...\n", f.Name())
 		originalPath := fmt.Sprintf("%s/%s", tmpDir, f.Name())
 		path := fmt.Sprintf("%s/%s", repo, f.Name())
 		fileContent, err := ioutil.ReadFile(originalPath)

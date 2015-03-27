@@ -31,17 +31,17 @@ mkdir -p /tmp/go-build
 wget -qO /tmp/go-build/build_${branch} https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build_${branch} || touch /tmp/go-build/build_${branch}
 wget -qO /tmp/go-build/build.db https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build.db || bash -c 'echo "{}" > /tmp/go-build/build.db'
 
-if [ "$(cat /tmp/go-build/build_${branch})" == "${short_commit}" ]; then
-  log "Commit ${short_commit} was already built. Skipping."
-  exit 130
-fi
-
 if [ ! -f .gobuilder.yml ]; then
   # Ensure .gobuilder.yml is present to prevent tools failing later
   echo "---" > .gobuilder.yml
 fi
 # Upload .gobuilder.yml to enable notifications even when script fails while build
 cp .gobuilder.yml /artifacts/
+
+if [ "$(cat /tmp/go-build/build_${branch})" == "${short_commit}" ]; then
+  log "Commit ${short_commit} was already built. Skipping."
+  exit 130
+fi
 
 if ! ( configreader checkEmpty artifacts ); then
   configreader read artifacts > /tmp/go-build/.artifact_files

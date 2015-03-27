@@ -162,7 +162,7 @@ func waitForBuild(conn *beanstalk.Conn) {
 }
 
 func build(repo, tmpDir string) (bool, bool) {
-	log.Infof("Beginning to process %s\n", repo)
+	log.Infof("Beginning to process %s", repo)
 
 	cfg := &docker.Config{
 		AttachStdin:  false,
@@ -222,7 +222,7 @@ func uploadAssets(repo, tmpDir string) {
 			// Dotfiles are used to transport metadata from the container
 			continue
 		}
-		log.Debugf("Uploading asset %s...\n", f.Name())
+		log.Debugf("Uploading asset %s...", f.Name())
 		originalPath := fmt.Sprintf("%s/%s", tmpDir, f.Name())
 		path := fmt.Sprintf("%s/%s", repo, f.Name())
 		fileContent, err := ioutil.ReadFile(originalPath)

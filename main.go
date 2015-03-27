@@ -27,6 +27,7 @@ var log = logrus.New()
 
 func init() {
 	log.Out = os.Stderr
+	log.Formatter = &logrus.TextFormatter{ForceColors: true}
 
 	papertrail_port, err := strconv.Atoi(os.Getenv("papertrail_port"))
 	if err != nil {

@@ -1,4 +1,10 @@
 
+1.8.1 / 2015-03-27
+==================
+
+  * Fix: Upload .gobuilder.yml in any case
+  * Fix: Installing a go utility needs its sources
+
 1.8.0 / 2015-03-27
 ==================
 

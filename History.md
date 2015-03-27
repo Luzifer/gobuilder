@@ -1,4 +1,11 @@
 
+1.8.0 / 2015-03-27
+==================
+
+  * Added .gobuilder.yml feature and removed old artifact handling
+  * Use the same log format as the build starter for the frontend
+  * Added favicon as static asset
+
 1.7.0 / 2015-03-26
 ==================
 

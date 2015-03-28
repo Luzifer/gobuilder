@@ -83,7 +83,7 @@
               </div>
               <div class="panel panel-default">
                 <div class="panel-heading">Downloads</div>
-                <table class="table">
+                <table class="table vert-align">
                   <tr>
                     <th class="col-lg-8">Filename</th>
                     <th class="col-lg-2">File Size</th>
@@ -91,7 +91,10 @@
                   </tr>
                   {% for properties in mybranch.Assets %}
                     <tr {% if !properties.FileName|is_mainarch %}class="subarch collapse"{% endif %}>
-                      <td>{{ properties.FileName }}</td>
+                      <td>
+                        <i class="fa fa-{{properties.FileName|branchicon}}"></i>
+                        {{ properties.FileName }}
+                      </td>
                       <td>{{ properties.Size|filesizeformat }}</td>
                       <td>
                         <a href="/get/{{ repo }}/{{ properties.FileName }}" class="btn btn-default" role="button">

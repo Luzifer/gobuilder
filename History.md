@@ -1,4 +1,12 @@
 
+1.9.0 / 2015-03-29
+==================
+
+  * Added platform icons to file view
+  * Removed newlines from log
+  * Fix: When build is skipped .gobuilder.yml is not available
+  * Use log level Info for build start
+
 1.8.2 / 2015-03-27
 ==================
 

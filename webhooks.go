@@ -65,6 +65,12 @@ func webhookInterface(res http.ResponseWriter, r *http.Request) {
 			"error": "Please provide a repository.",
 		}, res)
 	} else {
+		if !isValidRepositorySource(repo) {
+			template.ExecuteWriter(pongo2.Context{
+				"error": "Currently only github.com or bitbucket.com repos can be built.",
+			}, res)
+			return
+		}
 		err := sendToQueue(repo)
 		if err != nil {
 			template.ExecuteWriter(pongo2.Context{
@@ -77,6 +83,16 @@ func webhookInterface(res http.ResponseWriter, r *http.Request) {
 			}, res)
 		}
 	}
+}
+
+func isValidRepositorySource(repository string) (valid bool) {
+	valid = false
+	for _, host := range []string{"github.com", "bitbucket.com"} {
+		if strings.HasPrefix(repository, host) {
+			valid = true
+		}
+	}
+	return
 }
 
 func sendToQueue(repository string) error {

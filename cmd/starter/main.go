@@ -162,7 +162,9 @@ func waitForBuild(conn *beanstalk.Conn) {
 }
 
 func build(repo, tmpDir string) (bool, bool) {
-	log.Infof("Beginning to process %s", repo)
+	log.WithFields(logrus.Fields{
+		"repository": repo,
+	}).Info("Beginning to process repo")
 
 	cfg := &docker.Config{
 		AttachStdin:  false,

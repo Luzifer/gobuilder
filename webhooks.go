@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -67,8 +68,11 @@ func webhookInterface(res http.ResponseWriter, r *http.Request) {
 	} else {
 		if !isValidRepositorySource(repo) {
 			template.ExecuteWriter(pongo2.Context{
-				"error": "Currently only github.com or bitbucket.com repos can be built.",
+				"error": "Sorry, that does not look like a valid package. Not building that.",
 			}, res)
+			log.WithFields(logrus.Fields{
+				"repository": repo,
+			}).Warn("Refused to build repo")
 			return
 		}
 		err := sendToQueue(repo)
@@ -85,14 +89,9 @@ func webhookInterface(res http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func isValidRepositorySource(repository string) (valid bool) {
-	valid = false
-	for _, host := range []string{"github.com", "bitbucket.com"} {
-		if strings.HasPrefix(repository, host) {
-			valid = true
-		}
-	}
-	return
+func isValidRepositorySource(repository string) bool {
+	regex := regexp.MustCompile(`^[a-zA-Z0-9/_\.-]+[^/]$`)
+	return regex.Match([]byte(repository))
 }
 
 func sendToQueue(repository string) error {

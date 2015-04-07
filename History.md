@@ -1,4 +1,12 @@
 
+1.10.0 / 2015-04-07
+==================
+
+  * Added FreshDesk widget
+  * Make new builds visible even if they are not ready
+  * Fix: Streamlined log lines
+  * Added check to prevent spamming with broken repos
+
 1.9.0 / 2015-03-29
 ==================
 

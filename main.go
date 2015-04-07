@@ -74,7 +74,7 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 	}
 	buildDBFile := fmt.Sprintf("%s/build.db", params["repo"])
 
-	file, err := s3Bucket.Get(buildDBFile)
+	build_status, err := s3Bucket.Get(fmt.Sprintf("%s/build.status", params["repo"]))
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("%v", err),
@@ -88,27 +88,31 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 		return
 	}
 
-	build_status, err := s3Bucket.Get(fmt.Sprintf("%s/build.status", params["repo"]))
-	if err != nil {
-		build_status = []byte("unknown")
-	}
-
 	readmeContent, err := s3Bucket.Get(fmt.Sprintf("%s/%s_README.md", params["repo"], branch))
 	if err != nil {
 		readmeContent = []byte("Project provided no README.md file.")
 	}
 
-	var buildDB builddb.BuildDB
-	err = json.Unmarshal(file, &buildDB)
+	buildDB := builddb.BuildDB{}
+	hasBuilds := false
+
+	file, err := s3Bucket.Get(buildDBFile)
 	if err != nil {
-		log.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("%v", err),
-		}).Error("AWS DB Unmarshal Error")
-		template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-		template.ExecuteWriter(pongo2.Context{
-			"error": "An unknown error occured while getting your build.",
-		}, res)
-		return
+		buildDB["master"] = builddb.BuildDBBranch{}
+		hasBuilds = false
+	} else {
+		err = json.Unmarshal(file, &buildDB)
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"error": fmt.Sprintf("%v", err),
+			}).Error("AWS DB Unmarshal Error")
+			template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
+			template.ExecuteWriter(pongo2.Context{
+				"error": "An unknown error occured while getting your build.",
+			}, res)
+			return
+		}
+		hasBuilds = true
 	}
 
 	template := pongo2.Must(pongo2.FromFile("frontend/repository.html"))
@@ -124,6 +128,7 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 		"mybranch":     buildDB[branch],
 		"build_status": string(build_status),
 		"readme":       string(readmeContent),
+		"hasbuilds":    hasBuilds,
 	}, res)
 }
 

@@ -108,6 +108,10 @@
     
     {% block customscript %}{% endblock %}
 
+    <script type="text/javascript" src="https://s3.amazonaws.com/assets.freshdesk.com/widget/freshwidget.js"></script>
+    <script type="text/javascript">
+      FreshWidget.init("", {"queryString": "&widgetType=popup&attachFile=no&searchArea=no", "utf8": "✓", "widgetType": "popup", "buttonType": "text", "buttonText": "Help & Feedback", "buttonColor": "white", "buttonBg": "#006063", "alignment": "4", "offset": "300px", "formHeight": "500px", "url": "https://knutahlers.freshdesk.com"} );
+    </script>
 </body>
 
 </html>

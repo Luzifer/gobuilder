@@ -29,6 +29,7 @@
             {% endif %}
           </div>
         </div>
+        {% if hasbuilds %}
         <div class="row">
             <div class="col-lg-3">
               <div class="panel panel-default">
@@ -112,4 +113,24 @@
             </div>
         </div>
         <!-- /.row -->
+        {% else %}
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-3">
+              <div class="panel panel-default">
+                <div class="panel-heading">Not yet ready&hellip;</div>
+                <div class="panel-body">
+                  <p>
+                    Your build is known to us and you should see a build status above.
+                    Sadly it is not yet ready for you to see it as the workers are still
+                    working on it. Please stay tuned&hellip;
+                  </p>
+                  <p>
+                    If this message persists something went really wrong and you might
+                    consider contacting me&hellip;
+                  </p>
+                </div>
+              </div>
+            </div>
+        </div>
+        {% endif %}
 {% endblock %}

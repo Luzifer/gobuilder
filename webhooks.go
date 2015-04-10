@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"strings"
 
-	"launchpad.net/goamz/s3"
-
 	"github.com/Luzifer/gobuilder/buildjob"
 	"github.com/Sirupsen/logrus"
 	"github.com/flosch/pongo2"
@@ -105,7 +103,7 @@ func sendToQueue(repository string) error {
 	// Put the job into the queue and give it a time to run of 900 secs
 	redisClient.RPush("build-queue", string(queueEntry))
 
-	err = s3Bucket.Put(fmt.Sprintf("%s/build.status", repository), []byte("queued"), "text/plain", s3.PublicRead)
+	err = redisClient.Set(fmt.Sprintf("project::%s::build-status", repository), "queued", 0, 0, false, false)
 	if err != nil {
 		fmt.Printf("%+v", err)
 	}

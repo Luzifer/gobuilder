@@ -119,7 +119,7 @@ func waitForBuild() {
 		orFail(err)
 
 		if buildOK {
-			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("finished"), "text/plain", s3.PublicRead))
+			orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "finished", 0, 0, false, false))
 			_ = os.RemoveAll(tmpDir)
 
 			log.WithFields(logrus.Fields{
@@ -133,7 +133,7 @@ func waitForBuild() {
 
 			triggerSubBuilds(repo, config.Triggers)
 		} else {
-			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("queued"), "text/plain", s3.PublicRead))
+			orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "queued", 0, 0, false, false))
 			log.WithFields(logrus.Fields{
 				"repository": repo,
 			}).Error("Failed build")
@@ -156,7 +156,7 @@ func waitForBuild() {
 					"repository":         repo,
 					"numberOfBuildTries": maxJobRetries,
 				}).Error("Finally failed build")
-				orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("failed"), "text/plain", s3.PublicRead))
+				orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "failed", 0, 0, false, false))
 			}
 		}
 
@@ -188,7 +188,7 @@ func build(repo, tmpDir string) (bool, bool) {
 	})
 	orFail(err)
 
-	orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("building"), "text/plain", s3.PublicRead))
+	orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "building", 0, 0, false, false))
 	status, err := dockerClient.WaitContainer(container.ID)
 	orFail(err)
 

@@ -84,8 +84,8 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 	}
 	buildDBFile := fmt.Sprintf("%s/build.db", params["repo"])
 
-	build_status, err := s3Bucket.Get(fmt.Sprintf("%s/build.status", params["repo"]))
-	if err != nil {
+	build_status, err := redisClient.Get(fmt.Sprintf("project::%s::build-status", params["repo"]))
+	if err != nil || build_status == nil {
 		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("%v", err),
 			"repo":  params["repo"],

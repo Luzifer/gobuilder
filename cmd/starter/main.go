@@ -76,6 +76,11 @@ func main() {
 	}, docker.AuthConfiguration{})
 	orFail(err)
 
+	redisClient.Incr("active-workers")
+	defer func() {
+		redisClient.Decr("active-workers")
+	}()
+
 	waitForBuild()
 }
 
@@ -120,6 +125,8 @@ func waitForBuild() {
 
 		if buildOK {
 			orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "finished", 0, 0, false, false))
+			redisClient.LPush("last-builds", repo)
+			redisClient.LTrim("last-builds", 0, 10)
 			_ = os.RemoveAll(tmpDir)
 
 			log.WithFields(logrus.Fields{

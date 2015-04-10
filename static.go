@@ -4,14 +4,24 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/flosch/pongo2"
 )
 
 func handleFrontPage(res http.ResponseWriter) {
+	queueLength, _ := redisClient.LLen("build-queue")
+	lastBuilds, _ := redisClient.LRange("last-builds", 0, 10)
+	activeWorkersRaw, _ := redisClient.Get("active-workers")
+	activeWorkers, _ := strconv.Atoi(string(activeWorkersRaw))
+
 	template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-	template.ExecuteWriter(pongo2.Context{}, res)
+	template.ExecuteWriter(pongo2.Context{
+		"queueLength":   queueLength,
+		"lastBuilds":    lastBuilds,
+		"activeWorkers": activeWorkers,
+	}, res)
 }
 
 func handleImprint(res http.ResponseWriter) {

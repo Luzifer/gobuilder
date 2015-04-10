@@ -40,10 +40,6 @@
 			"Rev": "627d985ef9f202fbfc53531f1da96ef92ae3fb3e"
 		},
 		{
-			"ImportPath": "github.com/kr/beanstalk",
-			"Rev": "4011ceaa3ceeeeb8f38e541d2e8efceba6d0b86e"
-		},
-		{
 			"ImportPath": "github.com/russross/blackfriday",
 			"Comment": "v1.2-42-g77efab5",
 			"Rev": "77efab57b2f74dd3f9051c79752b2e8995c8b789"
@@ -51,6 +47,10 @@
 		{
 			"ImportPath": "github.com/shurcooL/sanitized_anchor_name",
 			"Rev": "9a8b7d4e8f347bfa230879db9d7d4e4d9e19f962"
+		},
+		{
+			"ImportPath": "github.com/xuyu/goredis",
+			"Rev": "300f7e8cf453e2ea44337b3969d3aecf1a92ebe3"
 		},
 		{
 			"ImportPath": "golang.org/x/text/transform",

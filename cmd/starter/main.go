@@ -20,12 +20,13 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/Sirupsen/logrus/hooks/papertrail"
 	"github.com/fsouza/go-dockerclient"
-	"github.com/kr/beanstalk"
+	"github.com/xuyu/goredis"
 )
 
 var dockerClient *docker.Client
 var log = logrus.New()
 var s3Bucket *s3.Bucket
+var redisClient *goredis.Redis
 
 const maxJobRetries int = 5
 
@@ -50,6 +51,14 @@ func init() {
 	}
 
 	log.Hooks.Add(hook)
+
+	redisClient, err = goredis.DialURL(os.Getenv("redis_url"))
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"url": os.Getenv("redis_url"),
+		}).Panic("Unable to connect to Redis")
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -67,38 +76,32 @@ func main() {
 	}, docker.AuthConfiguration{})
 	orFail(err)
 
-	conn, err := beanstalk.Dial("tcp", os.Getenv("BEANSTALK_ADDR"))
-	if err != nil {
-		log.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("%v", err),
-		}).Error("Beanstalk-Connect")
-		panic(err)
-	}
-
-	defer func() {
-		_ = conn.Close()
-	}()
-
-	waitForBuild(conn)
+	waitForBuild()
 }
 
-func waitForBuild(conn *beanstalk.Conn) {
-	ts := beanstalk.NewTubeSet(conn, "gobuild.luzifer.io")
+func waitForBuild() {
 	for {
-		id, body, err := ts.Reserve(10 * time.Second)
-		if cerr, ok := err.(beanstalk.ConnError); ok && cerr.Err == beanstalk.ErrTimeout {
-			continue
-		} else if err != nil {
+		queueLength, err := redisClient.LLen("build-queue")
+		if err != nil {
 			log.WithFields(logrus.Fields{
-				"error": fmt.Sprintf("%v", err),
-			}).Error("Tube-Reserve")
-			panic(err)
+				"error": err.Error(),
+			}).Error("Unable to determine queue length.")
+		}
+
+		if queueLength < 1 {
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		body, err := redisClient.LPop("build-queue")
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"error": err.Error(),
+			}).Error("An error occurred while getting job")
 		}
 
 		job, err := buildjob.FromBytes(body)
 		if err != nil {
 			// there was a job we could not parse throw it away and continue
-			_ = conn.Delete(id)
 			continue
 		}
 		repo := job.Repository
@@ -106,7 +109,6 @@ func waitForBuild(conn *beanstalk.Conn) {
 		tmpDir, err := ioutil.TempDir("", "gobuild")
 		orFail(err)
 		buildOK, triggerUpload := build(repo, tmpDir)
-		_ = conn.Delete(id)
 
 		if triggerUpload {
 			orFail(builddbCreator.GenerateBuildDB(tmpDir))
@@ -147,7 +149,7 @@ func waitForBuild(conn *beanstalk.Conn) {
 				queueEntry, err := job.ToByte()
 				orFail(err)
 
-				_, err = conn.Put([]byte(queueEntry), 1, 0, 900*time.Second)
+				redisClient.RPush("build-queue", string(queueEntry))
 				orFail(err)
 			} else {
 				log.WithFields(logrus.Fields{

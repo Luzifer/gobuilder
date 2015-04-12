@@ -1,4 +1,12 @@
 
+1.11.0 / 2015-04-12
+==================
+
+  * Added some metadata to front page
+  * Store build-status in Redis instead of S3
+  * Replaced beanstalk queue with Redis list
+  * Show the assets above the readme
+
 1.10.0 / 2015-04-07
 ==================
 

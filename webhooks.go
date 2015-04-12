@@ -5,17 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
-	"time"
-
-	"launchpad.net/goamz/s3"
 
 	"github.com/Luzifer/gobuilder/buildjob"
 	"github.com/Sirupsen/logrus"
 	"github.com/flosch/pongo2"
-	"github.com/kr/beanstalk"
 )
 
 func webhookGitHub(res http.ResponseWriter, r *http.Request) {
@@ -95,21 +90,6 @@ func isValidRepositorySource(repository string) bool {
 }
 
 func sendToQueue(repository string) error {
-	conn, err := beanstalk.Dial("tcp", os.Getenv("BEANSTALK_ADDR"))
-	if err != nil {
-		log.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("%v", err),
-		}).Error("Beanstalk-Connect")
-		return err
-	}
-
-	defer conn.Close()
-
-	t := beanstalk.Tube{
-		Conn: conn,
-		Name: "gobuild.luzifer.io",
-	}
-
 	job := buildjob.BuildJob{
 		Repository:         repository,
 		NumberOfExecutions: 0,
@@ -121,13 +101,9 @@ func sendToQueue(repository string) error {
 	}
 
 	// Put the job into the queue and give it a time to run of 900 secs
-	_, err = t.Put([]byte(queueEntry), 1, 0, 900*time.Second)
-	if err != nil {
-		log.Error(fmt.Sprintf("%q", err))
-		return err
-	}
+	redisClient.RPush("build-queue", string(queueEntry))
 
-	err = s3Bucket.Put(fmt.Sprintf("%s/build.status", repository), []byte("queued"), "text/plain", s3.PublicRead)
+	err = redisClient.Set(fmt.Sprintf("project::%s::build-status", repository), "queued", 0, 0, false, false)
 	if err != nil {
 		fmt.Printf("%+v", err)
 	}

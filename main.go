@@ -14,6 +14,7 @@ import (
 	"github.com/Luzifer/gobuilder/builddb"
 	"github.com/flosch/pongo2"
 	"github.com/go-martini/martini"
+	"github.com/xuyu/goredis"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/Sirupsen/logrus/hooks/papertrail"
@@ -24,6 +25,7 @@ import (
 
 var s3Bucket *s3.Bucket
 var log = logrus.New()
+var redisClient *goredis.Redis
 
 func init() {
 	log.Out = os.Stderr
@@ -41,6 +43,14 @@ func init() {
 	}
 
 	log.Hooks.Add(hook)
+
+	redisClient, err = goredis.DialURL(os.Getenv("redis_url"))
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"url": os.Getenv("redis_url"),
+		}).Panic("Unable to connect to Redis")
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -74,8 +84,8 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 	}
 	buildDBFile := fmt.Sprintf("%s/build.db", params["repo"])
 
-	build_status, err := s3Bucket.Get(fmt.Sprintf("%s/build.status", params["repo"]))
-	if err != nil {
+	build_status, err := redisClient.Get(fmt.Sprintf("project::%s::build-status", params["repo"]))
+	if err != nil || build_status == nil {
 		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("%v", err),
 			"repo":  params["repo"],

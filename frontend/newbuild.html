@@ -2,7 +2,7 @@
 
 {% block content %}
         <div class="row">
-            <div class="col-lg-6 col-lg-offset-3 text-center">
+            <div class="col-lg-8 col-lg-offset-2 jumbotron text-center">
                 <h1>Start a new build...</h1>
                 <form role="form" action="/build" method="post">
                   <div class="form-group">
@@ -11,6 +11,31 @@
                   <button type="submit" class="btn btn-primary btn-block">Start Build!</button>
                 </form>
             </div>
+        </div>
+        <!-- /.row -->
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">Latest builds</div>
+              <div class="list-group">
+                {% for repo in lastBuilds %}
+                  <a class="list-group-item" href="/{{ repo }}">{{ repo }}</a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          <!-- /.col -->
+          <div class="col-lg-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">Some statistics</div>
+              <div class="panel-body">
+                <p>
+                  Currently <strong>{{ activeWorkers }} worker{{ activeWorkers|pluralize }}</strong> {{ activeWorkers|pluralize:"is,are" }} running
+                  and working on <strong>{{ queueLength }} repositor{{ queueLength|pluralize:"y,ies" }}</strong> in the queue.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
         <!-- /.row -->
 {% endblock %}

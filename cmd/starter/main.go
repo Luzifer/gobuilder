@@ -20,12 +20,13 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/Sirupsen/logrus/hooks/papertrail"
 	"github.com/fsouza/go-dockerclient"
-	"github.com/kr/beanstalk"
+	"github.com/xuyu/goredis"
 )
 
 var dockerClient *docker.Client
 var log = logrus.New()
 var s3Bucket *s3.Bucket
+var redisClient *goredis.Redis
 
 const maxJobRetries int = 5
 
@@ -50,6 +51,14 @@ func init() {
 	}
 
 	log.Hooks.Add(hook)
+
+	redisClient, err = goredis.DialURL(os.Getenv("redis_url"))
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"url": os.Getenv("redis_url"),
+		}).Panic("Unable to connect to Redis")
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -67,38 +76,37 @@ func main() {
 	}, docker.AuthConfiguration{})
 	orFail(err)
 
-	conn, err := beanstalk.Dial("tcp", os.Getenv("BEANSTALK_ADDR"))
-	if err != nil {
-		log.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("%v", err),
-		}).Error("Beanstalk-Connect")
-		panic(err)
-	}
-
+	redisClient.Incr("active-workers")
 	defer func() {
-		_ = conn.Close()
+		redisClient.Decr("active-workers")
 	}()
 
-	waitForBuild(conn)
+	waitForBuild()
 }
 
-func waitForBuild(conn *beanstalk.Conn) {
-	ts := beanstalk.NewTubeSet(conn, "gobuild.luzifer.io")
+func waitForBuild() {
 	for {
-		id, body, err := ts.Reserve(10 * time.Second)
-		if cerr, ok := err.(beanstalk.ConnError); ok && cerr.Err == beanstalk.ErrTimeout {
-			continue
-		} else if err != nil {
+		queueLength, err := redisClient.LLen("build-queue")
+		if err != nil {
 			log.WithFields(logrus.Fields{
-				"error": fmt.Sprintf("%v", err),
-			}).Error("Tube-Reserve")
-			panic(err)
+				"error": err.Error(),
+			}).Error("Unable to determine queue length.")
+		}
+
+		if queueLength < 1 {
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		body, err := redisClient.LPop("build-queue")
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"error": err.Error(),
+			}).Error("An error occurred while getting job")
 		}
 
 		job, err := buildjob.FromBytes(body)
 		if err != nil {
 			// there was a job we could not parse throw it away and continue
-			_ = conn.Delete(id)
 			continue
 		}
 		repo := job.Repository
@@ -106,7 +114,6 @@ func waitForBuild(conn *beanstalk.Conn) {
 		tmpDir, err := ioutil.TempDir("", "gobuild")
 		orFail(err)
 		buildOK, triggerUpload := build(repo, tmpDir)
-		_ = conn.Delete(id)
 
 		if triggerUpload {
 			orFail(builddbCreator.GenerateBuildDB(tmpDir))
@@ -117,7 +124,9 @@ func waitForBuild(conn *beanstalk.Conn) {
 		orFail(err)
 
 		if buildOK {
-			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("finished"), "text/plain", s3.PublicRead))
+			orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "finished", 0, 0, false, false))
+			redisClient.LPush("last-builds", repo)
+			redisClient.LTrim("last-builds", 0, 10)
 			_ = os.RemoveAll(tmpDir)
 
 			log.WithFields(logrus.Fields{
@@ -131,7 +140,7 @@ func waitForBuild(conn *beanstalk.Conn) {
 
 			triggerSubBuilds(repo, config.Triggers)
 		} else {
-			orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("queued"), "text/plain", s3.PublicRead))
+			orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "queued", 0, 0, false, false))
 			log.WithFields(logrus.Fields{
 				"repository": repo,
 			}).Error("Failed build")
@@ -147,14 +156,14 @@ func waitForBuild(conn *beanstalk.Conn) {
 				queueEntry, err := job.ToByte()
 				orFail(err)
 
-				_, err = conn.Put([]byte(queueEntry), 1, 0, 900*time.Second)
+				redisClient.RPush("build-queue", string(queueEntry))
 				orFail(err)
 			} else {
 				log.WithFields(logrus.Fields{
 					"repository":         repo,
 					"numberOfBuildTries": maxJobRetries,
 				}).Error("Finally failed build")
-				orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("failed"), "text/plain", s3.PublicRead))
+				orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "failed", 0, 0, false, false))
 			}
 		}
 
@@ -186,7 +195,7 @@ func build(repo, tmpDir string) (bool, bool) {
 	})
 	orFail(err)
 
-	orFail(s3Bucket.Put(fmt.Sprintf("%s/build.status", repo), []byte("building"), "text/plain", s3.PublicRead))
+	orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "building", 0, 0, false, false))
 	status, err := dockerClient.WaitContainer(container.ID)
 	orFail(err)
 

@@ -20,6 +20,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/Sirupsen/logrus/hooks/papertrail"
 	"github.com/fsouza/go-dockerclient"
+	"github.com/robfig/cron"
 	"github.com/xuyu/goredis"
 )
 
@@ -76,98 +77,115 @@ func main() {
 	}, docker.AuthConfiguration{})
 	orFail(err)
 
-	redisClient.Incr("active-workers")
-	defer func() {
-		redisClient.Decr("active-workers")
-	}()
+	c := cron.New()
+	c.AddFunc("0 */5 * * * *", announceActiveWorker)
+	c.Start()
 
-	waitForBuild()
+	for {
+		fetchBuildJob()
+		time.Sleep(10 * time.Second)
+	}
 }
 
-func waitForBuild() {
-	for {
-		queueLength, err := redisClient.LLen("build-queue")
-		if err != nil {
-			log.WithFields(logrus.Fields{
-				"error": err.Error(),
-			}).Error("Unable to determine queue length.")
-		}
-
-		if queueLength < 1 {
-			time.Sleep(5 * time.Second)
-			continue
-		}
-		body, err := redisClient.LPop("build-queue")
-		if err != nil {
-			log.WithFields(logrus.Fields{
-				"error": err.Error(),
-			}).Error("An error occurred while getting job")
-		}
-
-		job, err := buildjob.FromBytes(body)
-		if err != nil {
-			// there was a job we could not parse throw it away and continue
-			continue
-		}
-		repo := job.Repository
-
-		tmpDir, err := ioutil.TempDir("", "gobuild")
-		orFail(err)
-		buildOK, triggerUpload := build(repo, tmpDir)
-
-		if triggerUpload {
-			orFail(builddbCreator.GenerateBuildDB(tmpDir))
-			uploadAssets(repo, tmpDir)
-		}
-
-		config, err := buildconfig.LoadFromFile(fmt.Sprintf("%s/.gobuilder.yml", tmpDir))
-		orFail(err)
-
-		if buildOK {
-			orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "finished", 0, 0, false, false))
-			redisClient.LPush("last-builds", repo)
-			redisClient.LTrim("last-builds", 0, 10)
-			_ = os.RemoveAll(tmpDir)
-
-			log.WithFields(logrus.Fields{
-				"repository": repo,
-			}).Info("Finished build")
-
-			orFail(config.Notify.Execute(notifier.NotifyMetaData{
-				EventType:  "success",
-				Repository: repo,
-			}))
-
-			triggerSubBuilds(repo, config.Triggers)
-		} else {
-			orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "queued", 0, 0, false, false))
-			log.WithFields(logrus.Fields{
-				"repository": repo,
-			}).Error("Failed build")
-
-			orFail(config.Notify.Execute(notifier.NotifyMetaData{
-				EventType:  "error",
-				Repository: repo,
-			}))
-
-			// Try to build the job only 5 times not to clutter the queue
-			if job.NumberOfExecutions < maxJobRetries-1 {
-				job.NumberOfExecutions = job.NumberOfExecutions + 1
-				queueEntry, err := job.ToByte()
-				orFail(err)
-
-				redisClient.RPush("build-queue", string(queueEntry))
-				orFail(err)
-			} else {
-				log.WithFields(logrus.Fields{
-					"repository":         repo,
-					"numberOfBuildTries": maxJobRetries,
-				}).Error("Finally failed build")
-				orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "failed", 0, 0, false, false))
-			}
-		}
-
+func announceActiveWorker() {
+	timestamp := float64(time.Now().Unix())
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("Unable to determine hostname")
 	}
+
+	redisClient.ZAdd("active-workers", map[string]float64{
+		hostname: timestamp,
+	})
+
+	// Remove old clients to ensure the redis doesn't get filled with old data
+	redisClient.ZRemRangeByScore("active-workers", "-inf", string(time.Now().Unix()-3600))
+}
+
+func fetchBuildJob() {
+	queueLength, err := redisClient.LLen("build-queue")
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"error": err.Error(),
+		}).Error("Unable to determine queue length.")
+	}
+
+	if queueLength < 1 {
+		time.Sleep(5 * time.Second)
+		return
+	}
+	body, err := redisClient.LPop("build-queue")
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"error": err.Error(),
+		}).Error("An error occurred while getting job")
+	}
+
+	job, err := buildjob.FromBytes(body)
+	if err != nil {
+		// there was a job we could not parse throw it away and continue
+		return
+	}
+	repo := job.Repository
+
+	tmpDir, err := ioutil.TempDir("", "gobuild")
+	orFail(err)
+	buildOK, triggerUpload := build(repo, tmpDir)
+
+	if triggerUpload {
+		orFail(builddbCreator.GenerateBuildDB(tmpDir))
+		uploadAssets(repo, tmpDir)
+	}
+
+	config, err := buildconfig.LoadFromFile(fmt.Sprintf("%s/.gobuilder.yml", tmpDir))
+	orFail(err)
+
+	if buildOK {
+		orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "finished", 0, 0, false, false))
+		redisClient.LPush("last-builds", repo)
+		redisClient.LTrim("last-builds", 0, 10)
+		_ = os.RemoveAll(tmpDir)
+
+		log.WithFields(logrus.Fields{
+			"repository": repo,
+		}).Info("Finished build")
+
+		orFail(config.Notify.Execute(notifier.NotifyMetaData{
+			EventType:  "success",
+			Repository: repo,
+		}))
+
+		triggerSubBuilds(repo, config.Triggers)
+	} else {
+		orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "queued", 0, 0, false, false))
+		log.WithFields(logrus.Fields{
+			"repository": repo,
+		}).Error("Failed build")
+
+		orFail(config.Notify.Execute(notifier.NotifyMetaData{
+			EventType:  "error",
+			Repository: repo,
+		}))
+
+		// Try to build the job only 5 times not to clutter the queue
+		if job.NumberOfExecutions < maxJobRetries-1 {
+			job.NumberOfExecutions = job.NumberOfExecutions + 1
+			queueEntry, err := job.ToByte()
+			orFail(err)
+
+			redisClient.RPush("build-queue", string(queueEntry))
+			orFail(err)
+		} else {
+			log.WithFields(logrus.Fields{
+				"repository":         repo,
+				"numberOfBuildTries": maxJobRetries,
+			}).Error("Finally failed build")
+			orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "failed", 0, 0, false, false))
+		}
+	}
+
 }
 
 func build(repo, tmpDir string) (bool, bool) {

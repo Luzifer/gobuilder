@@ -101,7 +101,7 @@ func announceActiveWorker() {
 	})
 
 	// Remove old clients to ensure the redis doesn't get filled with old data
-	redisClient.ZRemRangeByScore("active-workers", "-inf", string(time.Now().Unix()-3600))
+	redisClient.ZRemRangeByScore("active-workers", "-inf", strconv.Itoa(int(time.Now().Unix()-3600)))
 }
 
 func fetchBuildJob() {

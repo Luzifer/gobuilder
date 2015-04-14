@@ -17,7 +17,7 @@ func handleFrontPage(res http.ResponseWriter) {
 	activeWorkers, _ := redisClient.ZCount("active-workers", timestamp, "+inf")
 
 	queueLength, _ := redisClient.LLen("build-queue")
-	lastBuilds, _ := redisClient.LRange("last-builds", 0, 10)
+	lastBuilds, _ := redisClient.ZRevRange("last-builds", 0, 10, false)
 
 	template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
 	template.ExecuteWriter(pongo2.Context{

@@ -144,8 +144,9 @@ func fetchBuildJob() {
 
 	if buildOK {
 		orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "finished", 0, 0, false, false))
-		redisClient.LPush("last-builds", repo)
-		redisClient.LTrim("last-builds", 0, 10)
+		redisClient.ZAdd("last-builds", map[string]float64{
+			repo: float64(time.Now().Unix()),
+		})
 		_ = os.RemoveAll(tmpDir)
 
 		log.WithFields(logrus.Fields{

@@ -140,7 +140,10 @@ func fetchBuildJob() {
 	}
 
 	config, err := buildconfig.LoadFromFile(fmt.Sprintf("%s/.gobuilder.yml", tmpDir))
-	orFail(err)
+	if err != nil {
+		// We got no .gobuilder.yml? Assume something was terribly wrong and requeue build.
+		buildOK = false
+	}
 
 	if buildOK {
 		orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "finished", 0, 0, false, false))

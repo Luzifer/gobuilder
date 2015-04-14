@@ -1,4 +1,9 @@
 
+1.11.3 / 2015-04-14
+==================
+
+  * Fix: Build button gave no feedback as of template field errors
+
 1.11.2 / 2015-04-14
 ==================
 

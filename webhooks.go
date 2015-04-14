@@ -56,32 +56,35 @@ func webhookBitBucket(res http.ResponseWriter, r *http.Request) {
 func webhookInterface(res http.ResponseWriter, r *http.Request) {
 	repo := r.FormValue("repository")
 	template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
+	context := getNewBuildContext()
+
+	// No repository was given, just submitted
 	if len(repo) == 0 {
-		template.ExecuteWriter(pongo2.Context{
-			"error": "Please provide a repository.",
-		}, res)
-	} else {
-		if !isValidRepositorySource(repo) {
-			template.ExecuteWriter(pongo2.Context{
-				"error": "Sorry, that does not look like a valid package. Not building that.",
-			}, res)
-			log.WithFields(logrus.Fields{
-				"repository": repo,
-			}).Warn("Refused to build repo")
-			return
-		}
-		err := sendToQueue(repo)
-		if err != nil {
-			template.ExecuteWriter(pongo2.Context{
-				"error": "An unknown error occured while queueing the repository.",
-			}, res)
-		} else {
-			template.ExecuteWriter(pongo2.Context{
-				"success": "Your build job has been submitted.",
-				"repo":    repo,
-			}, res)
-		}
+		context["error"] = "Please provide a repository."
+		template.ExecuteWriter(context, res)
+		return
 	}
+
+	// Repository contained characters not being allowed
+	if !isValidRepositorySource(repo) {
+		context["error"] = "Sorry, that does not look like a valid package. Not building that."
+		template.ExecuteWriter(context, res)
+		log.WithFields(logrus.Fields{
+			"repository": repo,
+		}).Warn("Refused to build repo")
+		return
+	}
+
+	err := sendToQueue(repo)
+	if err != nil {
+		context["error"] = "An unknown error occured while queueing the repository."
+		template.ExecuteWriter(context, res)
+		return
+	}
+
+	context["success"] = "Your build job has been submitted."
+	context["repo"] = repo
+	template.ExecuteWriter(context, res)
 }
 
 func isValidRepositorySource(repository string) bool {

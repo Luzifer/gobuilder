@@ -11,7 +11,7 @@ import (
 	"github.com/flosch/pongo2"
 )
 
-func handleFrontPage(res http.ResponseWriter) {
+func getNewBuildContext() pongo2.Context {
 	// Fetch clients active in last 10min
 	timestamp := strconv.Itoa(int(time.Now().Unix() - 600))
 	activeWorkers, _ := redisClient.ZCount("active-workers", timestamp, "+inf")
@@ -19,12 +19,16 @@ func handleFrontPage(res http.ResponseWriter) {
 	queueLength, _ := redisClient.LLen("build-queue")
 	lastBuilds, _ := redisClient.ZRevRange("last-builds", 0, 10, false)
 
-	template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-	template.ExecuteWriter(pongo2.Context{
+	return pongo2.Context{
 		"queueLength":   queueLength,
 		"lastBuilds":    lastBuilds,
 		"activeWorkers": activeWorkers,
-	}, res)
+	}
+}
+
+func handleFrontPage(res http.ResponseWriter) {
+	template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
+	template.ExecuteWriter(getNewBuildContext(), res)
 }
 
 func handleImprint(res http.ResponseWriter) {

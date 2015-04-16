@@ -90,11 +90,11 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 			"error": fmt.Sprintf("%v", err),
 			"repo":  params["repo"],
 		}).Warn("AWS S3 Get Error")
+		context := getNewBuildContext()
+		context["error"] = "Your build is not yet known to us..."
+		context["value"] = params["repo"]
 		template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-		template.ExecuteWriter(pongo2.Context{
-			"error": "Your build is not yet known to us...",
-			"value": params["repo"],
-		}, res)
+		template.ExecuteWriter(context, res)
 		return
 	}
 
@@ -116,10 +116,10 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 			log.WithFields(logrus.Fields{
 				"error": fmt.Sprintf("%v", err),
 			}).Error("AWS DB Unmarshal Error")
+			context := getNewBuildContext()
+			context["error"] = "An unknown error occured while getting your build."
 			template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-			template.ExecuteWriter(pongo2.Context{
-				"error": "An unknown error occured while getting your build.",
-			}, res)
+			template.ExecuteWriter(context, res)
 			return
 		}
 		hasBuilds = true

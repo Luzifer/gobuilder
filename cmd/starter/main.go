@@ -21,6 +21,7 @@ import (
 	"github.com/Sirupsen/logrus/hooks/papertrail"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/robfig/cron"
+	"github.com/satori/go.uuid"
 	"github.com/xuyu/goredis"
 )
 
@@ -130,6 +131,26 @@ func fetchBuildJob() {
 	}
 	repo := job.Repository
 
+	// Aquire lock to ensure one repo is not built twice
+	lockID := uuid.NewV4().String()
+	redisClient.Set(fmt.Sprintf("project::%s::build-lock", repo), lockID, 1800, 0, false, true)
+
+	lock, err := redisClient.Get(fmt.Sprintf("project::%s::build-lock", repo))
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("Unable to fetch lock state")
+		return
+	}
+
+	if string(lock) != lockID {
+		// If build-job is currently locked but not by us, try again later
+		queueEntry, err := job.ToByte()
+		orFail(err)
+		redisClient.RPush("build-queue", string(queueEntry))
+		return
+	}
+
 	tmpDir, err := ioutil.TempDir("", "gobuild")
 	orFail(err)
 	buildStartTime := time.Now()
@@ -157,6 +178,7 @@ func fetchBuildJob() {
 			})
 		}
 
+		redisClient.Del(fmt.Sprintf("project::%s::build-lock", repo))
 		_ = os.RemoveAll(tmpDir)
 
 		log.WithFields(logrus.Fields{

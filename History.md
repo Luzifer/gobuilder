@@ -1,4 +1,13 @@
 
+1.12.0 / 2015-04-21
+==================
+
+  * Rephrased working queue length
+  * Rephrased build duration
+  * Store build duration and display it
+  * Fix: Errors in error templates
+  * Don't crash if .gobuilder.yml was not passed out of the container
+
 1.11.3 / 2015-04-14
 ==================
 

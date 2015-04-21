@@ -105,7 +105,7 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 
 	buildDuration, err := redisClient.Get(fmt.Sprintf("project::%s::build-duration", params["repo"]))
 	if err != nil {
-		buildDuration = "0"
+		buildDuration = []byte("0")
 	}
 
 	buildDB := builddb.BuildDB{}

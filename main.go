@@ -103,6 +103,11 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 		readmeContent = []byte("Project provided no README.md file.")
 	}
 
+	buildDuration, err := redisClient.Get(fmt.Sprintf("project::%s::build-duration", params["repo"]))
+	if err != nil {
+		buildDuration = "0"
+	}
+
 	buildDB := builddb.BuildDB{}
 	hasBuilds := false
 
@@ -132,13 +137,14 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 	}
 	sort.Sort(sort.Reverse(builddb.BranchSortEntryByBuildDate(branches)))
 	template.ExecuteWriter(pongo2.Context{
-		"branch":       branch,
-		"branches":     branches,
-		"repo":         params["repo"],
-		"mybranch":     buildDB[branch],
-		"build_status": string(build_status),
-		"readme":       string(readmeContent),
-		"hasbuilds":    hasBuilds,
+		"branch":        branch,
+		"branches":      branches,
+		"repo":          params["repo"],
+		"mybranch":      buildDB[branch],
+		"build_status":  string(build_status),
+		"readme":        string(readmeContent),
+		"hasbuilds":     hasBuilds,
+		"buildDuration": buildDuration,
 	}, res)
 }
 

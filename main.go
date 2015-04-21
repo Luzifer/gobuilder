@@ -103,9 +103,13 @@ func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *ht
 		readmeContent = []byte("Project provided no README.md file.")
 	}
 
-	buildDuration, err := redisClient.Get(fmt.Sprintf("project::%s::build-duration", params["repo"]))
+	buildDurationRaw, err := redisClient.Get(fmt.Sprintf("project::%s::build-duration", params["repo"]))
+	if err != nil || len(buildDurationRaw) == 0 {
+		buildDurationRaw = []byte("0")
+	}
+	buildDuration, err := strconv.Atoi(string(buildDurationRaw))
 	if err != nil {
-		buildDuration = []byte("0")
+		buildDuration = 0
 	}
 
 	buildDB := builddb.BuildDB{}

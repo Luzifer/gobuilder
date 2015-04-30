@@ -148,10 +148,15 @@ func fetchBuildJob() {
 
 	if buildOK {
 		orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "finished", 0, 0, false, false))
-		redisClient.Set(fmt.Sprintf("project::%s::build-duration", repo), fmt.Sprintf("%d", int(time.Now().Sub(buildStartTime).Seconds())), 0, 0, false, false)
-		redisClient.ZAdd("last-builds", map[string]float64{
-			repo: float64(time.Now().Unix()),
-		})
+
+		if triggerUpload {
+			// Only write build-duration if this was a build with assets
+			redisClient.Set(fmt.Sprintf("project::%s::build-duration", repo), fmt.Sprintf("%d", int(time.Now().Sub(buildStartTime).Seconds())), 0, 0, false, false)
+			redisClient.ZAdd("last-builds", map[string]float64{
+				repo: float64(time.Now().Unix()),
+			})
+		}
+
 		_ = os.RemoveAll(tmpDir)
 
 		log.WithFields(logrus.Fields{

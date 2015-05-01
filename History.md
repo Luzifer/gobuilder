@@ -1,4 +1,10 @@
 
+1.13.0 / 2015-05-01
+==================
+
+  * Added locking for build jobs
+  * Fix: Do not write build-duration for duplicate builds
+
 1.12.0 / 2015-04-21
 ==================
 

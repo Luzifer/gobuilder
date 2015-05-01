@@ -13,11 +13,6 @@
 			"Rev": "c0f7e35ed2e48f188c37581b4b743cf7383f85c6"
 		},
 		{
-			"ImportPath": "github.com/codegangsta/inject",
-			"Comment": "v1.0-rc1-10-g33e0aa1",
-			"Rev": "33e0aa1cb7c019ccc3fbe049a8262a6403d30504"
-		},
-		{
 			"ImportPath": "github.com/extemporalgenome/slug",
 			"Rev": "de70af6e24d0e6bdd6eaef276d2e9910e68a1397"
 		},
@@ -35,9 +30,12 @@
 			"Rev": "bb4da1901facc08b4edd9261050143b95e36d0a1"
 		},
 		{
-			"ImportPath": "github.com/go-martini/martini",
-			"Comment": "v1.0-107-g627d985",
-			"Rev": "627d985ef9f202fbfc53531f1da96ef92ae3fb3e"
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "14f550f51af52180c2eefed15e5fd18d63c0a64a"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "660d31f8602b95058fed6833debf113e85350868"
 		},
 		{
 			"ImportPath": "github.com/russross/blackfriday",

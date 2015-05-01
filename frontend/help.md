@@ -12,8 +12,8 @@ The most simple usage is to take the package of your code (for example `github.c
 
 There are currently two kinds of webhooks supported for automatically building your projects as soon as you push new code to the `master` branch. Currently only GitHub and BitBucket are supported:
 
-- GitHub - `https://gobuilder.me/webhook/github`
-- BitBucket - `https://gobuilder.me/webhook/bitbucket`
+- GitHub - `https://gobuilder.me/api/v1/webhook/github`
+- BitBucket - `https://gobuilder.me/api/v1/webhook/bitbucket`
 
 You just put the URL into the webhook section of your repository configuration and your project will be built automatically.
 

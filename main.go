@@ -79,7 +79,7 @@ func main() {
 	r.HandleFunc("/{repo:.+}", handlerRepositoryView).Methods("GET")
 
 	http.Handle("/", r)
-	http.ListenAndServe(":3001", nil)
+	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), nil)
 }
 
 func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {

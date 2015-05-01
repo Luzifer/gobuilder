@@ -57,6 +57,7 @@ func main() {
 	connectS3()
 
 	r := mux.NewRouter()
+	registerAPIv1(r)
 
 	r.PathPrefix("/css/").Handler(http.FileServer(http.Dir("./frontend/")))
 	r.PathPrefix("/js/").Handler(http.FileServer(http.Dir("./frontend/")))

@@ -69,8 +69,7 @@ func main() {
 	r.HandleFunc("/contact", handleImprint).Methods("GET")
 	r.HandleFunc("/help", handleHelpPage).Methods("GET")
 
-	// Build starters / webhooks
-	r.HandleFunc("/build", webhookInterface).Methods("POST")
+	// Build starters / webhooks (deprecated bv /api/v1/webhook/*)
 	r.HandleFunc("/webhook/github", webhookGitHub).Methods("POST")
 	r.HandleFunc("/webhook/bitbucket", webhookBitBucket).Methods("POST")
 

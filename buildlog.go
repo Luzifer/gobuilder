@@ -6,10 +6,11 @@ import (
 	"strings"
 
 	"github.com/flosch/pongo2"
-	"github.com/go-martini/martini"
+	"github.com/gorilla/mux"
 )
 
-func handlerBuildLog(params martini.Params, res http.ResponseWriter, r *http.Request) {
+func handlerBuildLog(res http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
 	file, err := s3Bucket.Get(fmt.Sprintf("%s/build.log", params["repo"]))
 	if err != nil {
 		file = []byte("No build log was found for this build.")

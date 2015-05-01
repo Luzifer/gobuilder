@@ -13,7 +13,7 @@ import (
 
 	"github.com/Luzifer/gobuilder/builddb"
 	"github.com/flosch/pongo2"
-	"github.com/go-martini/martini"
+	"github.com/gorilla/mux"
 	"github.com/xuyu/goredis"
 
 	"github.com/Sirupsen/logrus"
@@ -56,28 +56,34 @@ func init() {
 func main() {
 	connectS3()
 
-	m := martini.Classic()
-	m.Use(martini.Static("frontend"))
+	r := mux.NewRouter()
+
+	r.PathPrefix("/css/").Handler(http.FileServer(http.Dir("./frontend/")))
+	r.PathPrefix("/js/").Handler(http.FileServer(http.Dir("./frontend/")))
+	r.PathPrefix("/fonts/").Handler(http.FileServer(http.Dir("./frontend/")))
+	r.Handle("/favicon.ico", http.FileServer(http.Dir("./frontend/")))
 
 	// Static handlers
-	m.Get("/", handleFrontPage)
-	m.Get("/contact", handleImprint)
-	m.Get("/help", handleHelpPage)
+	r.HandleFunc("/", handleFrontPage).Methods("GET")
+	r.HandleFunc("/contact", handleImprint).Methods("GET")
+	r.HandleFunc("/help", handleHelpPage).Methods("GET")
 
 	// Build starters / webhooks
-	m.Post("/build", webhookInterface)
-	m.Post("/webhook/github", webhookGitHub)
-	m.Post("/webhook/bitbucket", webhookBitBucket)
+	r.HandleFunc("/build", webhookInterface).Methods("POST")
+	r.HandleFunc("/webhook/github", webhookGitHub).Methods("POST")
+	r.HandleFunc("/webhook/bitbucket", webhookBitBucket).Methods("POST")
 
 	// Build artifact displaying
-	m.Get("/get/(?P<file>.*)$", handlerDeliverFileFromS3)
-	m.Get("/(?P<repo>.*)/build.log$", handlerBuildLog)
-	m.Get("/(?P<repo>.*)$", handlerRepositoryView)
+	r.HandleFunc("/get/{file:.+}", handlerDeliverFileFromS3).Methods("GET")
+	r.HandleFunc("/{repo:.+}/build.log", handlerBuildLog).Methods("GET")
+	r.HandleFunc("/{repo:.+}", handlerRepositoryView).Methods("GET")
 
-	m.Run()
+	http.Handle("/", r)
+	http.ListenAndServe(":3001", nil)
 }
 
-func handlerRepositoryView(params martini.Params, res http.ResponseWriter, r *http.Request) {
+func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
 	branch := r.FormValue("branch")
 	if branch == "" {
 		branch = "master"

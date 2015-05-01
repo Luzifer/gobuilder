@@ -26,17 +26,17 @@ func getNewBuildContext() pongo2.Context {
 	}
 }
 
-func handleFrontPage(res http.ResponseWriter) {
+func handleFrontPage(res http.ResponseWriter, r *http.Request) {
 	template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
 	template.ExecuteWriter(getNewBuildContext(), res)
 }
 
-func handleImprint(res http.ResponseWriter) {
+func handleImprint(res http.ResponseWriter, r *http.Request) {
 	template := pongo2.Must(pongo2.FromFile("frontend/imprint.html"))
 	template.ExecuteWriter(pongo2.Context{}, res)
 }
 
-func handleHelpPage(res http.ResponseWriter) {
+func handleHelpPage(res http.ResponseWriter, r *http.Request) {
 	content, err := ioutil.ReadFile("frontend/help.md")
 	if err != nil {
 		log.WithFields(logrus.Fields{

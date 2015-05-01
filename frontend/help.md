@@ -27,6 +27,7 @@ To configure some aspects of your build you will need to create a `.gobuilder.ym
 - `version_file`: If you provide a file name to this option the hash of the compiled commit will get written in this file and added to the result ZIP file.
 - `notify`: You can ping some services after a successful / failed build. The notification can be filtered only to get sent on specific events by providing a `filter` value with `success` or `error`. Currently these services are supported:
     - `dockerhub`: Fill the whole URL you got as a "Build Trigger" as the target.
+    - `pushover`: Put your "User Key" into the target to receive notifications.
 
 An example configuration file:
 
@@ -42,6 +43,8 @@ notify:
   - type: dockerhub
     target: https://registry.hub.docker.com[...]d59f8a5ab895/
     filter: success
+  - type: pushover
+    target: W2HNyg7sCkvNH[...]B
 ```
 
 

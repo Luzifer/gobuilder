@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 jumbotron text-center">
                 <h1>Start a new build...</h1>
-                <form role="form" action="/build" method="post">
+                <form role="form" action="/api/v1/build" method="post">
                   <div class="form-group">
                     <input type="text" class="form-control" name="repository" placeholder="github.com/luzifer/gobuilder" {% if value %}value="{{ value }}"{% endif %}>
                   </div>

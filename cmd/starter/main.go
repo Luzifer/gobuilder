@@ -316,7 +316,7 @@ func triggerSubBuilds(sourcerepo string, repos []string) {
 
 	for _, repo := range repos {
 		go func(repo string) {
-			resp, err := http.PostForm("https://gobuilder.me/build", url.Values{
+			resp, err := http.PostForm("https://gobuilder.me/api/v1/build", url.Values{
 				"repository": []string{repo},
 			})
 			if err != nil {

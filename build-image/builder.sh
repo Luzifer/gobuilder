@@ -28,7 +28,7 @@ fi
 go fmt ./...
 
 mkdir -p /tmp/go-build
-wget -qO /tmp/go-build/build_${branch} https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build_${branch} || touch /tmp/go-build/build_${branch}
+wget -qO /tmp/go-build/build_${branch} https://gobuilder.me/api/v1/${gopath}/last-build || touch /tmp/go-build/build_${branch}
 wget -qO /tmp/go-build/build.db https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build.db || bash -c 'echo "{}" > /tmp/go-build/build.db'
 
 if [ ! -f .gobuilder.yml ]; then

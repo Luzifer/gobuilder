@@ -178,6 +178,15 @@ func fetchBuildJob() {
 			})
 		}
 
+		gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/build_master", tmpDir))
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("Unable to read gitHash")
+			gitHash = []byte("000000")
+		}
+		redisClient.Set(fmt.Sprintf("project::%s::last-build", repo), string(gitHash), 0, 0, false, false)
+
 		redisClient.Del(fmt.Sprintf("project::%s::build-lock", repo))
 		_ = os.RemoveAll(tmpDir)
 
@@ -307,7 +316,7 @@ func triggerSubBuilds(sourcerepo string, repos []string) {
 
 	for _, repo := range repos {
 		go func(repo string) {
-			resp, err := http.PostForm("https://gobuilder.me/build", url.Values{
+			resp, err := http.PostForm("https://gobuilder.me/api/v1/build", url.Values{
 				"repository": []string{repo},
 			})
 			if err != nil {

@@ -1,4 +1,11 @@
 
+1.14.0 / 2015-05-09
+==================
+
+  * Added Pushover support for notifications
+  * Implemented APIv1
+  * Replaced Martini framework with Gorilla mux
+
 1.13.0 / 2015-05-01
 ==================
 

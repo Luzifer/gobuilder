@@ -31,6 +31,8 @@ func (n *NotifyConfiguration) Execute(metadata NotifyMetaData) error {
 			switch method.Type {
 			case "dockerhub":
 				err = method.NotifyDockerHub(metadata)
+			case "pushover":
+				err = method.NotifyPushover(metadata)
 			}
 			if err != nil {
 				return err

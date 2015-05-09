@@ -4,3 +4,6 @@ triggers:
   - github.com/Luzifer/gobuilder/cmd/starter
 artifacts:
   - frontend
+notify:
+  - type: pushover
+    target: PZGq72ZzRSQYu4lq7t0z0aqL3Hfl5B

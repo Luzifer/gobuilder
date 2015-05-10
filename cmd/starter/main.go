@@ -176,16 +176,16 @@ func fetchBuildJob() {
 			redisClient.ZAdd("last-builds", map[string]float64{
 				repo: float64(time.Now().Unix()),
 			})
-		}
 
-		gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/build_master", tmpDir))
-		if err != nil {
-			log.WithFields(logrus.Fields{
-				"error": err,
-			}).Error("Unable to read gitHash")
-			gitHash = []byte("000000")
+			gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/build_master", tmpDir))
+			if err != nil {
+				log.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("Unable to read gitHash")
+				gitHash = []byte("000000")
+			}
+			redisClient.Set(fmt.Sprintf("project::%s::last-build", repo), string(gitHash), 0, 0, false, false)
 		}
-		redisClient.Set(fmt.Sprintf("project::%s::last-build", repo), string(gitHash), 0, 0, false, false)
 
 		redisClient.Del(fmt.Sprintf("project::%s::build-lock", repo))
 		_ = os.RemoveAll(tmpDir)

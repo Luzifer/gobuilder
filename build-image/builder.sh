@@ -54,12 +54,10 @@ for platform in ${GOLANG_CROSSPLATFORMS}; do
   log "Building ${product} for ${GOOS}-${GOARCH}..."
 
   mkdir -p /tmp/go-build/${product}/
-  go build -o ./${product} ./ || { log "Build for ${GOOS}-${GOARCH} failed."; continue; }
+  go build -o /tmp/go-build/${product}/${product} ./ || { log "Build for ${GOOS}-${GOARCH} failed."; continue; }
 
   if [ "${GOOS}" == "windows" ]; then
-    mv ./${product} /tmp/go-build/${product}/${product}.exe
-  else
-    mv ./${product} /tmp/go-build/${product}/${product}
+    mv /tmp/go-build/${product}/${product} /tmp/go-build/${product}/${product}.exe
   fi
 
   if [ -e /tmp/go-build/.artifact_files ]; then

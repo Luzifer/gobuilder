@@ -47,6 +47,12 @@ notify:
     target: W2HNyg7sCkvNH[...]B
 ```
 
+## Code verification and signatures
+
+Starting with version 1.15.0 GoBuilder supports verification of code signatures. This can be used to give users of your projects an additional bit of security if you direct them to GoBuilder for downloads. If you have signed tags the repository view for your project will get an additional button in the top right corner as soon as a signed label is selected by your user. By clicking on that button a message will be displayed stating whether your tag was successfully verified. Passing this test means the code was not altered while transferred between your computer and the GoBuilder build system.
+
+If you want to get those verifications for your master branch you need to sign your commits using an GPG key. As long as this signature is valid GoBuilder will show the verification result.
+
 
 [golang]: http://golang.org/
 [gh-webhook]: https://developer.github.com/webhooks/

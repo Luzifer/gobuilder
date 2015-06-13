@@ -43,6 +43,22 @@ if [ "$(cat /tmp/go-build/build_master)" == "${short_commit}" ]; then
   exit 130
 fi
 
+log "Verifying tag signatures..."
+for tag in ${tags}; do
+  if ( LANG=C git tag --verify ${tag} 2>&1 | grep "Good signature" ); then
+    LANG=C git tag --verify ${tag} 2>&1 | grep "gpg:" > /tmp/go-build/.signature_${tag}
+  else
+    echo "No valid signature for ${tag}"
+  fi
+done
+
+log "Verifying commit signature..."
+if ( LANG=C git show --show-signature HEAD | grep "Good signature" ); then
+  LANG=C git show --show-signature HEAD | grep "gpg:" > /tmp/go-build/.signature_master
+else
+  echo "No valid signature for master"
+fi
+
 if ! ( configreader checkEmpty artifacts ); then
   configreader read artifacts > /tmp/go-build/.artifact_files
 fi
@@ -96,6 +112,21 @@ if [ -f /tmp/go-build/master_README.md ]; then
   done
   cd -
 fi
+
+log "Building file hashes..."
+cd /tmp/go-build/
+for tag in master ${tags}; do
+  echo "---" >> .hashes_${tag}.yaml
+  for artifact in ${product}_${tag}_*.zip; do
+    echo "${artifact}:" >> .hashes_${tag}.yaml
+    for hasher in md5sum sha1sum sha256sum sha384sum; do
+      echo "  ${hasher}: $(${hasher} ${artifact} | awk {'print $1'})" >> .hashes_${tag}.yaml
+    done
+  done
+
+  echo "${tag}" >> /tmp/go-build/.built_tags
+done
+cd -
 
 log "Preparing metadata..."
 echo ${short_commit} > /tmp/go-build/build_master

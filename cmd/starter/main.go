@@ -177,6 +177,27 @@ func fetchBuildJob() {
 				repo: float64(time.Now().Unix()),
 			})
 
+			// Handle signature output
+			builtTagsRaw, err := ioutil.ReadFile(fmt.Sprintf("%s/.built_tags", tmpDir))
+			orFail(err)
+			buildTags := strings.Split(string(builtTagsRaw), "\n")
+			for _, tag := range buildTags {
+				signature, err := ioutil.ReadFile(fmt.Sprintf("%s/.signature_%s", tmpDir, tag))
+				if err != nil {
+					redisClient.Del(fmt.Sprintf("project::%s::signatures::%s", repo, tag))
+				} else {
+					redisClient.Set(fmt.Sprintf("project::%s::signatures::%s", repo, tag), string(signature), 0, 0, false, false)
+				}
+
+				hashes, err := ioutil.ReadFile(fmt.Sprintf("%s/.hashes_%s.yaml", tmpDir, tag))
+				if err == nil {
+					redisClient.Set(fmt.Sprintf("project::%s::hashes::%s", repo, tag), string(hashes), 0, 0, false, false)
+				} else {
+					redisClient.Del(fmt.Sprintf("project::%s::hashes::%s", repo, tag))
+				}
+			}
+
+			// Log last build
 			gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/build_master", tmpDir))
 			if err != nil {
 				log.WithFields(logrus.Fields{

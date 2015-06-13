@@ -44,9 +44,11 @@ fi
 cp .gobuilder.yml /artifacts/
 sync
 
-if [ "$(cat /tmp/go-build/build_master)" == "${short_commit}" ]; then
-  log "Commit ${short_commit} was already built. Skipping."
-  exit 130
+if ! [ ${FORCE_BUILD} -eq 1 ]; then
+  if [ "$(cat /tmp/go-build/build_master)" == "${short_commit}" ]; then
+    log "Commit ${short_commit} was already built. Skipping."
+    exit 130
+  fi
 fi
 
 log "Verifying tag signatures..."

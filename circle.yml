@@ -1,0 +1,18 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker info
+    - docker build --no-cache -t build-image ./build-image/
+  post:
+    - rm -r ~/.gradle
+
+test:
+  override:
+    - mkdir test_gobuilder
+    - docker run --rm -ti -v $(pwd)/test_gobuilder:/artifacts -e FORCE_BUILD=1 -e REPO=github.com/Luzifer/license build-image
+    - curl 'https://gobuilder.me/api/v1/github.com/Luzifer/license/signed-hashes/master' | grep sum > ./test_gobuilder/live.txt
+    - cat ./test_gobuilder/.hashes_master.txt | grep sum > ./test_gobuilder/test.txt
+    - diff -wu ./test_gobuilder/live.txt ./test_gobuilder/test.txt

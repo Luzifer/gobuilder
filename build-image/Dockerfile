@@ -2,7 +2,6 @@ FROM golang:cross
 
 MAINTAINER Knut Ahlers <knut@ahlers.me>
 
-ENV GIT_BRANCH master
 VOLUME /artifacts
 
 RUN apt-get update && \

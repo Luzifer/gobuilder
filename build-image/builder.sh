@@ -6,7 +6,6 @@ function log {
   echo "[$(date +%H:%M:%S.%N)] $@"
 }
 
-branch=${GIT_BRANCH}
 product=${REPO##*/}; product=${product%\.*}
 
 log "Fetching GO repository ${REPO}"
@@ -28,7 +27,7 @@ fi
 go fmt ./...
 
 mkdir -p /tmp/go-build
-wget -qO /tmp/go-build/build_${branch} https://gobuilder.me/api/v1/${gopath}/last-build || touch /tmp/go-build/build_${branch}
+wget -qO /tmp/go-build/build_master https://gobuilder.me/api/v1/${gopath}/last-build || touch /tmp/go-build/build_master
 wget -qO /tmp/go-build/build.db https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build.db || bash -c 'echo "{}" > /tmp/go-build/build.db'
 
 if [ ! -f .gobuilder.yml ]; then
@@ -39,7 +38,7 @@ fi
 cp .gobuilder.yml /artifacts/
 sync
 
-if [ "$(cat /tmp/go-build/build_${branch})" == "${short_commit}" ]; then
+if [ "$(cat /tmp/go-build/build_master)" == "${short_commit}" ]; then
   log "Commit ${short_commit} was already built. Skipping."
   exit 130
 fi
@@ -73,9 +72,9 @@ for platform in ${GOLANG_CROSSPLATFORMS}; do
 
   log "Compressing artifacts..."
   cd /tmp/go-build/
-  zip -r ${product}_${branch}_${GOOS}-${GOARCH}.zip ${product}
+  zip -r ${product}_master_${GOOS}-${GOARCH}.zip ${product}
   for tag in ${tags}; do
-    ln ${product}_${branch}_${GOOS}-${GOARCH}.zip ${product}_${tag/\//_}_${GOOS}-${GOARCH}.zip
+    ln ${product}_master_${GOOS}-${GOARCH}.zip ${product}_${tag/\//_}_${GOOS}-${GOARCH}.zip
   done
   cd -
 
@@ -84,22 +83,22 @@ done
 
 log "Checking README-File..."
 if ! ( configreader checkEmpty readme_file ) && [ -f "$(configreader read readme_file)" ]; then
-  cp "$(configreader read readme_file)" /tmp/go-build/${branch}_README.md
+  cp "$(configreader read readme_file)" /tmp/go-build/master_README.md
 else
   if [ -f README.md ]; then
-    cp README.md /tmp/go-build/${branch}_README.md
+    cp README.md /tmp/go-build/master_README.md
   fi
 fi
-if [ -f /tmp/go-build/${branch}_README.md ]; then
+if [ -f /tmp/go-build/master_README.md ]; then
   cd /tmp/go-build/
   for tag in ${tags}; do
-    ln ${branch}_README.md ${tag/\//_}_README.md
+    ln master_README.md ${tag/\//_}_README.md
   done
   cd -
 fi
 
 log "Preparing metadata..."
-echo ${short_commit} > /tmp/go-build/build_${branch}
+echo ${short_commit} > /tmp/go-build/build_master
 go version > /tmp/go-build/.goversion
 
 log "Uploading assets..."

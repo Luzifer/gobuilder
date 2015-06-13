@@ -1,4 +1,10 @@
 
+1.15.1 / 2015-06-13
+==================
+
+  * Added ownertrust for own key
+  * Added some documentation about code signing in GoBuilder
+
 1.15.0 / 2015-06-13
 ==================
 

@@ -2,7 +2,11 @@
 
 {% block customscript %}
 <script>
-
+$(function(){
+  $('.hash-display-button').bind('click', function() {
+    $(this).closest('tr').find('.hash-display').toggle();
+  })
+})
 </script>
 {% endblock %}
 
@@ -88,25 +92,46 @@
                 <div class="panel-heading">Downloads</div>
                 <table class="table vert-align">
                   <tr>
-                    <th class="col-lg-7">Filename</th>
-                    <th class="col-lg-2">File Size</th>
-                    <th class="col-lg-3">&nbsp;</th>
+                    <th>
+                      <div class="row">
+                        <div class="col-lg-7">Filename</div>
+                        <div class="col-lg-2">File Size</div>
+                        <div class="col-lg-3">&nbsp;</div>
+                      </div>
+                    </th>
                   </tr>
                   {% for properties in mybranch.Assets %}
                     <tr {% if !properties.FileName|is_mainarch %}class="subarch collapse"{% endif %}>
                       <td>
-                        <i class="fa fa-{{properties.FileName|branchicon}}"></i>
-                        {{ properties.FileName }}
-                      </td>
-                      <td>{{ properties.Size|filesizeformat }}</td>
-                      <td>
-                        <div class="btn-group pull-right">
-                          <a href="/get/{{ repo }}/{{ properties.FileName }}" class="btn btn-default" role="button">
-                            <i class="fa fa-download"></i> Download
-                          </a>
-                          <a href="#hashes" class="btn btn-default" role="button" title="Show Checksums">
-                            <i class="fa fa-bars"></i>
-                          </a>
+                        <div class="row" style="line-height: 34px;">
+                          <div class="col-lg-7">
+                            <i class="fa fa-{{properties.FileName|branchicon}}"></i>
+                            {{ properties.FileName }}
+                          </div>
+                          <div class="col-lg-2">{{ properties.Size|filesizeformat }}</div>
+                          <div class="col-lg-3">
+                            <div class="btn-group pull-right">
+                              <a href="/get/{{ repo }}/{{ properties.FileName }}" class="btn btn-default" role="button">
+                                <i class="fa fa-download"></i> Download
+                              </a>
+                              <a href="#hashes" class="btn btn-default dropdown-toggle" role="button" data-toggle="dropdown" aria-expanded="false">
+                                <span class="caret"></span>
+                                <span class="sr-only">Toggle Dropdown</span>
+                              </a>
+                              <ul class="dropdown-menu" role="menu">
+                                <li><a href="javascript:void(0);" class="hash-display-button"><i class="fa fa-bars"></i> Show Checksums</a>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row hash-display" style="margin-top: 10px; display:none;">
+                          <div class="col-lg-12">
+                            <pre>Checksums for {{ properties.FileName }}:
+
+MD5:    {{ properties.MD5 }}
+SHA1:   {{ properties.SHA1 }}
+SHA256: {{ properties.SHA256 }}</pre>
+                          </div>
                         </div>
                       </td>
                     </tr>

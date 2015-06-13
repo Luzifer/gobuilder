@@ -118,6 +118,11 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 		buildDuration = 0
 	}
 
+	signature, err := redisClient.Get(fmt.Sprintf("project::%s::signatures::%s", params["repo"], branch))
+	if err != nil {
+		signature = []byte("")
+	}
+
 	buildDB := builddb.BuildDB{}
 	hasBuilds := false
 
@@ -155,6 +160,7 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 		"readme":        string(readmeContent),
 		"hasbuilds":     hasBuilds,
 		"buildDuration": buildDuration,
+		"signature":     string(signature),
 	}, res)
 }
 

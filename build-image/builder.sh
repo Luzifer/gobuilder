@@ -9,7 +9,10 @@ function log {
 product=${REPO##*/}; product=${product%\.*}
 
 SIGNING=1
-cat /root/gpgkey.asc.enc | openssl enc -aes-256-cbc -a -d -k ${GPG_DECRYPT_KEY} | gpg --import || SIGNING=0
+cat /root/gpgkey.asc.enc | openssl enc -aes-256-cbc -a -d -k ${GPG_DECRYPT_KEY} | gpg --import 2>&1 1>/dev/null || SIGNING=0
+if [ ${SIGNING} -eq 1 ]; then
+  echo "E2FF3D20865D6F9B6AE74ECB7D5420F913246261:6:" | gpg --import-ownertrust
+fi
 
 log "Fetching GO repository ${REPO}"
 gopath=${REPO}

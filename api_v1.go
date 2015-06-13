@@ -17,6 +17,7 @@ func registerAPIv1(router *mux.Router) {
 	r.HandleFunc("/webhook/bitbucket", webhookBitBucket).Methods("POST")
 
 	r.HandleFunc("/{repo:.+}/last-build", apiV1HandlerLastBuild).Methods("GET")
+	r.HandleFunc("/{repo:.+}/signed-hashes/{tag}", apiV1HandlerSignedHashes).Methods("GET")
 }
 
 func apiV1HandlerLastBuild(res http.ResponseWriter, r *http.Request) {
@@ -35,4 +36,22 @@ func apiV1HandlerLastBuild(res http.ResponseWriter, r *http.Request) {
 	res.Header().Add("Content-Type", "text/plain")
 	res.Header().Add("Cache-Control", "no-cache")
 	res.Write(lastBuild)
+}
+
+func apiV1HandlerSignedHashes(res http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	redisKey := fmt.Sprintf("project::%s::hashes::%s", vars["repo"], vars["tag"])
+	hashList, err := redisClient.Get(redisKey)
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"error": err,
+			"repo":  vars["repo"],
+		}).Error("Failed to get signed hash list")
+		http.Error(res, "Could not read signed hash list", http.StatusInternalServerError)
+		return
+	}
+
+	res.Header().Add("Content-Type", "text/plain")
+	res.Header().Add("Cache-Control", "no-cache")
+	res.Write(hashList)
 }

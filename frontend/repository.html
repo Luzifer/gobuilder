@@ -2,7 +2,11 @@
 
 {% block customscript %}
 <script>
-
+$(function(){
+  $('.hash-display-button').bind('click', function() {
+    $(this).closest('tr').find('.hash-display').toggle();
+  })
+})
 </script>
 {% endblock %}
 
@@ -13,6 +17,7 @@
                   <div class="btn-group pull-right">
                     {% if "github.com" in repo %}<a href="https://{{repo}}" class="btn btn-default btn-lg"><i class="fa fa-github fa-lg"></i></a>{% endif %}
                     {% if "bitbucket.org" in repo %}<a href="https://{{repo}}" class="btn btn-default btn-lg"><i class="fa fa-bitbucket fa-lg"></i></a>{% endif %}
+                    {% if signature|length > 0 %}<a href="#signature" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature"><i class="fa fa-check-circle fa-lg"></i></a>{% endif %}
                   </div>
                   {{ repo }}
                 </h2>
@@ -87,22 +92,47 @@
                 <div class="panel-heading">Downloads</div>
                 <table class="table vert-align">
                   <tr>
-                    <th class="col-lg-8">Filename</th>
-                    <th class="col-lg-2">File Size</th>
-                    <th class="col-lg-2">&nbsp;</th>
+                    <th>
+                      <div class="row">
+                        <div class="col-lg-7">Filename</div>
+                        <div class="col-lg-2">File Size</div>
+                        <div class="col-lg-3">&nbsp;</div>
+                      </div>
+                    </th>
                   </tr>
                   {% for properties in mybranch.Assets %}
                     <tr {% if !properties.FileName|is_mainarch %}class="subarch collapse"{% endif %}>
                       <td>
-                        <i class="fa fa-{{properties.FileName|branchicon}}"></i>
-                        {{ properties.FileName }}
-                      </td>
-                      <td>{{ properties.Size|filesizeformat }}</td>
-                      <td>
-                        <a href="/get/{{ repo }}/{{ properties.FileName }}" class="btn btn-default" role="button">
-                          <span class="glyphicon glyphicon-save"></span>
-                          Download
-                        </a>
+                        <div class="row" style="line-height: 34px;">
+                          <div class="col-lg-7">
+                            <i class="fa fa-{{properties.FileName|branchicon}}"></i>
+                            {{ properties.FileName }}
+                          </div>
+                          <div class="col-lg-2">{{ properties.Size|filesizeformat }}</div>
+                          <div class="col-lg-3">
+                            <div class="btn-group pull-right">
+                              <a href="/get/{{ repo }}/{{ properties.FileName }}" class="btn btn-default" role="button">
+                                <i class="fa fa-download"></i> Download
+                              </a>
+                              <a href="#hashes" class="btn btn-default dropdown-toggle" role="button" data-toggle="dropdown" aria-expanded="false">
+                                <span class="caret"></span>
+                                <span class="sr-only">Toggle Dropdown</span>
+                              </a>
+                              <ul class="dropdown-menu" role="menu">
+                                <li><a href="javascript:void(0);" class="hash-display-button"><i class="fa fa-bars"></i> Show Checksums</a>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row hash-display" style="margin-top: 10px; display:none;">
+                          <div class="col-lg-12">
+                            <pre>Checksums for {{ properties.FileName }}:
+
+MD5:    {{ properties.MD5 }}
+SHA1:   {{ properties.SHA1 }}
+SHA256: {{ properties.SHA256 }}</pre>
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   {% endfor %}
@@ -120,6 +150,23 @@
             </div>
         </div>
         <!-- /.row -->
+
+        <div class="modal fade" id="signature" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Code-signature of this build</h4>
+              </div>
+              <div class="modal-body">
+                <pre>{{ signature }}</pre>
+                <p>
+                  For extra security you can <a href="/api/v1/{{repo}}/signed-hashes/{{branch}}">download</a> a signed list of checksums for this builds artifacts.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div> <!-- /.modal -->
         {% else %}
         <div class="row">
             <div class="col-lg-6 col-lg-offset-3">

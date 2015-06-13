@@ -8,6 +8,9 @@ function log {
 
 product=${REPO##*/}; product=${product%\.*}
 
+SIGNING=1
+cat /root/gpgkey.asc.enc | openssl enc -aes-256-cbc -a -d -k ${GPG_DECRYPT_KEY} | gpg --import || SIGNING=0
+
 log "Fetching GO repository ${REPO}"
 gopath=${REPO}
 go get -v -u ${REPO}
@@ -41,6 +44,22 @@ sync
 if [ "$(cat /tmp/go-build/build_master)" == "${short_commit}" ]; then
   log "Commit ${short_commit} was already built. Skipping."
   exit 130
+fi
+
+log "Verifying tag signatures..."
+for tag in ${tags}; do
+  if ( LANG=C git tag --verify ${tag} 2>&1 | grep "Good signature" ); then
+    LANG=C git tag --verify ${tag} 2>&1 | grep "gpg:" > /tmp/go-build/.signature_${tag}
+  else
+    echo "No valid signature for ${tag}"
+  fi
+done
+
+log "Verifying commit signature..."
+if ( LANG=C git show --show-signature HEAD | grep "Good signature" ); then
+  LANG=C git show --show-signature HEAD | grep "gpg:" > /tmp/go-build/.signature_master
+else
+  echo "No valid signature for master"
 fi
 
 if ! ( configreader checkEmpty artifacts ); then
@@ -96,6 +115,26 @@ if [ -f /tmp/go-build/master_README.md ]; then
   done
   cd -
 fi
+
+log "Building file hashes..."
+cd /tmp/go-build/
+for tag in master ${tags}; do
+  for artifact in ${product}_${tag}_*.zip; do
+    echo "[${artifact}]" >> .hashes_${tag}.txt
+    for hasher in md5sum sha1sum sha256sum sha384sum; do
+      echo "${hasher} = $(${hasher} ${artifact} | awk {'print $1'})" >> .hashes_${tag}.txt
+    done
+    echo >> .hashes_${tag}.txt
+  done
+
+  if [ $SIGNING -eq 1 ]; then
+    gpg --clearsign --output sig .hashes_${tag}.txt
+    mv sig .hashes_${tag}.txt
+  fi
+
+  echo "${tag}" >> /tmp/go-build/.built_tags
+done
+cd -
 
 log "Preparing metadata..."
 echo ${short_commit} > /tmp/go-build/build_master

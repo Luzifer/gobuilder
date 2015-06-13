@@ -189,7 +189,7 @@ func fetchBuildJob() {
 					redisClient.Set(fmt.Sprintf("project::%s::signatures::%s", repo, tag), string(signature), 0, 0, false, false)
 				}
 
-				hashes, err := ioutil.ReadFile(fmt.Sprintf("%s/.hashes_%s.yaml", tmpDir, tag))
+				hashes, err := ioutil.ReadFile(fmt.Sprintf("%s/.hashes_%s.txt", tmpDir, tag))
 				if err == nil {
 					redisClient.Set(fmt.Sprintf("project::%s::hashes::%s", repo, tag), string(hashes), 0, 0, false, false)
 				} else {

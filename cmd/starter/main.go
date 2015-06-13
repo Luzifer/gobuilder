@@ -263,6 +263,7 @@ func build(repo, tmpDir string) (bool, bool) {
 		Image:        os.Getenv("BUILD_IMAGE"),
 		Env: []string{
 			fmt.Sprintf("REPO=%s", repo),
+			fmt.Sprintf("GPG_DECRYPT_KEY=%s", os.Getenv("GPG_DECRYPT_KEY")),
 		},
 	}
 	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{

@@ -8,6 +8,9 @@ function log {
 
 product=${REPO##*/}; product=${product%\.*}
 
+SIGNING=1
+cat /root/gpgkey.asc.enc | openssl enc -aes-256-cbc -a -d -k ${GPG_DECRYPT_KEY} | gpg --import || SIGNING=0
+
 log "Fetching GO repository ${REPO}"
 gopath=${REPO}
 go get -v -u ${REPO}
@@ -116,13 +119,18 @@ fi
 log "Building file hashes..."
 cd /tmp/go-build/
 for tag in master ${tags}; do
-  echo "---" >> .hashes_${tag}.yaml
   for artifact in ${product}_${tag}_*.zip; do
-    echo "${artifact}:" >> .hashes_${tag}.yaml
+    echo "[${artifact}]" >> .hashes_${tag}.txt
     for hasher in md5sum sha1sum sha256sum sha384sum; do
-      echo "  ${hasher}: $(${hasher} ${artifact} | awk {'print $1'})" >> .hashes_${tag}.yaml
+      echo "${hasher} = $(${hasher} ${artifact} | awk {'print $1'})" >> .hashes_${tag}.txt
     done
+    echo >> .hashes_${tag}.txt
   done
+
+  if [ $SIGNING -eq 1 ]; then
+    gpg --clearsign --output sig .hashes_${tag}.txt
+    mv sig .hashes_${tag}.txt
+  fi
 
   echo "${tag}" >> /tmp/go-build/.built_tags
 done

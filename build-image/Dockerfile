@@ -9,6 +9,7 @@ RUN apt-get update && \
     go get github.com/Luzifer/gobuilder/cmd/configreader
 
 ADD ./builder.sh /usr/bin/builder.sh
+ADD ./gpgkey.asc.enc /root/gpgkey.asc.enc
 
 RUN mkdir /root/.ssh && \
     echo "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config && \

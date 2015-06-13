@@ -1,4 +1,15 @@
 
+1.15.0 / 2015-06-13
+==================
+
+  * Added signing of file checksums to enable users to verify downloads
+  * Added checking of code signatures in tags / commits
+  * Give back some link love to the repo itself
+  * Added license file
+  * Write build artifact into /tmp to prevent file collisions
+  * Fix: Build button in repo view was broken
+  * Do not write git hash when upload was not triggered
+
 1.14.0 / 2015-05-09
 ==================
 

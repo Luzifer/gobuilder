@@ -1,5 +1,8 @@
 # About this project
 
+[![Jenkins Build Status](http://badge.luzifer.io/v1/badge?title=Jenkins&text=Build%20Status)](http://jenkins.hub.luzifer.io/job/gobuilder-images/)
+[![License: Apache 2.0](http://badge.luzifer.io/v1/badge?color=5d79b5&title=license&text=Apache%202.0)](http://www.apache.org/licenses/LICENSE-2.0)
+
 This project originated when I was dissatisfied with how other automatic [Go][golang] building systems were working. I wanted a simple system building my Go code and after that packaging the results with some assets found in the same repository. Also I wanted to have a [webhook][gh-webhook] URL to trigger the builds automatically when my code is pushed to [GitHub][gh] or [BitBucket][bitbucket].
 
 At the time I wrote this build system no existing system did satisfy my requirements or they were just not reliable enough for my needs. From that the project [Luzifer/gobuilder][gobuilder] was born.

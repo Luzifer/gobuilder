@@ -21,7 +21,7 @@ func (n *NotifyEntry) NotifyPushover(metadata NotifyMetaData) error {
 		Priority: pushover.Normal,
 	}
 
-	p, err := pushover.NewPushover(os.Getenv("PUSHOVER_APPTOKEN"), n.Target)
+	p, err := pushover.NewPushover(os.Getenv("PUSHOVER_APITOKEN"), n.Target)
 	if err != nil {
 		return err
 	}

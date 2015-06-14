@@ -17,7 +17,13 @@ $(function(){
                   <div class="btn-group pull-right">
                     {% if "github.com" in repo %}<a href="https://{{repo}}" class="btn btn-default btn-lg"><i class="fa fa-github fa-lg"></i></a>{% endif %}
                     {% if "bitbucket.org" in repo %}<a href="https://{{repo}}" class="btn btn-default btn-lg"><i class="fa fa-bitbucket fa-lg"></i></a>{% endif %}
-                    {% if signature|length > 0 %}<a href="#signature" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature"><i class="fa fa-check-circle fa-lg"></i></a>{% endif %}
+                    {% if signature|length > 0 %}
+                      {% if "WARNING" in signature %}
+                        <a href="#signature" style="color:#f0ad4e;" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature"><i class="fa fa-check-circle fa-lg"></i></a>
+                      {% else %}
+                        <a href="#signature" style="color:#5cb85c;" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature"><i class="fa fa-check-circle fa-lg"></i></a>
+                      {% endif %}
+                    {% endif %}
                   </div>
                   {{ repo }}
                 </h2>

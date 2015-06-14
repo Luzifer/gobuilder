@@ -27,6 +27,11 @@ func webhookGitHub(res http.ResponseWriter, r *http.Request) {
 	json.Unmarshal([]byte(data), &tmp)
 	repoName := tmp.(map[string]interface{})["repository"].(map[string]interface{})["full_name"].(string)
 
+	ref := tmp.(map[string]interface{})["ref"].(string)
+	if ref != "refs/heads/master" {
+		return
+	}
+
 	repo := fmt.Sprintf("github.com/%s", repoName)
 	err = sendToQueue(repo)
 	if err != nil {

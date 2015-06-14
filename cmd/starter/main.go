@@ -1,27 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 	"os"
 	"strconv"
-	"strings"
-	"time"
 
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
 
-	"github.com/Luzifer/gobuilder/buildconfig"
-	"github.com/Luzifer/gobuilder/builddbCreator"
 	"github.com/Luzifer/gobuilder/buildjob"
-	"github.com/Luzifer/gobuilder/notifier"
 	"github.com/Sirupsen/logrus"
 	"github.com/Sirupsen/logrus/hooks/papertrail"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/robfig/cron"
-	"github.com/satori/go.uuid"
 	"github.com/xuyu/goredis"
 )
 
@@ -29,39 +19,29 @@ var dockerClient *docker.Client
 var log = logrus.New()
 var s3Bucket *s3.Bucket
 var redisClient *goredis.Redis
+var currentJobs chan bool
 
-const maxJobRetries int = 5
-
-func orFail(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func orLog(task, repo string, err error) {
-	if err != nil {
-		log.WithFields(logrus.Fields{
-			"repository": repo,
-			"error":      err,
-		}).Error(task)
-	}
-}
+const (
+	maxJobRetries       = 5
+	maxConcurrentBuilds = 2
+)
 
 func init() {
 	log.Out = os.Stderr
 
-	papertrail_port, err := strconv.Atoi(os.Getenv("papertrail_port"))
-	if err != nil {
-		log.Info("Failed to read papertrail_port, using only STDERR")
-		return
-	}
-	hook, err := logrus_papertrail.NewPapertrailHook(os.Getenv("papertrail_host"), papertrail_port, "GoBuilder Starter")
-	if err != nil {
-		log.Panic("Unable to create papertrail connection")
-		os.Exit(1)
-	}
+	// Add Papertrail connection for logging
+	papertrailPort, err := strconv.Atoi(os.Getenv("papertrail_port"))
+	if err == nil {
+		hook, err := logrus_papertrail.NewPapertrailHook(os.Getenv("papertrail_host"), papertrailPort, "GoBuilder Starter")
+		if err != nil {
+			log.Panic("Unable to create papertrail connection")
+			os.Exit(1)
+		}
 
-	log.Hooks.Add(hook)
+		log.Hooks.Add(hook)
+	} else {
+		log.Info("Failed to read papertrail_port, using only STDERR")
+	}
 
 	redisClient, err = goredis.DialURL(os.Getenv("redis_url"))
 	if err != nil {
@@ -70,18 +50,35 @@ func init() {
 		}).Panic("Unable to connect to Redis")
 		os.Exit(1)
 	}
+
+	awsAuth, err := aws.EnvAuth()
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"err": err,
+		}).Panic("Unable to read AWS credentials")
+		os.Exit(1)
+	}
+	s3Bucket = s3.New(awsAuth, aws.EUWest).Bucket("gobuild.luzifer.io")
+
+	dockerClient, err = docker.NewClient("unix:///var/run/docker.sock")
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"err": err,
+		}).Panic("Unable to connect to docker daemon")
+		os.Exit(1)
+	}
+
+	currentJobs = make(chan bool, maxConcurrentBuilds)
 }
 
 func main() {
-	awsAuth, err := aws.EnvAuth()
-	orFail(err)
-	s3Bucket = s3.New(awsAuth, aws.EUWest).Bucket("gobuild.luzifer.io")
-
-	dockerClientTmp, err := docker.NewClient("unix:///var/run/docker.sock")
-	orFail(err)
-	dockerClient = dockerClientTmp
-
-	orFail(pullLatestImage())
+	err := pullLatestImage()
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"err": err,
+		}).Panic("Unable to fetch docker image for builder")
+		os.Exit(1)
+	}
 
 	c := cron.New()
 	c.AddFunc("0 */5 * * * *", announceActiveWorker)
@@ -93,310 +90,138 @@ func main() {
 			}).Error("Unable to refresh build image")
 		}
 	})
+	c.AddFunc("*/10 * * * * *", func() {
+		go doBuildProcess()
+	})
 	c.Start()
 
 	for {
-		fetchBuildJob()
-		time.Sleep(10 * time.Second)
+		select {}
 	}
 }
 
-func pullLatestImage() error {
-	auth := docker.AuthConfiguration{}
-	authConfig, err := docker.NewAuthConfigurationsFromDockerCfg()
-	if err != nil {
-		return err
+func doBuildProcess() {
+	if len(currentJobs) == maxConcurrentBuilds {
+		// If maxConcurrentBuilds are running, do not fetch more jobs
+		return
 	}
 
-	reginfo := strings.SplitN(os.Getenv("BUILD_IMAGE"), "/", 2)
-	if len(reginfo) == 2 {
-		for s, a := range authConfig.Configs {
-			if strings.Contains(s, fmt.Sprintf("://%s/", reginfo[0])) {
-				auth = a
-			}
-		}
-	}
+	currentJobs <- true
+	defer func() {
+		<-currentJobs
+	}()
 
-	err = dockerClient.PullImage(docker.PullImageOptions{
-		Repository: os.Getenv("BUILD_IMAGE"),
-		Tag:        "latest",
-	}, auth)
-
-	return err
-}
-
-func announceActiveWorker() {
-	timestamp := float64(time.Now().Unix())
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.WithFields(logrus.Fields{
-			"error": err,
-		}).Error("Unable to determine hostname")
-	}
-
-	redisClient.ZAdd("active-workers", map[string]float64{
-		hostname: timestamp,
-	})
-
-	// Remove old clients to ensure the redis doesn't get filled with old data
-	redisClient.ZRemRangeByScore("active-workers", "-inf", strconv.Itoa(int(time.Now().Unix()-3600)))
-}
-
-func fetchBuildJob() {
 	queueLength, err := redisClient.LLen("build-queue")
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"error": err.Error(),
 		}).Error("Unable to determine queue length.")
+		return
 	}
 
 	if queueLength < 1 {
-		time.Sleep(5 * time.Second)
+		// There is no job? Stop now.
 		return
 	}
+
 	body, err := redisClient.LPop("build-queue")
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"error": err.Error(),
 		}).Error("An error occurred while getting job")
+		return
 	}
 
 	job, err := buildjob.FromBytes(body)
 	if err != nil {
-		// there was a job we could not parse throw it away and continue
-		return
-	}
-	repo := job.Repository
-
-	// Aquire lock to ensure one repo is not built twice
-	lockID := uuid.NewV4().String()
-	redisClient.Set(fmt.Sprintf("project::%s::build-lock", repo), lockID, 1800, 0, false, true)
-
-	lock, err := redisClient.Get(fmt.Sprintf("project::%s::build-lock", repo))
-	if err != nil {
-		log.WithFields(logrus.Fields{
-			"error": err,
-		}).Error("Unable to fetch lock state")
+		// there was a job we could not parse throw it away and stop here
 		return
 	}
 
-	if string(lock) != lockID {
-		// If build-job is currently locked but not by us, try again later
-		queueEntry, err := job.ToByte()
-		orFail(err)
-		redisClient.RPush("build-queue", string(queueEntry))
+	builder := newBuilder(job)
+
+	// Try to get the lock for this job and quit if we don't get it
+	if builder.AquireLock() != nil {
+		builder.PutBackJob()
 		return
 	}
 
-	tmpDir, err := ioutil.TempDir("", "gobuild")
-	orFail(err)
-	buildStartTime := time.Now()
-	buildOK, triggerUpload := build(repo, tmpDir)
+	// Prepare everything for the build or put back the job and stop if we can't
+	if err = builder.PrepareBuild(); err != nil {
+		log.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("PrepareBuild failed")
 
-	if triggerUpload {
-		orFail(builddbCreator.GenerateBuildDB(tmpDir))
-		uploadAssets(repo, tmpDir)
+		builder.PutBackJob()
+		return
 	}
 
-	config, err := buildconfig.LoadFromFile(fmt.Sprintf("%s/.gobuilder.yml", tmpDir))
-	if err != nil {
-		// We got no .gobuilder.yml? Assume something was terribly wrong and requeue build.
-		buildOK = false
+	// Ensure we don't make a mess after we're done
+	defer builder.Cleanup()
+
+	// Do the real build
+	if err := builder.Build(); err != nil {
+		log.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("Build failed")
+
+		builder.PutBackJob()
+		return
 	}
 
-	if buildOK {
-		orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "finished", 0, 0, false, false))
-
-		if triggerUpload {
-			// Only write build-duration if this was a build with assets
-			redisClient.Set(fmt.Sprintf("project::%s::build-duration", repo), fmt.Sprintf("%d", int(time.Now().Sub(buildStartTime).Seconds())), 0, 0, false, false)
-			redisClient.ZAdd("last-builds", map[string]float64{
-				repo: float64(time.Now().Unix()),
-			})
-
-			// Handle signature output
-			builtTagsRaw, err := ioutil.ReadFile(fmt.Sprintf("%s/.built_tags", tmpDir))
-			orFail(err)
-			buildTags := strings.Split(string(builtTagsRaw), "\n")
-			for _, tag := range buildTags {
-				signature, err := ioutil.ReadFile(fmt.Sprintf("%s/.signature_%s", tmpDir, tag))
-				if err != nil {
-					redisClient.Del(fmt.Sprintf("project::%s::signatures::%s", repo, tag))
-				} else {
-					redisClient.Set(fmt.Sprintf("project::%s::signatures::%s", repo, tag), string(signature), 0, 0, false, false)
-				}
-
-				hashes, err := ioutil.ReadFile(fmt.Sprintf("%s/.hashes_%s.txt", tmpDir, tag))
-				if err == nil {
-					redisClient.Set(fmt.Sprintf("project::%s::hashes::%s", repo, tag), string(hashes), 0, 0, false, false)
-				} else {
-					redisClient.Del(fmt.Sprintf("project::%s::hashes::%s", repo, tag))
-				}
-			}
-
-			// Log last build
-			gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/.build_master", tmpDir))
-			if err != nil {
-				log.WithFields(logrus.Fields{
-					"error": err,
-				}).Error("Unable to read gitHash")
-				gitHash = []byte("000000")
-			}
-			redisClient.Set(fmt.Sprintf("project::%s::last-build", repo), string(gitHash), 0, 0, false, false)
-
-			// Upload build.db
-			buildDB, err := ioutil.ReadFile(fmt.Sprintf("%s/.build.db", tmpDir))
-			if err != nil {
-				log.WithFields(logrus.Fields{
-					"error": err,
-				}).Error("Unable to read build.db")
-				orFail(err)
-			}
-			redisClient.Set(fmt.Sprintf("project::%s::builddb", repo), string(buildDB), 0, 0, false, false)
-		}
-
-		redisClient.Del(fmt.Sprintf("project::%s::build-lock", repo))
-		_ = os.RemoveAll(tmpDir)
-
+	// Handle the build log
+	if err := builder.FetchBuildLog(); err != nil {
 		log.WithFields(logrus.Fields{
-			"repository": repo,
-		}).Info("Finished build")
+			"err": err,
+		}).Fatal("Was unable to fetch the log from the container")
 
-		orLog("Sending notification", repo, config.Notify.Execute(notifier.NotifyMetaData{
-			EventType:  "success",
-			Repository: repo,
-		}))
+		builder.PutBackJob()
+		return
+	}
 
-		triggerSubBuilds(repo, config.Triggers)
-	} else {
-		orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "queued", 0, 0, false, false))
+	if err := builder.WriteBuildLog(); err != nil {
 		log.WithFields(logrus.Fields{
-			"repository": repo,
-		}).Error("Failed build")
+			"err": err,
+		}).Error("Was unable to store the build log")
+	}
 
-		orFail(config.Notify.Execute(notifier.NotifyMetaData{
-			EventType:  "error",
-			Repository: repo,
-		}))
+	// If the build was marked as failed abort now
+	if !builder.BuildOK {
+		log.Fatal("Build was marked as failed, requeuing now.")
 
-		// Try to build the job only 5 times not to clutter the queue
-		if job.NumberOfExecutions < maxJobRetries-1 {
-			job.NumberOfExecutions = job.NumberOfExecutions + 1
-			queueEntry, err := job.ToByte()
-			orFail(err)
+		builder.PutBackJob()
 
-			redisClient.RPush("build-queue", string(queueEntry))
-			orFail(err)
-		} else {
+		// Send error notifications
+		builder.SendNotifications()
+		return
+	}
+
+	// Handle the uploads
+	if builder.UploadRequired {
+		if err := builder.UploadAssets(); err != nil {
 			log.WithFields(logrus.Fields{
-				"repository":         repo,
-				"numberOfBuildTries": maxJobRetries,
-			}).Error("Finally failed build")
-			orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "failed", 0, 0, false, false))
+				"err": err,
+			}).Fatal("Was unable to upload the build assets")
+
+			builder.PutBackJob()
+			return
 		}
 	}
 
-}
+	builder.UpdateBuildStatus(BuildStatusFinished)
 
-func build(repo, tmpDir string) (bool, bool) {
-	log.WithFields(logrus.Fields{
-		"repository": repo,
-	}).Info("Beginning to process repo")
+	if builder.UploadRequired {
+		if err := builder.UpdateMetaData(); err != nil {
+			log.WithFields(logrus.Fields{
+				"err": err,
+			}).Fatal("There was an error while updating metadata")
 
-	cfg := &docker.Config{
-		AttachStdin:  false,
-		AttachStdout: true,
-		AttachStderr: true,
-		Image:        os.Getenv("BUILD_IMAGE"),
-		Env: []string{
-			fmt.Sprintf("REPO=%s", repo),
-			fmt.Sprintf("GPG_DECRYPT_KEY=%s", os.Getenv("GPG_DECRYPT_KEY")),
-		},
-	}
-	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{
-		Config: cfg,
-	})
-	orFail(err)
-	err = dockerClient.StartContainer(container.ID, &docker.HostConfig{
-		Binds:        []string{fmt.Sprintf("%s:/artifacts", tmpDir)},
-		Privileged:   false,
-		PortBindings: make(map[docker.Port][]docker.PortBinding),
-	})
-	orFail(err)
-
-	orFail(redisClient.Set(fmt.Sprintf("project::%s::build-status", repo), "building", 0, 0, false, false))
-	status, err := dockerClient.WaitContainer(container.ID)
-	orFail(err)
-
-	logFile, err := os.Create(fmt.Sprintf("%s/build.log", tmpDir))
-	orFail(err)
-	defer func() {
-		_ = logFile.Close()
-	}()
-
-	err = dockerClient.Logs(docker.LogsOptions{
-		Container:    container.ID,
-		Stdout:       true,
-		OutputStream: logFile,
-	})
-	orFail(err)
-
-	if status == 0 {
-		return true, true
-	} else if status == 130 {
-		// Special case: Build was aborted due to redundant build request
-		return true, false
-	}
-	return false, false
-}
-
-func uploadAssets(repo, tmpDir string) {
-	assets, err := ioutil.ReadDir(tmpDir)
-	orFail(err)
-	for _, f := range assets {
-		if f.IsDir() {
-			// Some repos are creating directories. Don't know why. Ignore them.
-			continue
+			builder.PutBackJob()
+			return
 		}
-		if strings.HasPrefix(f.Name(), ".") {
-			// Dotfiles are used to transport metadata from the container
-			continue
-		}
-		log.Debugf("Uploading asset %s...", f.Name())
-		originalPath := fmt.Sprintf("%s/%s", tmpDir, f.Name())
-		path := fmt.Sprintf("%s/%s", repo, f.Name())
-		fileContent, err := ioutil.ReadFile(originalPath)
-		orFail(err)
-
-		err = s3Bucket.Put(path, fileContent, "", s3.PublicRead)
-		orFail(err)
-	}
-}
-
-func triggerSubBuilds(sourcerepo string, repos []string) {
-	if len(repos) > 20 {
-		// Flood / DDoS protection
-		log.WithFields(logrus.Fields{
-			"repository":         sourcerepo,
-			"number_of_triggers": len(repos),
-		}).Error("Too many triggers passed")
-		return
 	}
 
-	for _, repo := range repos {
-		go func(repo string) {
-			resp, err := http.PostForm("https://gobuilder.me/api/v1/build", url.Values{
-				"repository": []string{repo},
-			})
-			if err != nil {
-				log.WithFields(logrus.Fields{
-					"repository": sourcerepo,
-					"subrepo":    repo,
-					"error":      fmt.Sprintf("%v", err),
-				}).Error("Could not queue SubBuild")
-			} else {
-				defer resp.Body.Close()
-			}
-		}(repo)
-	}
+	// Send success notifications
+	builder.SendNotifications()
+	builder.TriggerSubBuilds()
 }

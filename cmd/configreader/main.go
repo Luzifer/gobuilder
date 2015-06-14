@@ -9,6 +9,23 @@ import (
 	"gopkg.in/codegangsta/cli.v1"
 )
 
+var (
+	defaultArchs   = []string{"amd64", "386", "arm"}
+	defaultOSs     = []string{"windows", "linux", "darwin"}
+	validPlatForms = []string{
+		"darwin/386", "darwin/amd64",
+		"dragonfly/386", "dragonfly/amd64",
+		"freebsd/386", "freebsd/amd64", "freebsd/arm",
+		"linux/386", "linux/amd64", "linux/arm",
+		"nacl/386", "nacl/amd64p32", "nacl/arm",
+		"netbsd/386", "netbsd/amd64", "netbsd/arm",
+		"openbsd/386", "openbsd/amd64",
+		"plan9/386", "plan9/amd64",
+		"solaris/amd64",
+		"windows/386", "windows/amd64",
+	}
+)
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "configreader"
@@ -82,5 +99,89 @@ func handleCommand(context *cli.Context, filter func(string)) {
 		filter(strings.Join(cfg.Artifacts, "\n"))
 	case "version_file":
 		filter(cfg.VersionFile)
+	case "arch_matrix":
+		filter(strings.Join(buildArchList(cfg), " "))
+	case "build_tags":
+		filter(getBuildTags(cfg))
+	case "ld_flags":
+		filter(getLDFlags(cfg))
 	}
+}
+
+func getBuildTags(cfg *buildconfig.BuildConfig) string {
+	selectors := []string{
+		fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")),
+		os.Getenv("GOOS"),
+		"general",
+	}
+
+	for _, s := range selectors {
+		if conf, ok := cfg.BuildMatrix[s]; ok {
+			if len(conf.Tags) > 0 {
+				return strings.Join(conf.Tags, " ")
+			}
+		}
+	}
+
+	return ""
+}
+
+func getLDFlags(cfg *buildconfig.BuildConfig) string {
+	selectors := []string{
+		fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")),
+		os.Getenv("GOOS"),
+		"general",
+	}
+
+	for _, s := range selectors {
+		if conf, ok := cfg.BuildMatrix[s]; ok {
+			if len(conf.LDFlags) > 0 {
+				return strings.Join(conf.LDFlags, " ")
+			}
+		}
+	}
+
+	return ""
+}
+
+func buildArchList(cfg *buildconfig.BuildConfig) []string {
+	archs := []string{}
+	for k := range cfg.BuildMatrix {
+		if k == "osx" {
+			k = "darwin"
+		}
+		if strings.Contains(k, "/") {
+			archs = append(archs, k)
+		} else {
+			for _, a := range defaultArchs {
+				archs = append(archs, fmt.Sprintf("%s/%s", k, a))
+			}
+		}
+	}
+
+	if len(archs) == 0 {
+		for _, o := range defaultOSs {
+			for _, a := range defaultArchs {
+				archs = append(archs, fmt.Sprintf("%s/%s", o, a))
+			}
+		}
+	}
+
+	out := []string{}
+	for _, v := range archs {
+		if sliceContains(validPlatForms, v) && !sliceContains(out, v) {
+			out = append(out, v)
+		}
+	}
+
+	return out
+}
+
+func sliceContains(slice []string, match string) bool {
+	for _, v := range slice {
+		if v == match {
+			return true
+		}
+	}
+	return false
 }

@@ -81,20 +81,48 @@ func main() {
 	orFail(err)
 	dockerClient = dockerClientTmp
 
-	err = dockerClient.PullImage(docker.PullImageOptions{
-		Repository: os.Getenv("BUILD_IMAGE"),
-		Tag:        "latest",
-	}, docker.AuthConfiguration{})
-	orFail(err)
+	orFail(pullLatestImage())
 
 	c := cron.New()
 	c.AddFunc("0 */5 * * * *", announceActiveWorker)
+	c.AddFunc("0 */30 * * * *", func() {
+		err := pullLatestImage()
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("Unable to refresh build image")
+		}
+	})
 	c.Start()
 
 	for {
 		fetchBuildJob()
 		time.Sleep(10 * time.Second)
 	}
+}
+
+func pullLatestImage() error {
+	auth := docker.AuthConfiguration{}
+	authConfig, err := docker.NewAuthConfigurationsFromDockerCfg()
+	if err != nil {
+		return err
+	}
+
+	reginfo := strings.SplitN(os.Getenv("BUILD_IMAGE"), "/", 2)
+	if len(reginfo) == 2 {
+		for s, a := range authConfig.Configs {
+			if strings.Contains(s, fmt.Sprintf("://%s/", reginfo[0])) {
+				auth = a
+			}
+		}
+	}
+
+	err = dockerClient.PullImage(docker.PullImageOptions{
+		Repository: os.Getenv("BUILD_IMAGE"),
+		Tag:        "latest",
+	}, auth)
+
+	return err
 }
 
 func announceActiveWorker() {

@@ -81,13 +81,21 @@ if ! ( configreader checkEmpty artifacts ); then
   configreader read artifacts > /tmp/go-build/.artifact_files
 fi
 
-for platform in ${GOLANG_CROSSPLATFORMS}; do
+log "Collecting build matrix..."
+platforms=$(configreader read arch_matrix)
+echo ${platforms}
+
+for platform in ${platforms}; do
   export GOOS=${platform%/*}
   export GOARCH=${platform##*/}
   log "Building ${product} for ${GOOS}-${GOARCH}..."
 
   mkdir -p /tmp/go-build/${product}/
-  go build -o /tmp/go-build/${product}/${product} ./ || { log "Build for ${GOOS}-${GOARCH} failed."; continue; }
+  go build \
+    -tags "$(configreader read build_tags)" \
+    -ldflags "$(configreader read ld_flags)" \
+    -o /tmp/go-build/${product}/${product} \
+    ./ || { log "Build for ${GOOS}-${GOARCH} failed."; continue; }
 
   if [ "${GOOS}" == "windows" ]; then
     mv /tmp/go-build/${product}/${product} /tmp/go-build/${product}/${product}.exe

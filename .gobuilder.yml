@@ -1,4 +1,8 @@
 ---
+build_matrix:
+  windows:
+  linux:
+  osx:
 readme_file: frontend/help.md
 triggers:
   - github.com/Luzifer/gobuilder/cmd/starter

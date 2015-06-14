@@ -1,4 +1,9 @@
 
+1.18.0 / 2015-06-14
+==================
+
+  * Store more than only one log and display last 10 on repo page
+
 1.17.0 / 2015-06-14
 ==================
 

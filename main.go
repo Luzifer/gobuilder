@@ -75,7 +75,7 @@ func main() {
 
 	// Build artifact displaying
 	r.HandleFunc("/get/{file:.+}", handlerDeliverFileFromS3).Methods("GET")
-	r.HandleFunc("/{repo:.+}/build.log", handlerBuildLog).Methods("GET")
+	r.HandleFunc("/{repo:.+}/log/{logid}", handlerBuildLog).Methods("GET")
 	r.HandleFunc("/{repo:.+}", handlerRepositoryView).Methods("GET")
 
 	http.Handle("/", r)
@@ -144,6 +144,15 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 		hasBuilds = true
 	}
 
+	logs, err := redisClient.ZRevRange(fmt.Sprintf("project::%s::logs", params["repo"]), 0, 10, false)
+	if err != nil {
+		logs = []string{}
+		log.WithFields(logrus.Fields{
+			"repo": params["repo"],
+			"err":  err,
+		}).Error("Unable to load last logs")
+	}
+
 	template := pongo2.Must(pongo2.FromFile("frontend/repository.html"))
 	branches := []builddb.BranchSortEntry{}
 	for k, v := range buildDB {
@@ -160,6 +169,7 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 		"hasbuilds":     hasBuilds,
 		"buildDuration": buildDuration,
 		"signature":     string(signature),
+		"logs":          logs,
 	}, res)
 }
 

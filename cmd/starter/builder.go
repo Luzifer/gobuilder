@@ -3,11 +3,13 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -197,8 +199,18 @@ func (b *builder) FetchBuildLog() error {
 }
 
 func (b *builder) WriteBuildLog() error {
-	path := fmt.Sprintf("%s/build.log", b.job.Repository)
-	return s3Bucket.Put(path, []byte(b.BuildLog), "", s3.PublicRead)
+	buildID := fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.FormatInt(time.Now().UnixNano(), 10))))[0:16]
+	if err := redisClient.Set(fmt.Sprintf("project::%s::logs::%s", b.job.Repository, buildID), b.BuildLog, 0, 0, false, false); err != nil {
+		return err
+	}
+
+	if _, err := redisClient.ZAdd(fmt.Sprintf("project::%s::logs", b.job.Repository), map[string]float64{
+		buildID: float64(time.Now().Unix()),
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b *builder) UploadAssets() error {

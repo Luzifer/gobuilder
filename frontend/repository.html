@@ -79,13 +79,16 @@ $(function(){
                 {% endif %}
               </div>
 
-              <p>
-                <a class="btn btn-default btn-block" href="/{{ repo }}/build.log" role="button">
-                  <span class="glyphicon glyphicon-th-list"></span>
-                  Open BuildLog
-                </a>
-              </p>
-            </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">Build-Logs</div>
+                <div class="list-group">
+                  {% for logid in logs %}
+                    <a href="/{{repo}}/log/{{logid}}" class="list-group-item">{{logid}}</a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div> <!-- /.col-lg-3 -->
+
             <div class="col-lg-9">
               <div class="panel panel-default">
                 <div class="panel-heading">Properties</div>

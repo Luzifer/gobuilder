@@ -11,7 +11,7 @@ import (
 
 func handlerBuildLog(res http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	file, err := s3Bucket.Get(fmt.Sprintf("%s/build.log", params["repo"]))
+	file, err := redisClient.Get(fmt.Sprintf("project::%s::logs::%s", params["repo"], params["logid"]))
 	if err != nil {
 		file = []byte("No build log was found for this build.")
 	}

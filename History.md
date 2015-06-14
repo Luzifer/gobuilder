@@ -1,4 +1,11 @@
 
+1.15.2 / 2015-06-14
+==================
+
+  * Added support for lightweight tags
+  * Display signature button in different colors depending on Warning
+  * Fix: Typo
+
 1.15.1 / 2015-06-13
 ==================
 

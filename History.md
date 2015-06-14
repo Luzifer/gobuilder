@@ -1,4 +1,12 @@
 
+1.15.3 / 2015-06-14
+==================
+
+  * Fix: Wrong naming of pushover token
+  * Don't fail on notification failure but log them
+  * Do not store metadata about builds in S3
+  * Cleaned UI, added hint how to sign tags / commits
+
 1.15.2 / 2015-06-14
 ==================
 

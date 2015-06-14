@@ -34,7 +34,7 @@ go fmt ./...
 
 mkdir -p /tmp/go-build
 wget -qO /tmp/go-build/build_master https://gobuilder.me/api/v1/${gopath}/last-build || touch /tmp/go-build/build_master
-wget -qO /tmp/go-build/build.db https://s3-eu-west-1.amazonaws.com/gobuild.luzifer.io/${gopath}/build.db || bash -c 'echo "{}" > /tmp/go-build/build.db'
+wget -qO /tmp/go-build/.build.db https://gobuilder.me/api/v1/${gopath}/build.db || bash -c 'echo "{}" > /tmp/go-build/.build.db'
 
 if [ ! -f .gobuilder.yml ]; then
   # Ensure .gobuilder.yml is present to prevent tools failing later
@@ -152,7 +152,7 @@ done
 cd -
 
 log "Preparing metadata..."
-echo ${short_commit} > /tmp/go-build/build_master
+echo ${short_commit} > /tmp/go-build/.build_master
 go version > /tmp/go-build/.goversion
 
 log "Uploading assets..."

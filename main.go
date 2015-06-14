@@ -88,7 +88,6 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 	if branch == "" {
 		branch = "master"
 	}
-	buildDBFile := fmt.Sprintf("%s/build.db", params["repo"])
 
 	build_status, err := redisClient.Get(fmt.Sprintf("project::%s::build-status", params["repo"]))
 	if err != nil || build_status == nil {
@@ -126,7 +125,7 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 	buildDB := builddb.BuildDB{}
 	hasBuilds := false
 
-	file, err := s3Bucket.Get(buildDBFile)
+	file, err := getBuildDBWithFallback(params["repo"])
 	if err != nil {
 		buildDB["master"] = builddb.BuildDBBranch{}
 		hasBuilds = false
@@ -174,4 +173,22 @@ func connectS3() {
 	bucket := s3conn.Bucket("gobuild.luzifer.io")
 
 	s3Bucket = bucket
+}
+
+func getBuildDBWithFallback(repo string) ([]byte, error) {
+	redisKey := fmt.Sprintf("project::%s::builddb", repo)
+	buildDB, err := redisClient.Get(redisKey)
+	if err != nil || len(buildDB) == 0 {
+		// Fall back to old storage method
+		buildDB, err = s3Bucket.Get(fmt.Sprintf("%s/build.db", repo))
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"error": err,
+				"repo":  repo,
+			}).Error("Failed to load build.db")
+			return []byte{}, fmt.Errorf("Unable to load build.db: %s", err)
+		}
+	}
+
+	return buildDB, nil
 }

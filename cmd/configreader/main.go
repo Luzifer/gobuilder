@@ -112,6 +112,7 @@ func getBuildTags(cfg *buildconfig.BuildConfig) string {
 	selectors := []string{
 		fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")),
 		os.Getenv("GOOS"),
+		"general",
 	}
 
 	for _, s := range selectors {
@@ -129,6 +130,7 @@ func getLDFlags(cfg *buildconfig.BuildConfig) string {
 	selectors := []string{
 		fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")),
 		os.Getenv("GOOS"),
+		"general",
 	}
 
 	for _, s := range selectors {

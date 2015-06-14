@@ -4,3 +4,4 @@ gobuilder
 builddb_creator/builddb_creator
 build-starter/build-starter
 Godeps/_workspace
+cmd/configreader/configreader

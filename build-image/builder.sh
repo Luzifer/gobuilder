@@ -53,9 +53,19 @@ fi
 
 log "Verifying tag signatures..."
 for tag in ${tags}; do
-  if ( LANG=C git tag --verify ${tag} 2>&1 | grep "Good signature" ); then
-    LANG=C git tag --verify ${tag} 2>&1 | grep "gpg:" > /tmp/go-build/.signature_${tag}
+  if ( test $(LANG=C git cat-file -t ${tag}) == "tag" ); then
+    # Identified as an annotated (real) tag
+    if ( LANG=C git tag --verify ${tag} 2>&1 | grep "Good signature" ); then
+      LANG=C git tag --verify ${tag} 2>&1 | grep "gpg:" > /tmp/go-build/.signature_${tag}
+    fi
   else
+    # Identified as a commit (lightweight tag)
+    if ( LANG=C git show --show-signature ${tag} | grep "Good signature" ); then
+      LANG=C git show --show-signature ${tag} | grep "gpg:" > /tmp/go-build/.signature_${tag}
+    fi
+  fi
+
+  if ! [ -e /tmp/go-build/.signature_${tag} ]; then
     echo "No valid signature for ${tag}"
   fi
 done

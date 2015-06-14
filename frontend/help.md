@@ -21,6 +21,9 @@ You just put the URL into the webhook section of your repository configuration a
 
 To configure some aspects of your build you will need to create a `.gobuilder.yml` file in your repository root. This file currently has these options:
 
+- `build_matrix`: A map of `OS/ARCH` combinations to build; if you don't specify the `build_matrix` we will build windows, osx and linux for you (For a list of valid platforms see [configreader](/cmd/configreader/main.go#L15-L25))
+  - `build_tags`: A list of build tags to use while building
+  - `ldflags`: A list of ldflags to use while building (Please note: This feature is experimental and you might get unexpected effects!)
 - `readme_file`: The markdown file to display on the repository page in the web frontend. (Defaults to `README.md`)
 - `triggers`: A list of repositories to build after a successful build of your repository. This could be used to generate some CLI utilities sitting in subdirs of your repository.
 - `artifacts`: In this option you can list assets to include into the zip file created from the build. For example if you have a file called `LICENSE` in the root of your repository and want this to get included into the build result you just add a item with the content `LICENSE` to this array.
@@ -31,8 +34,22 @@ To configure some aspects of your build you will need to create a `.gobuilder.ym
 
 An example configuration file:
 
-```
+```yaml
 ---
+build_matrix:
+  windows:
+  osx:              # You can use "osx" as an alias to "darwin"
+  linux/amd64:
+    build_tags:
+      - nofoo
+      - bar
+  linux/386:
+    build_tags:
+      - foo
+      - nobar
+  general:          # tags / ldflags for "general" are used as a fallback
+    ldflags:
+      - "-x main.version 1.0.0"
 readme_file: frontend/help.md
 triggers:
   - github.com/Luzifer/gobuilder/cmd/starter

@@ -198,7 +198,7 @@ func fetchBuildJob() {
 			}
 
 			// Log last build
-			gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/build_master", tmpDir))
+			gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/.build_master", tmpDir))
 			if err != nil {
 				log.WithFields(logrus.Fields{
 					"error": err,

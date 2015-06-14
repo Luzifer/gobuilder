@@ -152,7 +152,7 @@ done
 cd -
 
 log "Preparing metadata..."
-echo ${short_commit} > /tmp/go-build/build_master
+echo ${short_commit} > /tmp/go-build/.build_master
 go version > /tmp/go-build/.goversion
 
 log "Uploading assets..."

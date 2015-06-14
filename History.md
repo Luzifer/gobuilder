@@ -1,4 +1,11 @@
 
+1.17.0 / 2015-06-14
+==================
+
+  * Full refactoring of build-starter
+  * Added badges to README
+  * Added auth configuration for docker pull; added periodical refresh
+
 1.16.0 / 2015-06-14
 ==================
 

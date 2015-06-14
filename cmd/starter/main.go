@@ -38,6 +38,15 @@ func orFail(err error) {
 	}
 }
 
+func orLog(task, repo string, err error) {
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"repository": repo,
+			"error":      err,
+		}).Error(task)
+	}
+}
+
 func init() {
 	log.Out = os.Stderr
 
@@ -225,7 +234,7 @@ func fetchBuildJob() {
 			"repository": repo,
 		}).Info("Finished build")
 
-		orFail(config.Notify.Execute(notifier.NotifyMetaData{
+		orLog("Sending notification", repo, config.Notify.Execute(notifier.NotifyMetaData{
 			EventType:  "success",
 			Repository: repo,
 		}))

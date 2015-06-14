@@ -150,6 +150,11 @@ func buildArchList(cfg *buildconfig.BuildConfig) []string {
 		if k == "osx" {
 			k = "darwin"
 		}
+
+		if k == "all" {
+			archs = validPlatForms
+		}
+
 		if strings.Contains(k, "/") {
 			archs = append(archs, k)
 		} else {

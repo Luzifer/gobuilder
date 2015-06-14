@@ -1,4 +1,13 @@
 
+1.16.0 / 2015-06-14
+==================
+
+  * Enable "all" build target to build on all
+  * Limit building gobuilder for linux only
+  * Fix: Trigger webhook builds only on push to master
+  * Added documentation for `build_matrix`
+  * Added build matrix with tags / ldflags
+
 1.15.3 / 2015-06-14
 ==================
 

@@ -19,6 +19,7 @@ func registerAPIv1(router *mux.Router) {
 	r.HandleFunc("/{repo:.+}/last-build", apiV1HandlerLastBuild).Methods("GET")
 	r.HandleFunc("/{repo:.+}/signed-hashes/{tag}", apiV1HandlerSignedHashes).Methods("GET")
 	r.HandleFunc("/{repo:.+}/rebuild", apiV1HandlerRebuild).Methods("GET")
+	r.HandleFunc("/{repo:.+}/build.db", apiV1HandlerBuildDb).Methods("GET")
 }
 
 func apiV1HandlerLastBuild(res http.ResponseWriter, r *http.Request) {
@@ -55,6 +56,18 @@ func apiV1HandlerSignedHashes(res http.ResponseWriter, r *http.Request) {
 	res.Header().Add("Content-Type", "text/plain")
 	res.Header().Add("Cache-Control", "no-cache")
 	res.Write(hashList)
+}
+
+func apiV1HandlerBuildDb(res http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	buildDB, err := getBuildDBWithFallback(vars["repo"])
+	if err != nil {
+		http.Error(res, "Could not read build.db", http.StatusInternalServerError)
+	}
+
+	res.Header().Add("Content-Type", "application/json")
+	res.Header().Add("Cache-Control", "no-cache")
+	res.Write(buildDB)
 }
 
 func apiV1HandlerRebuild(res http.ResponseWriter, r *http.Request) {

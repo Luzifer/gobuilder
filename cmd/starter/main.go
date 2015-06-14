@@ -206,6 +206,16 @@ func fetchBuildJob() {
 				gitHash = []byte("000000")
 			}
 			redisClient.Set(fmt.Sprintf("project::%s::last-build", repo), string(gitHash), 0, 0, false, false)
+
+			// Upload build.db
+			buildDB, err := ioutil.ReadFile(fmt.Sprintf("%s/.build.db", tmpDir))
+			if err != nil {
+				log.WithFields(logrus.Fields{
+					"error": err,
+				}).Error("Unable to read build.db")
+				orFail(err)
+			}
+			redisClient.Set(fmt.Sprintf("project::%s::builddb", repo), string(buildDB), 0, 0, false, false)
 		}
 
 		redisClient.Del(fmt.Sprintf("project::%s::build-lock", repo))

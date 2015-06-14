@@ -18,7 +18,7 @@ import (
 func GenerateBuildDB(basedir string) error {
 	var buildDB builddb.BuildDB
 
-	content, err := ioutil.ReadFile(fmt.Sprintf("%s/build.db", basedir))
+	content, err := ioutil.ReadFile(fmt.Sprintf("%s/.build.db", basedir))
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func GenerateBuildDB(basedir string) error {
 	}
 
 	db, err := json.Marshal(buildDB)
-	ioutil.WriteFile(fmt.Sprintf("%s/build.db", basedir), db, 0664)
+	ioutil.WriteFile(fmt.Sprintf("%s/.build.db", basedir), db, 0664)
 
 	return nil
 }

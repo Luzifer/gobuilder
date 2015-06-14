@@ -17,13 +17,23 @@ $(function(){
                   <div class="btn-group pull-right">
                     {% if "github.com" in repo %}<a href="https://{{repo}}" class="btn btn-default btn-lg"><i class="fa fa-github fa-lg"></i></a>{% endif %}
                     {% if "bitbucket.org" in repo %}<a href="https://{{repo}}" class="btn btn-default btn-lg"><i class="fa fa-bitbucket fa-lg"></i></a>{% endif %}
+                    <a href="/api/v1/{{repo}}/rebuild" class="btn btn-default btn-lg"><i class="fa fa-repeat fa-lg"></i></a>
                     {% if signature|length > 0 %}
                       {% if "WARNING" in signature %}
-                        <a href="#signature" style="color:#f0ad4e;" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature"><i class="fa fa-check-circle fa-lg"></i></a>
+                        <a href="#signature" style="color:#f0ad4e;" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature" title="Valid but untrusted signature"><i class="fa fa-check-circle fa-lg"></i></a>
                       {% else %}
-                        <a href="#signature" style="color:#5cb85c;" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature"><i class="fa fa-check-circle fa-lg"></i></a>
+                        <a href="#signature" style="color:#5cb85c;" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature" title="Valid trusted signature"><i class="fa fa-check-circle fa-lg"></i></a>
                       {% endif %}
+                    {% else %}
+                      <a href="#signature" style="color:#ccc;" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature" title="No signature"><i class="fa fa-check-circle fa-lg"></i></a>
                     {% endif %}
+                    <a href="javascript:void(0);" class="btn btn-default dropdown-toggle btn-lg" role="button" data-toggle="dropdown" aria-expanded="false">
+                      <span class="caret"></span>
+                      <span class="sr-only">Toggle Dropdown</span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                      <li><a href="/api/v1/{{repo}}/signed-hashes/{{branch}}"><i class="fa fa-lock"></i> Download signed checksum list</a></li>
+                    </ul>
                   </div>
                   {{ repo }}
                 </h2>
@@ -69,13 +79,6 @@ $(function(){
                 {% endif %}
               </div>
 
-
-              <form role="form" action="/api/v1/build" method="post">
-                <p>
-                  <input type="hidden" name="repository" value="{{ repo }}">
-                  <button type="submit" class="btn btn-success btn-block">Queue Build Now...</button>
-                </p>
-              </form>
               <p>
                 <a class="btn btn-default btn-block" href="/{{ repo }}/build.log" role="button">
                   <span class="glyphicon glyphicon-th-list"></span>
@@ -125,7 +128,7 @@ $(function(){
                                 <span class="sr-only">Toggle Dropdown</span>
                               </a>
                               <ul class="dropdown-menu" role="menu">
-                                <li><a href="javascript:void(0);" class="hash-display-button"><i class="fa fa-bars"></i> Show Checksums</a>
+                                <li><a href="javascript:void(0);" class="hash-display-button"><i class="fa fa-bars"></i> Show Checksums</a></li>
                               </ul>
                             </div>
                           </div>
@@ -165,10 +168,19 @@ SHA256: {{ properties.SHA256 }}</pre>
                 <h4 class="modal-title" id="myModalLabel">Code-signature of this build</h4>
               </div>
               <div class="modal-body">
-                <pre>{{ signature }}</pre>
-                <p>
-                  For extra security you can <a href="/api/v1/{{repo}}/signed-hashes/{{branch}}">download</a> a signed list of checksums for this build's artifacts.
-                </p>
+                {% if signature|length > 0 %}
+                  <pre>{{ signature }}</pre>
+                {% else %}
+                  <p>
+                    This build has not been signed by its maintainer.
+                  </p>
+                  <p>
+                    If you are the maintainer of this project and want others to be able to verify
+                    the code has not been changed you can sign your tags using a GPG key:
+                    <a href="https://git-scm.com/book/tr/v2/Git-Tools-Signing-Your-Work">Git Tools
+                      - Signing Your Work</a>
+                  </p>
+                {% endif %}
               </div>
             </div>
           </div>

@@ -44,7 +44,7 @@ fi
 cp .gobuilder.yml /artifacts/
 sync
 
-if ! [ ${FORCE_BUILD} -eq 1 ]; then
+if ! ( test "${FORCE_BUILD}" == "true" ); then
   if [ "$(cat /tmp/go-build/build_master)" == "${short_commit}" ]; then
     log "Commit ${short_commit} was already built. Skipping."
     exit 130

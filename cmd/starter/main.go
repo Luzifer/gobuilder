@@ -10,6 +10,7 @@ import (
 	"github.com/Luzifer/gobuilder/buildjob"
 	"github.com/Sirupsen/logrus"
 	"github.com/Sirupsen/logrus/hooks/papertrail"
+	"github.com/cenkalti/backoff"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/robfig/cron"
 	"github.com/xuyu/goredis"
@@ -72,8 +73,7 @@ func init() {
 }
 
 func main() {
-	err := pullLatestImage()
-	if err != nil {
+	if err := backoff.Retry(pullLatestImage, backoff.NewExponentialBackOff()); err != nil {
 		log.WithFields(logrus.Fields{
 			"err": err,
 		}).Panic("Unable to fetch docker image for builder")

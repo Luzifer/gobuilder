@@ -81,7 +81,7 @@ func (b *builder) PutBackJob() {
 			"repository":         b.job.Repository,
 			"numberOfBuildTries": maxJobRetries,
 		}).Error("Finally failed build")
-		b.UpdateBuildStatus(BuildStatusFailed)
+		b.UpdateBuildStatus(BuildStatusFailed, 0)
 		return
 	}
 
@@ -99,7 +99,7 @@ func (b *builder) PutBackJob() {
 		}).Fatal("Could not put job back to queue")
 	}
 
-	b.UpdateBuildStatus(BuildStatusQueued)
+	b.UpdateBuildStatus(BuildStatusQueued, 0)
 }
 
 func (b *builder) PrepareBuild() error {
@@ -110,7 +110,7 @@ func (b *builder) PrepareBuild() error {
 	b.tmpDir = tmpDir
 	b.buildStartTime = time.Now()
 
-	b.UpdateBuildStatus(BuildStatusStarted)
+	b.UpdateBuildStatus(BuildStatusStarted, 1800)
 	return nil
 }
 
@@ -365,8 +365,8 @@ func (b *builder) Cleanup() {
 	}).Info("Finished build")
 }
 
-func (b *builder) UpdateBuildStatus(status string) {
-	if err := redisClient.Set(fmt.Sprintf("project::%s::build-status", b.job.Repository), status, 0, 0, false, false); err != nil {
+func (b *builder) UpdateBuildStatus(status string, expire int) {
+	if err := redisClient.Set(fmt.Sprintf("project::%s::build-status", b.job.Repository), status, expire, 0, false, false); err != nil {
 		log.WithFields(logrus.Fields{
 			"err": err,
 		}).Error("Failed to set the build status to 'queued'")

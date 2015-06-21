@@ -208,7 +208,7 @@ func doBuildProcess() {
 		}
 	}
 
-	builder.UpdateBuildStatus(BuildStatusFinished)
+	builder.UpdateBuildStatus(BuildStatusFinished, 0)
 
 	if builder.UploadRequired {
 		if err := builder.UpdateMetaData(); err != nil {

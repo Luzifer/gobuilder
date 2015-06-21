@@ -1,4 +1,13 @@
 
+1.19.0 / 2015-06-21
+==================
+
+  * Write build started status with expiry
+  * Allow evaluation of bash variables in ldflags
+  * Added backoff not to quit too fast if pull fails at docker not yet ready
+  * Fix: With only general build target set no build was done
+  * Fix: Empty vars caused the build to crash
+
 1.18.0 / 2015-06-14
 ==================
 

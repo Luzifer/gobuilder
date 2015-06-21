@@ -147,12 +147,15 @@ func getLDFlags(cfg *buildconfig.BuildConfig) string {
 func buildArchList(cfg *buildconfig.BuildConfig) []string {
 	archs := []string{}
 	for k := range cfg.BuildMatrix {
-		if k == "osx" {
-			k = "darwin"
-		}
 
-		if k == "all" {
+		// Some special handlings
+		switch k {
+		case "osx":
+			k = "darwin"
+		case "all":
 			archs = validPlatForms
+		case "general":
+			continue
 		}
 
 		if strings.Contains(k, "/") {

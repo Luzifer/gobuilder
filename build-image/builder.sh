@@ -13,6 +13,7 @@ cat /root/gpgkey.asc.enc | openssl enc -aes-256-cbc -a -d -k ${GPG_DECRYPT_KEY} 
 if [ ${SIGNING} -eq 1 ]; then
   echo "E2FF3D20865D6F9B6AE74ECB7D5420F913246261:6:" | gpg --import-ownertrust
 fi
+unset GPG_DECRYPT_KEY
 
 log "Fetching GO repository ${REPO}"
 gopath=${REPO}
@@ -91,11 +92,11 @@ for platform in ${platforms}; do
   log "Building ${product} for ${GOOS}-${GOARCH}..."
 
   mkdir -p /tmp/go-build/${product}/
-  go build \
-    -tags "$(configreader read build_tags)" \
-    -ldflags "$(configreader read ld_flags)" \
-    -o /tmp/go-build/${product}/${product} \
-    ./ || { log "Build for ${GOOS}-${GOARCH} failed."; continue; }
+  echo "go build " \
+    "-tags \"$(configreader read build_tags)\"" \
+    "-ldflags \"$(configreader read ld_flags)\"" \
+    "-o /tmp/go-build/${product}/${product}" \
+    "./" | bash -x || { log "Build for ${GOOS}-${GOARCH} failed."; continue; }
 
   if [ "${GOOS}" == "windows" ]; then
     mv /tmp/go-build/${product}/${product} /tmp/go-build/${product}/${product}.exe

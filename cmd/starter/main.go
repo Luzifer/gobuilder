@@ -142,7 +142,7 @@ func doBuildProcess() {
 
 	// Try to get the lock for this job and quit if we don't get it
 	if builder.AquireLock() != nil {
-		builder.PutBackJob()
+		builder.PutBackJob(false)
 		return
 	}
 
@@ -152,7 +152,7 @@ func doBuildProcess() {
 			"err": err,
 		}).Error("PrepareBuild failed")
 
-		builder.PutBackJob()
+		builder.PutBackJob(false)
 		return
 	}
 
@@ -165,7 +165,7 @@ func doBuildProcess() {
 			"err": err,
 		}).Error("Build failed")
 
-		builder.PutBackJob()
+		builder.PutBackJob(true)
 		return
 	}
 
@@ -175,7 +175,7 @@ func doBuildProcess() {
 			"err": err,
 		}).Fatal("Was unable to fetch the log from the container")
 
-		builder.PutBackJob()
+		builder.PutBackJob(false)
 		return
 	}
 
@@ -189,7 +189,7 @@ func doBuildProcess() {
 	if !builder.BuildOK {
 		log.Fatal("Build was marked as failed, requeuing now.")
 
-		builder.PutBackJob()
+		builder.PutBackJob(true)
 
 		// Send error notifications
 		builder.SendNotifications()
@@ -203,7 +203,7 @@ func doBuildProcess() {
 				"err": err,
 			}).Fatal("Was unable to upload the build assets")
 
-			builder.PutBackJob()
+			builder.PutBackJob(false)
 			return
 		}
 	}
@@ -216,7 +216,7 @@ func doBuildProcess() {
 				"err": err,
 			}).Fatal("There was an error while updating metadata")
 
-			builder.PutBackJob()
+			builder.PutBackJob(false)
 			return
 		}
 	}

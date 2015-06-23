@@ -73,8 +73,10 @@ func (b *builder) AquireLock() error {
 	return nil
 }
 
-func (b *builder) PutBackJob() {
-	b.job.NumberOfExecutions++
+func (b *builder) PutBackJob(increaseFails bool) {
+	if increaseFails {
+		b.job.NumberOfExecutions++
+	}
 
 	if b.job.NumberOfExecutions > maxJobRetries {
 		log.WithFields(logrus.Fields{

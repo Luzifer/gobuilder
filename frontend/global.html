@@ -13,6 +13,7 @@
 
     <!-- Bootstrap Core CSS -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://bootswatch.com/spacelab/bootstrap.min.css">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
@@ -23,6 +24,9 @@
     }
     .table.vert-align tbody>tr>td{
         vertical-align: middle;
+    }
+    .modal-dialog {
+      z-index: 1060;
     }
     {% block customcss %}{% endblock %}
     </style>
@@ -39,7 +43,7 @@
 <body>
 
     <!-- Navigation -->
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="container">
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
@@ -113,7 +117,7 @@
 
     <script type="text/javascript" src="https://s3.amazonaws.com/assets.freshdesk.com/widget/freshwidget.js"></script>
     <script type="text/javascript">
-      FreshWidget.init("", {"queryString": "&widgetType=popup&attachFile=no&searchArea=no", "utf8": "✓", "widgetType": "popup", "buttonType": "text", "buttonText": "Help & Feedback", "buttonColor": "white", "buttonBg": "#006063", "alignment": "4", "offset": "300px", "formHeight": "500px", "url": "https://knutahlers.freshdesk.com"} );
+      FreshWidget.init("", {"queryString": "&widgetType=popup&attachFile=no&searchArea=no", "utf8": "✓", "widgetType": "popup", "buttonType": "text", "buttonText": "Contact & Feedback", "buttonColor": "white", "buttonBg": "#006063", "alignment": "4", "offset": "300px", "formHeight": "500px", "url": "https://knutahlers.freshdesk.com"} );
     </script>
 </body>
 

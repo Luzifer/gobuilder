@@ -15,19 +15,19 @@ $(function(){
             <div class="col-lg-12">
                 <h2>
                   <div class="btn-group pull-right">
-                    {% if "github.com" in repo %}<a href="https://{{repo}}" class="btn btn-default btn-lg"><i class="fa fa-github fa-lg"></i></a>{% endif %}
-                    {% if "bitbucket.org" in repo %}<a href="https://{{repo}}" class="btn btn-default btn-lg"><i class="fa fa-bitbucket fa-lg"></i></a>{% endif %}
-                    <a href="/api/v1/{{repo}}/rebuild" class="btn btn-default btn-lg"><i class="fa fa-repeat fa-lg"></i></a>
+                    {% if "github.com" in repo %}<a href="https://{{repo}}" class="btn btn-default"><i class="fa fa-github fa-lg"></i></a>{% endif %}
+                    {% if "bitbucket.org" in repo %}<a href="https://{{repo}}" class="btn btn-default"><i class="fa fa-bitbucket fa-lg"></i></a>{% endif %}
+                    <a href="/api/v1/{{repo}}/rebuild" class="btn btn-default"><i class="fa fa-repeat fa-lg"></i></a>
                     {% if signature|length > 0 %}
                       {% if "WARNING" in signature %}
-                        <a href="#signature" style="color:#f0ad4e;" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature" title="Valid but untrusted signature"><i class="fa fa-check-circle fa-lg"></i></a>
+                        <a href="#signature" style="color:#f0ad4e;" class="btn btn-default" data-toggle="modal" data-target="#signature" title="Valid but untrusted signature"><i class="fa fa-check-circle fa-lg"></i></a>
                       {% else %}
-                        <a href="#signature" style="color:#5cb85c;" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature" title="Valid trusted signature"><i class="fa fa-check-circle fa-lg"></i></a>
+                        <a href="#signature" style="color:#5cb85c;" class="btn btn-default" data-toggle="modal" data-target="#signature" title="Valid trusted signature"><i class="fa fa-check-circle fa-lg"></i></a>
                       {% endif %}
                     {% else %}
-                      <a href="#signature" style="color:#ccc;" class="btn btn-default btn-lg" data-toggle="modal" data-target="#signature" title="No signature"><i class="fa fa-check-circle fa-lg"></i></a>
+                      <a href="#signature" style="color:#ccc;" class="btn btn-default" data-toggle="modal" data-target="#signature" title="No signature"><i class="fa fa-check-circle fa-lg"></i></a>
                     {% endif %}
-                    <a href="javascript:void(0);" class="btn btn-default dropdown-toggle btn-lg" role="button" data-toggle="dropdown" aria-expanded="false">
+                    <a href="javascript:void(0);" class="btn btn-default dropdown-toggle" role="button" data-toggle="dropdown" aria-expanded="false">
                       <span class="caret"></span>
                       <span class="sr-only">Toggle Dropdown</span>
                     </a>

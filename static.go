@@ -11,7 +11,25 @@ import (
 	"github.com/flosch/pongo2"
 )
 
-func getNewBuildContext() pongo2.Context {
+func getBasicContext(r *http.Request) pongo2.Context {
+	sess, _ := sessionStore.Get(r, "GoBuilderSession")
+
+	ctx := pongo2.Context{
+		"gh_user": getGithubUsername(r),
+	}
+
+	if errorMessages := sess.Flashes("alert_error"); len(errorMessages) > 0 {
+		ctx["error"] = errorMessages[0].(string)
+	}
+
+	if successMessages := sess.Flashes("alert_success"); len(successMessages) > 0 {
+		ctx["success"] = successMessages[0].(string)
+	}
+
+	return ctx
+}
+
+func getNewBuildContext(r *http.Request) pongo2.Context {
 	// Fetch clients active in last 10min
 	timestamp := strconv.Itoa(int(time.Now().Unix() - 600))
 	activeWorkers, _ := redisClient.ZCount("active-workers", timestamp, "+inf")
@@ -19,21 +37,23 @@ func getNewBuildContext() pongo2.Context {
 	queueLength, _ := redisClient.LLen("build-queue")
 	lastBuilds, _ := redisClient.ZRevRange("last-builds", 0, 10, false)
 
-	return pongo2.Context{
-		"queueLength":   queueLength,
-		"lastBuilds":    lastBuilds,
-		"activeWorkers": activeWorkers,
-	}
+	ctx := getBasicContext(r)
+
+	ctx["queueLength"] = queueLength
+	ctx["lastBuilds"] = lastBuilds
+	ctx["activeWorkers"] = activeWorkers
+
+	return ctx
 }
 
 func handleFrontPage(res http.ResponseWriter, r *http.Request) {
 	template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-	template.ExecuteWriter(getNewBuildContext(), res)
+	template.ExecuteWriter(getNewBuildContext(r), res)
 }
 
 func handleImprint(res http.ResponseWriter, r *http.Request) {
 	template := pongo2.Must(pongo2.FromFile("frontend/imprint.html"))
-	template.ExecuteWriter(pongo2.Context{}, res)
+	template.ExecuteWriter(getBasicContext(r), res)
 }
 
 func handleHelpPage(res http.ResponseWriter, r *http.Request) {
@@ -45,8 +65,10 @@ func handleHelpPage(res http.ResponseWriter, r *http.Request) {
 		http.Error(res, "An unknown error occured.", http.StatusInternalServerError)
 		return
 	}
+
 	template := pongo2.Must(pongo2.FromFile("frontend/help.html"))
-	template.ExecuteWriter(pongo2.Context{
-		"helptext": string(content),
-	}, res)
+	ctx := getBasicContext(r)
+	ctx["helptext"] = string(content)
+
+	template.ExecuteWriter(ctx, res)
 }

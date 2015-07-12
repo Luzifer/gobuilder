@@ -29,6 +29,7 @@ func webhookGitHub(res http.ResponseWriter, r *http.Request) {
 
 	ref := tmp.(map[string]interface{})["ref"].(string)
 	if ref != "refs/heads/master" {
+		http.Error(res, "OK, got your message, will not take action.", http.StatusOK)
 		return
 	}
 

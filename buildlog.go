@@ -17,7 +17,7 @@ func handlerBuildLog(res http.ResponseWriter, r *http.Request) {
 	}
 
 	template := pongo2.Must(pongo2.FromFile("frontend/buildlog.html"))
-	ctx := getBasicContext(r)
+	ctx := getBasicContext(res, r)
 	ctx["repo"] = params["repo"]
 	ctx["log"] = logHighlight(file)
 

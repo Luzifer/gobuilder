@@ -213,7 +213,7 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 	}
 	sort.Sort(sort.Reverse(builddb.BranchSortEntryByBuildDate(branches)))
 
-	ctx := getBasicContext(r)
+	ctx := getBasicContext(res, r)
 	ctx["branch"] = branch
 	ctx["branches"] = branches
 	ctx["repo"] = params["repo"]

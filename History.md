@@ -1,4 +1,13 @@
 
+1.20.0 / 2015-07-12
+==================
+
+  * Replaced undocumented Getenv with CLI parameters
+  * Implemented GitHub auth / hook adding
+  * Fix: Do not simply end without response on GitHub hook
+  * Fix: Do not increase fail-count when job failed of gobuilders fault
+  * Changed design
+
 1.19.0 / 2015-06-21
 ==================
 

@@ -12,6 +12,7 @@ import (
 	"launchpad.net/goamz/s3"
 
 	"github.com/Luzifer/gobuilder/builddb"
+	"github.com/Luzifer/gobuilder/buildjob"
 	"github.com/Luzifer/gobuilder/config"
 	"github.com/flosch/pongo2"
 	"github.com/gorilla/mux"
@@ -184,6 +185,17 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 			"err":  err,
 		}).Error("Unable to load last logs")
 	}
+	logMetas := []*buildjob.BuildLog{}
+	for _, v := range logs {
+		if l, err := buildjob.LogFromString(v); err == nil {
+			logMetas = append(logMetas, l)
+		} else {
+			// TODO: Remove me. I'm only here for migration purposes!
+			logMetas = append(logMetas, &buildjob.BuildLog{
+				ID: v,
+			})
+		}
+	}
 
 	template := pongo2.Must(pongo2.FromFile("frontend/repository.html"))
 	branches := []builddb.BranchSortEntry{}
@@ -202,7 +214,7 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 	ctx["hasbuilds"] = hasBuilds
 	ctx["buildDuration"] = buildDuration
 	ctx["signature"] = string(signature)
-	ctx["logs"] = logs
+	ctx["logs"] = logMetas
 
 	template.ExecuteWriter(ctx, res)
 }

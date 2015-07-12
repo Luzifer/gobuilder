@@ -8,6 +8,7 @@ import (
 	"launchpad.net/goamz/s3"
 
 	"github.com/Luzifer/gobuilder/buildjob"
+	"github.com/Luzifer/gobuilder/config"
 	"github.com/Sirupsen/logrus"
 	"github.com/Sirupsen/logrus/hooks/papertrail"
 	"github.com/cenkalti/backoff"
@@ -16,11 +17,14 @@ import (
 	"github.com/xuyu/goredis"
 )
 
-var dockerClient *docker.Client
-var log = logrus.New()
-var s3Bucket *s3.Bucket
-var redisClient *goredis.Redis
-var currentJobs chan bool
+var (
+	dockerClient *docker.Client
+	log          = logrus.New()
+	s3Bucket     *s3.Bucket
+	redisClient  *goredis.Redis
+	currentJobs  chan bool
+	cfg          *config.Config
+)
 
 const (
 	maxJobRetries       = 5
@@ -29,6 +33,8 @@ const (
 
 func init() {
 	log.Out = os.Stderr
+
+	cfg = config.Load()
 
 	// Add Papertrail connection for logging
 	papertrailPort, err := strconv.Atoi(os.Getenv("papertrail_port"))

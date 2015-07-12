@@ -323,7 +323,7 @@ func (b *builder) SendNotifications() {
 	if err := b.buildConfig.Notify.Execute(notifier.NotifyMetaData{
 		EventType:  eventType,
 		Repository: b.job.Repository,
-	}); err != nil {
+	}, cfg); err != nil {
 		log.WithFields(logrus.Fields{
 			"error": err,
 		}).Error("Unable to send notification")

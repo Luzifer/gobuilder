@@ -2,12 +2,12 @@ package notifier
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/Luzifer/gobuilder/config"
 	"github.com/thorduri/pushover"
 )
 
-func (n *NotifyEntry) NotifyPushover(metadata NotifyMetaData) error {
+func (n *NotifyEntry) NotifyPushover(metadata NotifyMetaData, cfg *config.Config) error {
 	verb := "succeeded"
 	if metadata.EventType == "error" {
 		verb = "failed"
@@ -21,7 +21,7 @@ func (n *NotifyEntry) NotifyPushover(metadata NotifyMetaData) error {
 		Priority: pushover.Normal,
 	}
 
-	p, err := pushover.NewPushover(os.Getenv("PUSHOVER_APITOKEN"), n.Target)
+	p, err := pushover.NewPushover(cfg.Pushover.APIToken, n.Target)
 	if err != nil {
 		return err
 	}

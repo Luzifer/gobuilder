@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -45,8 +44,8 @@ func handleOauthGithubInit(res http.ResponseWriter, r *http.Request) {
 		}
 
 		resp, err := http.PostForm("https://github.com/login/oauth/access_token", url.Values{
-			"client_id":     {os.Getenv("github_client_id")},
-			"client_secret": {os.Getenv("github_client_secret")},
+			"client_id":     {cfg.GitHub.ClientID},
+			"client_secret": {cfg.GitHub.ClientSecret},
 			"code":          {code},
 			"state":         {state},
 		})
@@ -77,7 +76,7 @@ func handleOauthGithubInit(res http.ResponseWriter, r *http.Request) {
 
 	query := url.Values{}
 	redirURL, _ := url.Parse("https://github.com/login/oauth/authorize")
-	query.Set("client_id", os.Getenv("github_client_id"))
+	query.Set("client_id", cfg.GitHub.ClientID)
 	query.Set("scope", scopes)
 
 	u := uuid.NewV4().String()
@@ -125,7 +124,7 @@ func getGithubUsername(r *http.Request) string {
 
 func addGithubWebhook(res http.ResponseWriter, r *http.Request, repo string) {
 	sess, _ := sessionStore.Get(r, "GoBuilderSession")
-	hookURL := strings.TrimRight(os.Getenv("baseurl"), "/") + "/api/v1/webhook/github"
+	hookURL := strings.TrimRight(cfg.BaseURL, "/") + "/api/v1/webhook/github"
 
 	if token, ok := sess.Values["access_token"].(string); !ok || len(token) == 0 {
 		return

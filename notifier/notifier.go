@@ -1,6 +1,10 @@
 package notifier
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/Luzifer/gobuilder/config"
+)
 
 // NotifyEntry represents a configuration for a single notification method
 type NotifyEntry struct {
@@ -24,7 +28,7 @@ type NotifyConfiguration []NotifyEntry
 
 // Execute iterates over all configured notification methods and calls
 // the respective methods
-func (n *NotifyConfiguration) Execute(metadata NotifyMetaData) error {
+func (n *NotifyConfiguration) Execute(metadata NotifyMetaData, cfg *config.Config) error {
 	for _, method := range *n {
 		if len(strings.TrimSpace(method.Filter)) == 0 || strings.Contains(method.Filter, metadata.EventType) {
 			var err error
@@ -32,7 +36,7 @@ func (n *NotifyConfiguration) Execute(metadata NotifyMetaData) error {
 			case "dockerhub":
 				err = method.NotifyDockerHub(metadata)
 			case "pushover":
-				err = method.NotifyPushover(metadata)
+				err = method.NotifyPushover(metadata, cfg)
 			}
 			if err != nil {
 				return err

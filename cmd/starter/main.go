@@ -178,7 +178,7 @@ func doBuildProcess() {
 	if err := builder.FetchBuildLog(); err != nil {
 		log.WithFields(logrus.Fields{
 			"err": err,
-		}).Fatal("Was unable to fetch the log from the container")
+		}).Error("Was unable to fetch the log from the container")
 
 		builder.PutBackJob(false)
 		return
@@ -192,7 +192,7 @@ func doBuildProcess() {
 
 	// If the build was marked as failed abort now
 	if !builder.BuildOK {
-		log.Fatal("Build was marked as failed, requeuing now.")
+		log.Error("Build was marked as failed, requeuing now.")
 
 		builder.PutBackJob(true)
 
@@ -206,7 +206,7 @@ func doBuildProcess() {
 		if err := builder.UploadAssets(); err != nil {
 			log.WithFields(logrus.Fields{
 				"err": err,
-			}).Fatal("Was unable to upload the build assets")
+			}).Error("Was unable to upload the build assets")
 
 			builder.PutBackJob(false)
 			return
@@ -219,7 +219,7 @@ func doBuildProcess() {
 		if err := builder.UpdateMetaData(); err != nil {
 			log.WithFields(logrus.Fields{
 				"err": err,
-			}).Fatal("There was an error while updating metadata")
+			}).Error("There was an error while updating metadata")
 
 			builder.PutBackJob(false)
 			return

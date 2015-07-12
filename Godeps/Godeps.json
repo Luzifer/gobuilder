@@ -8,6 +8,10 @@
 			"Rev": "5b2527008a4c8988ca9dc6f010ebfb9dae67150b"
 		},
 		{
+			"ImportPath": "github.com/Luzifer/rconfig",
+			"Rev": "0c78105a26af5663b6bb2c5be1fed4ed7d81d687"
+		},
+		{
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.6.5",
 			"Rev": "c0f7e35ed2e48f188c37581b4b743cf7383f85c6"
@@ -57,6 +61,10 @@
 		{
 			"ImportPath": "github.com/shurcooL/sanitized_anchor_name",
 			"Rev": "9a8b7d4e8f347bfa230879db9d7d4e4d9e19f962"
+		},
+		{
+			"ImportPath": "github.com/spf13/pflag",
+			"Rev": "67cbc198fd11dab704b214c1e629a97af392c085"
 		},
 		{
 			"ImportPath": "github.com/xuyu/goredis",

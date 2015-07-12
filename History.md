@@ -1,4 +1,14 @@
 
+1.22.0 / 2015-07-12
+==================
+
+  * Display build logs next to "Not yet ready"
+  * Fix: Logging did shut down build-starter, decreased level
+  * Fix: Clean flashes after display
+  * Fix: Redirects; Use redirects & flashes for alert display
+  * Renamed Build-Logs panel
+  * Fix: Positioning of log success indicator
+
 1.21.0 / 2015-07-12
 ==================
 

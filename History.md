@@ -1,4 +1,12 @@
 
+1.21.0 / 2015-07-12
+==================
+
+  * Fix: Logging was not initialized
+  * Fix: CSS error showing wrong colors
+  * Let workers time out faster
+  * Added metadata to log list
+
 1.20.1 / 2015-07-12
 ==================
 

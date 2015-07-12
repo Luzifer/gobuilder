@@ -38,9 +38,21 @@
 			"Rev": "660d31f8602b95058fed6833debf113e85350868"
 		},
 		{
+			"ImportPath": "github.com/gorilla/securecookie",
+			"Rev": "1b0c7f6e9ab3d7f500fd7d50c7ad835ff428139b"
+		},
+		{
+			"ImportPath": "github.com/gorilla/sessions",
+			"Rev": "aa5e036e6c44aec69a32eb41097001978b29ad31"
+		},
+		{
 			"ImportPath": "github.com/russross/blackfriday",
 			"Comment": "v1.2-42-g77efab5",
 			"Rev": "77efab57b2f74dd3f9051c79752b2e8995c8b789"
+		},
+		{
+			"ImportPath": "github.com/satori/go.uuid",
+			"Rev": "242673bbc820e051ef00033e274d32e08ece9e15"
 		},
 		{
 			"ImportPath": "github.com/shurcooL/sanitized_anchor_name",
@@ -53,6 +65,11 @@
 		{
 			"ImportPath": "golang.org/x/text/transform",
 			"Rev": "dadbda34c6a86c65cacce7b470b5d838d660c347"
+		},
+		{
+			"ImportPath": "gopkg.in/bufio.v1",
+			"Comment": "v1",
+			"Rev": "567b2bfa514e796916c4747494d6ff5132a1dfce"
 		},
 		{
 			"ImportPath": "launchpad.net/goamz/aws",

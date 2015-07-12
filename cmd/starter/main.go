@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"strconv"
 
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -23,7 +22,7 @@ var (
 	s3Bucket     *s3.Bucket
 	redisClient  *goredis.Redis
 	currentJobs  chan bool
-	cfg          *config.Config
+	conf         *config.Config
 )
 
 const (
@@ -32,14 +31,14 @@ const (
 )
 
 func init() {
+	var err error
 	log.Out = os.Stderr
 
-	cfg = config.Load()
+	conf = config.Load()
 
 	// Add Papertrail connection for logging
-	papertrailPort, err := strconv.Atoi(os.Getenv("papertrail_port"))
-	if err == nil {
-		hook, err := logrus_papertrail.NewPapertrailHook(os.Getenv("papertrail_host"), papertrailPort, "GoBuilder Starter")
+	if conf.Papertrail.Port == 0 {
+		hook, err := logrus_papertrail.NewPapertrailHook(conf.Papertrail.Host, conf.Papertrail.Port, "GoBuilder Starter")
 		if err != nil {
 			log.Panic("Unable to create papertrail connection")
 			os.Exit(1)
@@ -50,10 +49,10 @@ func init() {
 		log.Info("Failed to read papertrail_port, using only STDERR")
 	}
 
-	redisClient, err = goredis.DialURL(os.Getenv("redis_url"))
+	redisClient, err = goredis.DialURL(conf.RedisURL)
 	if err != nil {
 		log.WithFields(logrus.Fields{
-			"url": os.Getenv("redis_url"),
+			"url": conf.RedisURL,
 		}).Panic("Unable to connect to Redis")
 		os.Exit(1)
 	}

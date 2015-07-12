@@ -27,6 +27,11 @@ type Config struct {
 	Pushover struct {
 		APIToken string `env:"PUSHOVER_APITOKEN" flag:"pushover-token"`
 	}
+
+	BuildImage struct {
+		ImageName     string `env:"BUILD_IMAGE" flag:"build-image"`
+		GPGDecryptKey string `env:"GPG_DECRYPT_KEY" flag:"gpg-decrypt-key"`
+	}
 }
 
 // Load collects the configuration

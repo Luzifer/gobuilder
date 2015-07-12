@@ -35,7 +35,7 @@ func pullLatestImage() error {
 		return err
 	}
 
-	reginfo := strings.SplitN(os.Getenv("BUILD_IMAGE"), "/", 2)
+	reginfo := strings.SplitN(conf.BuildImage.ImageName, "/", 2)
 	if len(reginfo) == 2 {
 		for s, a := range authConfig.Configs {
 			if strings.Contains(s, fmt.Sprintf("://%s/", reginfo[0])) {
@@ -45,7 +45,7 @@ func pullLatestImage() error {
 	}
 
 	err = dockerClient.PullImage(docker.PullImageOptions{
-		Repository: os.Getenv("BUILD_IMAGE"),
+		Repository: conf.BuildImage.ImageName,
 		Tag:        "latest",
 	}, auth)
 

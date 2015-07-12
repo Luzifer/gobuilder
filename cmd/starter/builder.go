@@ -125,10 +125,10 @@ func (b *builder) Build() error {
 		AttachStdin:  false,
 		AttachStdout: true,
 		AttachStderr: true,
-		Image:        os.Getenv("BUILD_IMAGE"),
+		Image:        conf.BuildImage.ImageName,
 		Env: []string{
 			fmt.Sprintf("REPO=%s", b.job.Repository),
-			fmt.Sprintf("GPG_DECRYPT_KEY=%s", os.Getenv("GPG_DECRYPT_KEY")),
+			fmt.Sprintf("GPG_DECRYPT_KEY=%s", conf.BuildImage.GPGDecryptKey),
 		},
 	}
 	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{
@@ -323,7 +323,7 @@ func (b *builder) SendNotifications() {
 	if err := b.buildConfig.Notify.Execute(notifier.NotifyMetaData{
 		EventType:  eventType,
 		Repository: b.job.Repository,
-	}, cfg); err != nil {
+	}, conf); err != nil {
 		log.WithFields(logrus.Fields{
 			"error": err,
 		}).Error("Unable to send notification")

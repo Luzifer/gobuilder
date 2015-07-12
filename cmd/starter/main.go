@@ -37,7 +37,7 @@ func init() {
 	conf = config.Load()
 
 	// Add Papertrail connection for logging
-	if conf.Papertrail.Port == 0 {
+	if conf.Papertrail.Port != 0 {
 		hook, err := logrus_papertrail.NewPapertrailHook(conf.Papertrail.Host, conf.Papertrail.Port, "GoBuilder Starter")
 		if err != nil {
 			log.Panic("Unable to create papertrail connection")

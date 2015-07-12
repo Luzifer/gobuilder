@@ -66,9 +66,11 @@
                     </li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="/contact">Contact</a>
-                    </li>
+                  {% if gh_user %}
+                    <li><a href="/ghlogout"><i class="fa fa-sign-out fa-lg"></i> Sign-out <strong>{{gh_user}}</strong></a></li>
+                  {% else %}
+                    <li><a href="/ghlogin"><i class="fa fa-github fa-lg"></i> Login with GitHub</a></li>
+                  {% endif %}
                 </ul>
             </div>
             <!-- /.navbar-collapse -->

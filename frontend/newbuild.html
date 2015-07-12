@@ -8,7 +8,11 @@
                   <div class="form-group">
                     <input type="text" class="form-control" name="repository" placeholder="github.com/luzifer/gobuilder" {% if value %}value="{{ value }}"{% endif %}>
                   </div>
+                  {% if gh_user %}
+                  <button type="submit" class="btn btn-primary btn-block">Start Build &amp; Add GitHub BuildHook!</button>
+                  {% else %}
                   <button type="submit" class="btn btn-primary btn-block">Start Build!</button>
+                  {% endif %}
                 </form>
             </div>
         </div>

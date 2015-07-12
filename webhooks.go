@@ -62,7 +62,7 @@ func webhookBitBucket(res http.ResponseWriter, r *http.Request) {
 func webhookInterface(res http.ResponseWriter, r *http.Request) {
 	repo := r.FormValue("repository")
 	template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-	context := getNewBuildContext()
+	context := getNewBuildContext(r)
 
 	// No repository was given, just submitted
 	if len(repo) == 0 {
@@ -80,6 +80,8 @@ func webhookInterface(res http.ResponseWriter, r *http.Request) {
 		}).Warn("Refused to build repo")
 		return
 	}
+
+	addGithubWebhook(res, r, repo)
 
 	err := sendToQueue(repo)
 	if err != nil {

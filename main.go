@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -34,6 +35,8 @@ var (
 	sessionStore *sessions.CookieStore
 	cfg          *config.Config
 )
+
+type flashContext map[string]string
 
 func init() {
 	var err error
@@ -75,6 +78,8 @@ func init() {
 		[]byte(sessionStoreAuthenticationKey),
 		[]byte(sessionStoreEncryptionKey),
 	)
+
+	gob.Register(&flashContext{})
 }
 
 func main() {
@@ -116,6 +121,8 @@ func main() {
 }
 
 func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
+	sess, _ := sessionStore.Get(r, "GoBuilderSession")
+
 	params := mux.Vars(r)
 	branch := r.FormValue("branch")
 	if branch == "" {
@@ -128,11 +135,13 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 			"error": fmt.Sprintf("%v", err),
 			"repo":  params["repo"],
 		}).Warn("AWS S3 Get Error")
-		context := getNewBuildContext(r)
-		context["error"] = "Your build is not yet known to us..."
-		context["value"] = params["repo"]
-		template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-		template.ExecuteWriter(context, res)
+
+		sess.AddFlash(flashContext{
+			"error": "Your build is not yet known to us...",
+			"value": params["repo"],
+		}, "context")
+		sess.Save(r, res)
+		http.Redirect(res, r, "/", http.StatusFound)
 		return
 	}
 
@@ -168,10 +177,10 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 			log.WithFields(logrus.Fields{
 				"error": fmt.Sprintf("%v", err),
 			}).Error("AWS DB Unmarshal Error")
-			context := getNewBuildContext(r)
-			context["error"] = "An unknown error occured while getting your build."
-			template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-			template.ExecuteWriter(context, res)
+
+			sess.AddFlash("Your build is not yet known to us...", "alert_error")
+			sess.Save(r, res)
+			http.Redirect(res, r, "/", http.StatusFound)
 			return
 		}
 		hasBuilds = true

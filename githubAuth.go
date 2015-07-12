@@ -39,7 +39,7 @@ func handleOauthGithubInit(res http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("state") != state {
 			sess.AddFlash("Something went wrong while authenticating you. Please try again.", "alert_error")
 			sess.Save(r, res)
-			http.Redirect(res, r, "/", http.StatusTemporaryRedirect)
+			http.Redirect(res, r, "/", http.StatusFound)
 			return
 		}
 
@@ -53,7 +53,7 @@ func handleOauthGithubInit(res http.ResponseWriter, r *http.Request) {
 			log.WithField("error", err).Error("Fetching OAuth2 AccessKey failed")
 			sess.AddFlash("Something went wrong while authenticating you. Please try again.", "alert_error")
 			sess.Save(r, res)
-			http.Redirect(res, r, "/", http.StatusTemporaryRedirect)
+			http.Redirect(res, r, "/", http.StatusFound)
 			return
 		}
 		defer resp.Body.Close()
@@ -64,13 +64,13 @@ func handleOauthGithubInit(res http.ResponseWriter, r *http.Request) {
 		if accessInformation.Get("scope") != scopes {
 			sess.AddFlash("You denied some access rights. Unable to work that way.", "alert_error")
 			sess.Save(r, res)
-			http.Redirect(res, r, "/", http.StatusTemporaryRedirect)
+			http.Redirect(res, r, "/", http.StatusFound)
 			return
 		}
 
 		sess.Values["access_token"] = accessInformation.Get("access_token")
 		sess.Save(r, res)
-		http.Redirect(res, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(res, r, "/", http.StatusFound)
 		return
 	}
 
@@ -85,14 +85,14 @@ func handleOauthGithubInit(res http.ResponseWriter, r *http.Request) {
 	sess.Save(r, res)
 
 	redirURL.RawQuery = query.Encode()
-	http.Redirect(res, r, redirURL.String(), http.StatusTemporaryRedirect)
+	http.Redirect(res, r, redirURL.String(), http.StatusFound)
 }
 
 func handleOauthGithubLogout(res http.ResponseWriter, r *http.Request) {
 	sess, _ := sessionStore.Get(r, "GoBuilderSession")
 	delete(sess.Values, "access_token")
 	sess.Save(r, res)
-	http.Redirect(res, r, "/", http.StatusTemporaryRedirect)
+	http.Redirect(res, r, "/", http.StatusFound)
 }
 
 func getGithubUsername(r *http.Request) string {

@@ -74,5 +74,5 @@ func apiV1HandlerRebuild(res http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	sendToQueue(vars["repo"])
 
-	http.Redirect(res, r, fmt.Sprintf("/%s", vars["repo"]), http.StatusTemporaryRedirect)
+	http.Redirect(res, r, fmt.Sprintf("/%s", vars["repo"]), http.StatusFound)
 }

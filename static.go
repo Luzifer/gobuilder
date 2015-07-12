@@ -26,6 +26,12 @@ func getBasicContext(r *http.Request) pongo2.Context {
 		ctx["success"] = successMessages[0].(string)
 	}
 
+	if contextFlashs := sess.Flashes("context"); len(contextFlashs) > 0 {
+		for k, v := range *contextFlashs[0].(*flashContext) {
+			ctx[k] = v
+		}
+	}
+
 	return ctx
 }
 

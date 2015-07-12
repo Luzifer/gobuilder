@@ -10,7 +10,6 @@ import (
 
 	"github.com/Luzifer/gobuilder/buildjob"
 	"github.com/Sirupsen/logrus"
-	"github.com/flosch/pongo2"
 )
 
 func webhookGitHub(res http.ResponseWriter, r *http.Request) {
@@ -60,24 +59,26 @@ func webhookBitBucket(res http.ResponseWriter, r *http.Request) {
 }
 
 func webhookInterface(res http.ResponseWriter, r *http.Request) {
+	sess, _ := sessionStore.Get(r, "GoBuilderSession")
 	repo := r.FormValue("repository")
-	template := pongo2.Must(pongo2.FromFile("frontend/newbuild.html"))
-	context := getNewBuildContext(r)
 
 	// No repository was given, just submitted
 	if len(repo) == 0 {
-		context["error"] = "Please provide a repository."
-		template.ExecuteWriter(context, res)
+		sess.AddFlash("Please provide a repository.", "alert_error")
+		sess.Save(r, res)
+		http.Redirect(res, r, "/", http.StatusFound)
 		return
 	}
 
 	// Repository contained characters not being allowed
 	if !isValidRepositorySource(repo) {
-		context["error"] = "Sorry, that does not look like a valid package. Not building that."
-		template.ExecuteWriter(context, res)
 		log.WithFields(logrus.Fields{
 			"repository": repo,
 		}).Warn("Refused to build repo")
+
+		sess.AddFlash("Sorry, that does not look like a valid package. Not building that.", "alert_error")
+		sess.Save(r, res)
+		http.Redirect(res, r, "/", http.StatusFound)
 		return
 	}
 
@@ -85,14 +86,18 @@ func webhookInterface(res http.ResponseWriter, r *http.Request) {
 
 	err := sendToQueue(repo)
 	if err != nil {
-		context["error"] = "An unknown error occured while queueing the repository."
-		template.ExecuteWriter(context, res)
+		sess.AddFlash("An unknown error occured while queueing the repository.", "alert_error")
+		sess.Save(r, res)
+		http.Redirect(res, r, "/", http.StatusFound)
 		return
 	}
 
-	context["success"] = "Your build job has been submitted."
-	context["repo"] = repo
-	template.ExecuteWriter(context, res)
+	sess.AddFlash(flashContext{
+		"success": "Your build job has been submitted.",
+		"repo":    repo,
+	}, "context")
+	sess.Save(r, res)
+	http.Redirect(res, r, "/", http.StatusFound)
 }
 
 func isValidRepositorySource(repository string) bool {

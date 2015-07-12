@@ -1,0 +1,19 @@
+.indicator-ball {
+  border-radius: 50%;
+  display:inline-block;
+  height: 1em;
+  margin-right: 0.25em;
+  position: relative;
+  top: 1px;
+  width: 1em;
+}
+
+.indicator-ball, .indicator-ball-success {
+  background-color: #468847;
+  border: 1px solid #d6e9c6;
+}
+
+.indicator-ball, .indicator-ball-failure {
+  background-color: #b94a48;
+  border: 1px solid #eed3d7;
+}

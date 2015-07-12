@@ -82,8 +82,15 @@ $(function(){
               <div class="panel panel-default">
                 <div class="panel-heading">Build-Logs</div>
                 <div class="list-group">
-                  {% for logid in logs %}
-                    <a href="/{{repo}}/log/{{logid}}" class="list-group-item">{{logid}}</a>
+                  {% for log in logs %}
+                    <a href="/{{repo}}/log/{{log.ID}}" class="list-group-item">
+                      {% if log.Success %}
+                      <span class="indicator-ball indicator-ball-success"></span>
+                      {% else %}
+                      <span class="indicator-ball indicator-ball-failure"></span>
+                      {% endif %}
+                      {{log.Time|timesince}}
+                    </a>
                   {% endfor %}
                 </div>
               </div>

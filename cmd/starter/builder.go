@@ -206,8 +206,18 @@ func (b *builder) WriteBuildLog() error {
 		return err
 	}
 
+	logMeta := buildjob.BuildLog{
+		Success: b.BuildOK,
+		Time:    time.Now(),
+		ID:      buildID,
+	}
+	meta, err := logMeta.ToString()
+	if err != nil {
+		return err
+	}
+
 	if _, err := redisClient.ZAdd(fmt.Sprintf("project::%s::logs", b.job.Repository), map[string]float64{
-		buildID: float64(time.Now().Unix()),
+		meta: float64(time.Now().Unix()),
 	}); err != nil {
 		return err
 	}

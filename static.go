@@ -30,8 +30,8 @@ func getBasicContext(r *http.Request) pongo2.Context {
 }
 
 func getNewBuildContext(r *http.Request) pongo2.Context {
-	// Fetch clients active in last 10min
-	timestamp := strconv.Itoa(int(time.Now().Unix() - 600))
+	// Fetch clients active in last 5min
+	timestamp := strconv.Itoa(int(time.Now().Unix() - 300))
 	activeWorkers, _ := redisClient.ZCount("active-workers", timestamp, "+inf")
 
 	queueLength, _ := redisClient.LLen("build-queue")

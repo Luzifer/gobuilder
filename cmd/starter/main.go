@@ -86,7 +86,7 @@ func main() {
 	}
 
 	c := cron.New()
-	c.AddFunc("0 */5 * * * *", announceActiveWorker)
+	c.AddFunc("0 * * * * *", announceActiveWorker)
 	c.AddFunc("0 */30 * * * *", func() {
 		err := pullLatestImage()
 		if err != nil {

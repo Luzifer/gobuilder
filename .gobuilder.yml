@@ -4,6 +4,7 @@ build_matrix:
 readme_file: frontend/help.md
 triggers:
   - github.com/Luzifer/gobuilder/cmd/starter
+  - github.com/Luzifer/gobuilder/cmd/gobuilder-cli
 artifacts:
   - frontend
 notify:

@@ -8,6 +8,10 @@
 			"Rev": "5b2527008a4c8988ca9dc6f010ebfb9dae67150b"
 		},
 		{
+			"ImportPath": "github.com/Luzifer/go-openssl",
+			"Rev": "5c6e7579832374b7acd6bbd2d78e14d758b1f792"
+		},
+		{
 			"ImportPath": "github.com/Luzifer/rconfig",
 			"Rev": "0c78105a26af5663b6bb2c5be1fed4ed7d81d687"
 		},

@@ -36,6 +36,8 @@ To configure some aspects of your build you will need to create a `.gobuilder.ym
     - `pushover`: Put your "User Key" into the target to receive notifications.
     - `email`: Put a single email address as the target.
 
+The `target` parameter for notifications can be encrypted in order not to expose your email address, Pushover token or any secret added in the future to the public. For details please refer to the [gobuilder-cli tool](https://gobuilder.me/github.com/Luzifer/gobuilder/cmd/gobuilder-cli).
+
 An example configuration file:
 
 ```yaml

@@ -32,6 +32,10 @@ type Config struct {
 		ImageName     string `env:"BUILD_IMAGE" flag:"build-image"`
 		GPGDecryptKey string `env:"GPG_DECRYPT_KEY" flag:"gpg-decrypt-key"`
 	}
+
+	Mandrill struct {
+		MandrillAPIKey string `flag:"mandrill-key"`
+	}
 }
 
 // Load collects the configuration

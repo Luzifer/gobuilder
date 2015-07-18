@@ -8,4 +8,6 @@ artifacts:
   - frontend
 notify:
   - type: pushover
-    target: PZGq72ZzRSQYu4lq7t0z0aqL3Hfl5B
+    target: U2FsdGVkX1+lhqGpqB/a9C300iOul5tdRcg1Fb7vwivoJA64eNfFVTL+QwDl5wT8
+  - type: email
+    target: U2FsdGVkX194oB3+U15z7t9iKbVxGjFWb7gjvo0R8NM=

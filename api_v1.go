@@ -17,6 +17,7 @@ func registerAPIv1(router *mux.Router) {
 	r.HandleFunc("/build", webhookInterface).Methods("POST")
 	r.HandleFunc("/webhook/github", webhookGitHub).Methods("POST")
 	r.HandleFunc("/webhook/bitbucket", webhookBitBucket).Methods("POST")
+	r.HandleFunc("/webhook/cli", webhookCLI).Methods("POST")
 
 	r.HandleFunc("/{repo:.+}/last-build", apiV1HandlerLastBuild).Methods("GET")
 	r.HandleFunc("/{repo:.+}/signed-hashes/{tag}", apiV1HandlerSignedHashes).Methods("GET")

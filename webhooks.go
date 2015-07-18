@@ -100,6 +100,34 @@ func webhookInterface(res http.ResponseWriter, r *http.Request) {
 	http.Redirect(res, r, "/", http.StatusFound)
 }
 
+func webhookCLI(res http.ResponseWriter, r *http.Request) {
+	repo := r.FormValue("repository")
+
+	// No repository was given, just submitted
+	if len(repo) == 0 {
+		http.Error(res, "Please provide a repository", http.StatusNoContent)
+		return
+	}
+
+	// Repository contained characters not being allowed
+	if !isValidRepositorySource(repo) {
+		log.WithFields(logrus.Fields{
+			"repository": repo,
+		}).Warn("Refused to build repo")
+
+		http.Error(res, "Sorry, that does not look like a valid package. Not building that.", http.StatusNotAcceptable)
+		return
+	}
+
+	err := sendToQueue(repo)
+	if err != nil {
+		http.Error(res, "An unknown error occured while queueing the repository.", http.StatusInternalServerError)
+		return
+	}
+
+	http.Error(res, "OK", http.StatusOK)
+}
+
 func isValidRepositorySource(repository string) bool {
 	regex := regexp.MustCompile(`^[a-zA-Z0-9/_\.-]+[^/]$`)
 	return regex.Match([]byte(repository))

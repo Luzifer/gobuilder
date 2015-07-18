@@ -1,4 +1,11 @@
 
+1.23.0 / 2015-07-18
+==================
+
+  * Documented email notification
+  * Added email notification
+  * Added notification target encryption
+
 1.22.0 / 2015-07-12
 ==================
 

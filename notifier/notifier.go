@@ -49,6 +49,8 @@ func (n *NotifyConfiguration) Execute(metadata NotifyMetaData, cfg *config.Confi
 				err = method.NotifyDockerHub(metadata)
 			case "pushover":
 				err = method.NotifyPushover(metadata, cfg)
+			case "email":
+				err = method.NotifyEMail(metadata, cfg)
 			}
 			if err != nil {
 				return err

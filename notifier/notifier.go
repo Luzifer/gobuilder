@@ -3,6 +3,7 @@ package notifier
 import (
 	"strings"
 
+	"github.com/Luzifer/go-openssl"
 	"github.com/Luzifer/gobuilder/config"
 )
 
@@ -28,10 +29,21 @@ type NotifyConfiguration []NotifyEntry
 
 // Execute iterates over all configured notification methods and calls
 // the respective methods
-func (n *NotifyConfiguration) Execute(metadata NotifyMetaData, cfg *config.Config) error {
+func (n *NotifyConfiguration) Execute(metadata NotifyMetaData, cfg *config.Config, encryptionKey string) error {
 	for _, method := range *n {
 		if len(strings.TrimSpace(method.Filter)) == 0 || strings.Contains(method.Filter, metadata.EventType) {
 			var err error
+
+			if strings.HasPrefix(method.Target, "U2FsdGVkX1") {
+				// Data was encrypted before
+				o := openssl.New()
+				dec, err := o.DecryptString(encryptionKey, method.Target)
+				if err != nil {
+					return err
+				}
+				method.Target = string(dec)
+			}
+
 			switch method.Type {
 			case "dockerhub":
 				err = method.NotifyDockerHub(metadata)

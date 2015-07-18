@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Luzifer/go-openssl"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/satori/go.uuid"
 )
 
 func registerAPIv1(router *mux.Router) {
@@ -20,6 +22,33 @@ func registerAPIv1(router *mux.Router) {
 	r.HandleFunc("/{repo:.+}/signed-hashes/{tag}", apiV1HandlerSignedHashes).Methods("GET")
 	r.HandleFunc("/{repo:.+}/rebuild", apiV1HandlerRebuild).Methods("GET")
 	r.HandleFunc("/{repo:.+}/build.db", apiV1HandlerBuildDb).Methods("GET")
+	r.HandleFunc("/{repo:.+}/encrypt", apiV1HandlerEncrypt).Methods("POST")
+}
+
+func apiV1HandlerEncrypt(res http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	redisKey := fmt.Sprintf("project::%s::encryption-key", vars["repo"])
+
+	encryptionKey, err := redisClient.Get(redisKey)
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"error": err,
+			"repo":  vars["repo"],
+		}).Error("Failed to get encryption key")
+		http.Error(res, "Could not read encryption key", http.StatusInternalServerError)
+		return
+	}
+
+	if string(encryptionKey) == "" {
+		encryptionKey = []byte(uuid.NewV4().String())
+		redisClient.Set(redisKey, string(encryptionKey), 0, 0, false, false)
+	}
+
+	o := openssl.New()
+	enc, err := o.EncryptString(string(encryptionKey), r.FormValue("secret"))
+
+	res.Header().Set("Content-Type", "text/plain")
+	res.Write(enc)
 }
 
 func apiV1HandlerLastBuild(res http.ResponseWriter, r *http.Request) {

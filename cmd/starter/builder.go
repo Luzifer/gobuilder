@@ -330,10 +330,18 @@ func (b *builder) SendNotifications() {
 		eventType = "error"
 	}
 
+	encryptionKey, err := redisClient.Get(fmt.Sprintf("project::%s::encryption-key", b.job.Repository))
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"error": err,
+			"repo":  b.job.Repository,
+		}).Error("Unable to load encryption key")
+	}
+
 	if err := b.buildConfig.Notify.Execute(notifier.NotifyMetaData{
 		EventType:  eventType,
 		Repository: b.job.Repository,
-	}, conf); err != nil {
+	}, conf, string(encryptionKey)); err != nil {
 		log.WithFields(logrus.Fields{
 			"error": err,
 		}).Error("Unable to send notification")

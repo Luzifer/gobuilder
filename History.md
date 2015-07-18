@@ -1,4 +1,10 @@
 
+1.24.0 / 2015-07-18
+==================
+
+  * Added README hint for encrypted values
+  * Implemented gobuilder-cli
+
 1.23.0 / 2015-07-18
 ==================
 

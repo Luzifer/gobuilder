@@ -19,6 +19,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/xuyu/goredis"
 
 	"github.com/Sirupsen/logrus"
@@ -97,6 +98,7 @@ func main() {
 	r.HandleFunc("/", handleFrontPage).Methods("GET")
 	r.HandleFunc("/contact", handleImprint).Methods("GET")
 	r.HandleFunc("/help", handleHelpPage).Methods("GET")
+	r.Handle("/metrics", prometheus.Handler())
 
 	// GitHub auth
 	r.HandleFunc("/ghlogin", handleOauthGithubInit).Methods("GET")

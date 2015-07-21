@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 func init() {
 	go checkUpdateAndRestart()
@@ -11,9 +14,10 @@ func checkUpdateAndRestart() {
 		<-time.After(5 * time.Minute)
 
 		lastBuild, _ := redisClient.Get("project::github.com/Luzifer/gobuilder/cmd/starter::last-build")
-		if len(lastBuild) > 0 && version != "dev" && string(lastBuild) != version {
-			log.WithField("new_version", string(lastBuild)).
-				Infof("Detected update from %s to %s, will quit soon.", version, string(lastBuild))
+		newVersion := strings.TrimSpace(string(lastBuild))
+		if len(lastBuild) > 0 && version != "dev" && newVersion != version {
+			log.WithField("new_version", newVersion).
+				Infof("Detected update from %s to %s, will quit soon.", version, newVersion)
 			killswitch = true
 		}
 	}

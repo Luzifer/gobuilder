@@ -2,4 +2,4 @@
 build_matrix:
   general:
     ldflags:
-      - '-X main.version $(git describe --tags)'
+      - '-X main.version $(git rev-parse --short HEAD)'

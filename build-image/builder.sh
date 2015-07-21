@@ -21,7 +21,7 @@ go get -v -u ${REPO}
 
 cd /go/src/${gopath}
 
-short_commit=$(git rev-parse HEAD | head -c6)
+short_commit=$(git rev-parse --short HEAD)
 tags=$(git tag -l --contains HEAD)
 
 # GoDeps support

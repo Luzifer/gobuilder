@@ -208,6 +208,8 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	abortReason, _ := redisClient.Get(fmt.Sprintf("project::%s::abort", params["repo"]))
+
 	template := pongo2.Must(pongo2.FromFile("frontend/repository.html"))
 	branches := []builddb.BranchSortEntry{}
 	for k, v := range buildDB {
@@ -226,6 +228,7 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 	ctx["buildDuration"] = buildDuration
 	ctx["signature"] = string(signature)
 	ctx["logs"] = logMetas
+	ctx["abort"] = string(abortReason)
 
 	template.ExecuteWriter(ctx, res)
 }

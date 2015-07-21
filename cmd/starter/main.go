@@ -192,9 +192,14 @@ func doBuildProcess() {
 
 	// If the build was marked as failed abort now
 	if !builder.BuildOK {
-		log.Error("Build was marked as failed, requeuing now.")
+		ib, _ := builder.IsBuildable()
 
-		builder.PutBackJob(true)
+		if ib {
+			log.Error("Build was marked as failed, requeuing now.")
+			builder.PutBackJob(true)
+		} else {
+			log.Errorf("Build failed and is not buildable: %s", builder.AbortReason)
+		}
 
 		// Send error notifications
 		builder.SendNotifications()

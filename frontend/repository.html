@@ -55,6 +55,15 @@ $(function(){
             </div>
             {% endif %}
           </div>
+          {% if abort %}
+          <div class="col-lg-12">
+            <div class="alert alert-danger">
+              <span class="glyphicon glyphicon-ban-circle"></span>
+              Last build was aborted because of following reason:<br />
+              {{abort}}
+            </div>
+          </div>
+          {% endif %}
         </div>
         {% if hasbuilds %}
         <div class="row">

@@ -45,6 +45,7 @@ type builder struct {
 	BuildOK        bool
 	UploadRequired bool
 	BuildLog       string
+	AbortReason    string
 }
 
 func newBuilder(job *buildjob.BuildJob) *builder {
@@ -391,4 +392,24 @@ func (b *builder) UpdateBuildStatus(status string, expire int) {
 			"err": err,
 		}).Error("Failed to set the build status to 'queued'")
 	}
+}
+
+func (b *builder) IsBuildable() (bool, error) {
+	if strings.Contains(b.BuildLog, "could not read Username for 'https://github.com': No such device or address") {
+		// Someone tried to build a private GitHub repository
+		b.AbortReason = "GoBuilder is unable to build private repositories"
+	}
+
+	if strings.Contains(b.BuildLog, "no buildable Go source files in") {
+		// We got a directory without any .go files
+		b.AbortReason = "In the directory used to build are no *.go files present"
+	}
+
+	if b.AbortReason != "" {
+		if err := redisClient.Set(fmt.Sprintf("project::%s::abort", b.job.Repository), b.AbortReason, 0, 0, false, false); err != nil {
+			return false, err
+		}
+	}
+
+	return b.AbortReason == "", nil
 }

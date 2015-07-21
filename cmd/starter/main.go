@@ -233,6 +233,7 @@ func doBuildProcess() {
 			log.WithFields(logrus.Fields{
 				"host": hostname,
 			}).Errorf("Build failed and is not buildable: %s", builder.AbortReason)
+			builder.UpdateBuildStatus(BuildStatusFailed, 0)
 		}
 
 		// Send error notifications

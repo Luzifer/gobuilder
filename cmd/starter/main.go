@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"runtime"
 
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -17,20 +18,20 @@ import (
 )
 
 var (
-	dockerClient *docker.Client
-	log          = logrus.New()
-	s3Bucket     *s3.Bucket
-	redisClient  *goredis.Redis
-	currentJobs  chan bool
-	conf         *config.Config
-	version      = "dev"
-	killswitch   = false
-	hostname     = "unkown"
+	dockerClient        *docker.Client
+	log                 = logrus.New()
+	s3Bucket            *s3.Bucket
+	redisClient         *goredis.Redis
+	currentJobs         chan bool
+	conf                *config.Config
+	version             = "dev"
+	killswitch          = false
+	hostname            = "unkown"
+	maxConcurrentBuilds = runtime.NumCPU()
 )
 
 const (
-	maxJobRetries       = 5
-	maxConcurrentBuilds = 2
+	maxJobRetries = 5
 )
 
 func init() {
@@ -100,7 +101,7 @@ func main() {
 
 	log.WithFields(logrus.Fields{
 		"host": hostname,
-	}).Infof("Build starter version %s in service.", version)
+	}).Infof("Build starter version %s with %d build slots in service.", version, maxConcurrentBuilds)
 
 	c := cron.New()
 	c.AddFunc("0 * * * * *", announceActiveWorker)

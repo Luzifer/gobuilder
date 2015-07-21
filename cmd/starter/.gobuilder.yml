@@ -1,0 +1,5 @@
+---
+build_matrix:
+  general:
+    ldflags:
+      - '-X main.version $(git describe --tags)'

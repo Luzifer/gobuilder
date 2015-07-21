@@ -23,6 +23,8 @@ var (
 	redisClient  *goredis.Redis
 	currentJobs  chan bool
 	conf         *config.Config
+	version      = "dev"
+	killswitch   = false
 )
 
 const (
@@ -96,7 +98,13 @@ func main() {
 		}
 	})
 	c.AddFunc("*/10 * * * * *", func() {
-		go doBuildProcess()
+		if !killswitch {
+			go doBuildProcess()
+		} else {
+			if len(currentJobs) == 0 {
+				os.Exit(0)
+			}
+		}
 	})
 	c.Start()
 

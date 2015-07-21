@@ -16,6 +16,7 @@ func announceActiveWorker() {
 	hostname, err := os.Hostname()
 	if err != nil {
 		log.WithFields(logrus.Fields{
+			"host":  hostname,
 			"error": err,
 		}).Error("Unable to determine hostname")
 	}

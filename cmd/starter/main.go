@@ -25,6 +25,7 @@ var (
 	conf         *config.Config
 	version      = "dev"
 	killswitch   = false
+	hostname     = "unkown"
 )
 
 const (
@@ -42,19 +43,24 @@ func init() {
 	if conf.Papertrail.Port != 0 {
 		hook, err := logrus_papertrail.NewPapertrailHook(conf.Papertrail.Host, conf.Papertrail.Port, "GoBuilder Starter")
 		if err != nil {
-			log.Panic("Unable to create papertrail connection")
+			log.WithFields(logrus.Fields{
+				"host": hostname,
+			}).Panic("Unable to create papertrail connection")
 			os.Exit(1)
 		}
 
 		log.Hooks.Add(hook)
 	} else {
-		log.Info("Failed to read papertrail_port, using only STDERR")
+		log.WithFields(logrus.Fields{
+			"host": hostname,
+		}).Info("Failed to read papertrail_port, using only STDERR")
 	}
 
 	redisClient, err = goredis.DialURL(conf.RedisURL)
 	if err != nil {
 		log.WithFields(logrus.Fields{
-			"url": conf.RedisURL,
+			"url":  conf.RedisURL,
+			"host": hostname,
 		}).Panic("Unable to connect to Redis")
 		os.Exit(1)
 	}
@@ -62,7 +68,8 @@ func init() {
 	awsAuth, err := aws.EnvAuth()
 	if err != nil {
 		log.WithFields(logrus.Fields{
-			"err": err,
+			"host": hostname,
+			"err":  err,
 		}).Panic("Unable to read AWS credentials")
 		os.Exit(1)
 	}
@@ -71,23 +78,29 @@ func init() {
 	dockerClient, err = docker.NewClient("unix:///var/run/docker.sock")
 	if err != nil {
 		log.WithFields(logrus.Fields{
-			"err": err,
+			"host": hostname,
+			"err":  err,
 		}).Panic("Unable to connect to docker daemon")
 		os.Exit(1)
 	}
 
 	currentJobs = make(chan bool, maxConcurrentBuilds)
+
+	hostname, err = os.Hostname()
 }
 
 func main() {
 	if err := backoff.Retry(pullLatestImage, backoff.NewExponentialBackOff()); err != nil {
 		log.WithFields(logrus.Fields{
-			"err": err,
+			"host": hostname,
+			"err":  err,
 		}).Panic("Unable to fetch docker image for builder")
 		os.Exit(1)
 	}
 
-	log.Infof("Build starter version %s in service.", version)
+	log.WithFields(logrus.Fields{
+		"host": hostname,
+	}).Infof("Build starter version %s in service.", version)
 
 	c := cron.New()
 	c.AddFunc("0 * * * * *", announceActiveWorker)
@@ -95,6 +108,7 @@ func main() {
 		err := pullLatestImage()
 		if err != nil {
 			log.WithFields(logrus.Fields{
+				"host":  hostname,
 				"error": err,
 			}).Error("Unable to refresh build image")
 		}
@@ -129,6 +143,7 @@ func doBuildProcess() {
 	queueLength, err := redisClient.LLen("build-queue")
 	if err != nil {
 		log.WithFields(logrus.Fields{
+			"host":  hostname,
 			"error": err.Error(),
 		}).Error("Unable to determine queue length.")
 		return
@@ -142,6 +157,7 @@ func doBuildProcess() {
 	body, err := redisClient.LPop("build-queue")
 	if err != nil {
 		log.WithFields(logrus.Fields{
+			"host":  hostname,
 			"error": err.Error(),
 		}).Error("An error occurred while getting job")
 		return
@@ -164,7 +180,8 @@ func doBuildProcess() {
 	// Prepare everything for the build or put back the job and stop if we can't
 	if err = builder.PrepareBuild(); err != nil {
 		log.WithFields(logrus.Fields{
-			"err": err,
+			"host": hostname,
+			"err":  err,
 		}).Error("PrepareBuild failed")
 
 		builder.PutBackJob(false)
@@ -177,7 +194,8 @@ func doBuildProcess() {
 	// Do the real build
 	if err := builder.Build(); err != nil {
 		log.WithFields(logrus.Fields{
-			"err": err,
+			"host": hostname,
+			"err":  err,
 		}).Error("Build failed")
 
 		builder.PutBackJob(true)
@@ -187,7 +205,8 @@ func doBuildProcess() {
 	// Handle the build log
 	if err := builder.FetchBuildLog(); err != nil {
 		log.WithFields(logrus.Fields{
-			"err": err,
+			"host": hostname,
+			"err":  err,
 		}).Error("Was unable to fetch the log from the container")
 
 		builder.PutBackJob(false)
@@ -196,7 +215,8 @@ func doBuildProcess() {
 
 	if err := builder.WriteBuildLog(); err != nil {
 		log.WithFields(logrus.Fields{
-			"err": err,
+			"host": hostname,
+			"err":  err,
 		}).Error("Was unable to store the build log")
 	}
 
@@ -205,10 +225,14 @@ func doBuildProcess() {
 		ib, _ := builder.IsBuildable()
 
 		if ib {
-			log.Error("Build was marked as failed, requeuing now.")
+			log.WithFields(logrus.Fields{
+				"host": hostname,
+			}).Error("Build was marked as failed, requeuing now.")
 			builder.PutBackJob(true)
 		} else {
-			log.Errorf("Build failed and is not buildable: %s", builder.AbortReason)
+			log.WithFields(logrus.Fields{
+				"host": hostname,
+			}).Errorf("Build failed and is not buildable: %s", builder.AbortReason)
 		}
 
 		// Send error notifications
@@ -220,7 +244,8 @@ func doBuildProcess() {
 	if builder.UploadRequired {
 		if err := builder.UploadAssets(); err != nil {
 			log.WithFields(logrus.Fields{
-				"err": err,
+				"host": hostname,
+				"err":  err,
 			}).Error("Was unable to upload the build assets")
 
 			builder.PutBackJob(false)
@@ -233,7 +258,8 @@ func doBuildProcess() {
 	if builder.UploadRequired {
 		if err := builder.UpdateMetaData(); err != nil {
 			log.WithFields(logrus.Fields{
-				"err": err,
+				"host": hostname,
+				"err":  err,
 			}).Error("There was an error while updating metadata")
 
 			builder.PutBackJob(false)

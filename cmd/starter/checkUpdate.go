@@ -3,6 +3,8 @@ package main
 import (
 	"strings"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 func init() {
@@ -16,8 +18,10 @@ func checkUpdateAndRestart() {
 		lastBuild, _ := redisClient.Get("project::github.com/Luzifer/gobuilder/cmd/starter::last-build")
 		newVersion := strings.TrimSpace(string(lastBuild))
 		if len(lastBuild) > 0 && version != "dev" && newVersion != version {
-			log.WithField("new_version", newVersion).
-				Infof("Detected update from %s to %s, will quit soon.", version, newVersion)
+			log.WithFields(logrus.Fields{
+				"host":        hostname,
+				"new_version": newVersion,
+			}).Infof("Detected update from %s to %s, will quit soon.", version, newVersion)
 			killswitch = true
 		}
 	}

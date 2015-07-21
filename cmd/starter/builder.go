@@ -62,6 +62,7 @@ func (b *builder) AquireLock() error {
 	lock, err := redisClient.Get(fmt.Sprintf("project::%s::build-lock", b.job.Repository))
 	if err != nil {
 		log.WithFields(logrus.Fields{
+			"host":  hostname,
 			"error": err,
 		}).Error("AquireLock: Unable to fetch lock state")
 		return err
@@ -81,6 +82,7 @@ func (b *builder) PutBackJob(increaseFails bool) {
 
 	if b.job.NumberOfExecutions > maxJobRetries {
 		log.WithFields(logrus.Fields{
+			"host":               hostname,
 			"repository":         b.job.Repository,
 			"numberOfBuildTries": maxJobRetries,
 		}).Error("Finally failed build")
@@ -91,14 +93,16 @@ func (b *builder) PutBackJob(increaseFails bool) {
 	queueEntry, err := b.job.ToByte()
 	if err != nil {
 		log.WithFields(logrus.Fields{
-			"err": err,
+			"host": hostname,
+			"err":  err,
 		}).Fatal("Could not put job back to queue")
 	}
 
 	_, err = redisClient.RPush("build-queue", string(queueEntry))
 	if err != nil {
 		log.WithFields(logrus.Fields{
-			"err": err,
+			"host": hostname,
+			"err":  err,
 		}).Fatal("Could not put job back to queue")
 	}
 
@@ -119,6 +123,7 @@ func (b *builder) PrepareBuild() error {
 
 func (b *builder) Build() error {
 	log.WithFields(logrus.Fields{
+		"host":       hostname,
 		"repository": b.job.Repository,
 	}).Info("Beginning to process repo")
 
@@ -243,7 +248,9 @@ func (b *builder) UploadAssets() error {
 			continue
 		}
 
-		log.Debugf("Uploading asset %s...", f.Name())
+		log.WithFields(logrus.Fields{
+			"host": hostname,
+		}).Debugf("Uploading asset %s...", f.Name())
 		originalPath := fmt.Sprintf("%s/%s", b.tmpDir, f.Name())
 		path := fmt.Sprintf("%s/%s", b.job.Repository, f.Name())
 		fileContent, err := ioutil.ReadFile(originalPath)
@@ -293,12 +300,14 @@ func (b *builder) UpdateMetaData() error {
 	gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/.build_master", b.tmpDir))
 	if err != nil {
 		log.WithFields(logrus.Fields{
+			"host":  hostname,
 			"error": err,
 		}).Error("Unable to read gitHash")
 		gitHash = []byte("000000")
 	}
 	if err := redisClient.Set(fmt.Sprintf("project::%s::last-build", b.job.Repository), string(gitHash), 0, 0, false, false); err != nil {
 		log.WithFields(logrus.Fields{
+			"host":       hostname,
 			"error":      err,
 			"repository": b.job.Repository,
 		}).Error("Unable to write last-build")
@@ -309,12 +318,14 @@ func (b *builder) UpdateMetaData() error {
 	buildDB, err := ioutil.ReadFile(fmt.Sprintf("%s/.build.db", b.tmpDir))
 	if err != nil {
 		log.WithFields(logrus.Fields{
+			"host":  hostname,
 			"error": err,
 		}).Error("Unable to read build.db")
 		return err
 	}
 	if err := redisClient.Set(fmt.Sprintf("project::%s::builddb", b.job.Repository), string(buildDB), 0, 0, false, false); err != nil {
 		log.WithFields(logrus.Fields{
+			"host":       hostname,
 			"error":      err,
 			"repository": b.job.Repository,
 		}).Error("Unable to write builddb")
@@ -334,6 +345,7 @@ func (b *builder) SendNotifications() {
 	encryptionKey, err := redisClient.Get(fmt.Sprintf("project::%s::encryption-key", b.job.Repository))
 	if err != nil {
 		log.WithFields(logrus.Fields{
+			"host":  hostname,
 			"error": err,
 			"repo":  b.job.Repository,
 		}).Error("Unable to load encryption key")
@@ -344,6 +356,7 @@ func (b *builder) SendNotifications() {
 		Repository: b.job.Repository,
 	}, conf, string(encryptionKey)); err != nil {
 		log.WithFields(logrus.Fields{
+			"host":  hostname,
 			"error": err,
 		}).Error("Unable to send notification")
 	}
@@ -353,6 +366,7 @@ func (b *builder) TriggerSubBuilds() {
 	if len(b.buildConfig.Triggers) > 20 {
 		// Flood / DDoS protection
 		log.WithFields(logrus.Fields{
+			"host":               hostname,
 			"repository":         b.job.Repository,
 			"number_of_triggers": len(b.buildConfig.Triggers),
 		}).Error("Too many triggers passed")
@@ -366,6 +380,7 @@ func (b *builder) TriggerSubBuilds() {
 			})
 			if err != nil {
 				log.WithFields(logrus.Fields{
+					"host":       hostname,
 					"repository": b.job.Repository,
 					"subrepo":    repo,
 					"error":      fmt.Sprintf("%v", err),
@@ -382,6 +397,7 @@ func (b *builder) Cleanup() {
 	_ = os.RemoveAll(b.tmpDir)
 
 	log.WithFields(logrus.Fields{
+		"host":       hostname,
 		"repository": b.job.Repository,
 	}).Info("Finished build")
 }
@@ -389,7 +405,8 @@ func (b *builder) Cleanup() {
 func (b *builder) UpdateBuildStatus(status string, expire int) {
 	if err := redisClient.Set(fmt.Sprintf("project::%s::build-status", b.job.Repository), status, expire, 0, false, false); err != nil {
 		log.WithFields(logrus.Fields{
-			"err": err,
+			"host": hostname,
+			"err":  err,
 		}).Error("Failed to set the build status to 'queued'")
 	}
 }

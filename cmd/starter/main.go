@@ -87,6 +87,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	log.Infof("Build starter version %s in service.", version)
+
 	c := cron.New()
 	c.AddFunc("0 * * * * *", announceActiveWorker)
 	c.AddFunc("0 */30 * * * *", func() {

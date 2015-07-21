@@ -236,8 +236,6 @@ func doBuildProcess() {
 			builder.UpdateBuildStatus(BuildStatusFailed, 0)
 		}
 
-		// Send error notifications
-		builder.SendNotifications()
 		return
 	}
 

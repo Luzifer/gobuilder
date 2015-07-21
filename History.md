@@ -1,4 +1,13 @@
 
+1.25.0 / 2015-07-21
+==================
+
+  * Log hostname in BuildStarter logs
+  * Fix: Use gits own --short option for rev-parse
+  * Added killswitch on update detection
+  * Abort non-buildable builds
+  * Added metrics collector
+
 1.24.0 / 2015-07-18
 ==================
 

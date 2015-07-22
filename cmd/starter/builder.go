@@ -64,6 +64,7 @@ func (b *builder) AquireLock() error {
 		log.WithFields(logrus.Fields{
 			"host":  hostname,
 			"error": err,
+			"repo":  b.job.Repository,
 		}).Error("AquireLock: Unable to fetch lock state")
 		return err
 	}
@@ -83,7 +84,7 @@ func (b *builder) PutBackJob(increaseFails bool) {
 	if b.job.NumberOfExecutions > maxJobRetries {
 		log.WithFields(logrus.Fields{
 			"host":               hostname,
-			"repository":         b.job.Repository,
+			"repo":               b.job.Repository,
 			"numberOfBuildTries": maxJobRetries,
 		}).Error("Finally failed build")
 		b.UpdateBuildStatus(BuildStatusFailed, 0)
@@ -95,6 +96,7 @@ func (b *builder) PutBackJob(increaseFails bool) {
 		log.WithFields(logrus.Fields{
 			"host": hostname,
 			"err":  err,
+			"repo": b.job.Repository,
 		}).Fatal("Could not put job back to queue")
 	}
 
@@ -103,6 +105,7 @@ func (b *builder) PutBackJob(increaseFails bool) {
 		log.WithFields(logrus.Fields{
 			"host": hostname,
 			"err":  err,
+			"repo": b.job.Repository,
 		}).Fatal("Could not put job back to queue")
 	}
 
@@ -123,8 +126,8 @@ func (b *builder) PrepareBuild() error {
 
 func (b *builder) Build() error {
 	log.WithFields(logrus.Fields{
-		"host":       hostname,
-		"repository": b.job.Repository,
+		"host": hostname,
+		"repo": b.job.Repository,
 	}).Info("Beginning to process repo")
 
 	cfg := &docker.Config{
@@ -302,14 +305,15 @@ func (b *builder) UpdateMetaData() error {
 		log.WithFields(logrus.Fields{
 			"host":  hostname,
 			"error": err,
+			"repo":  b.job.Repository,
 		}).Error("Unable to read gitHash")
 		gitHash = []byte("000000")
 	}
 	if err := redisClient.Set(fmt.Sprintf("project::%s::last-build", b.job.Repository), string(gitHash), 0, 0, false, false); err != nil {
 		log.WithFields(logrus.Fields{
-			"host":       hostname,
-			"error":      err,
-			"repository": b.job.Repository,
+			"host":  hostname,
+			"error": err,
+			"repo":  b.job.Repository,
 		}).Error("Unable to write last-build")
 	}
 
@@ -320,14 +324,15 @@ func (b *builder) UpdateMetaData() error {
 		log.WithFields(logrus.Fields{
 			"host":  hostname,
 			"error": err,
+			"repo":  b.job.Repository,
 		}).Error("Unable to read build.db")
 		return err
 	}
 	if err := redisClient.Set(fmt.Sprintf("project::%s::builddb", b.job.Repository), string(buildDB), 0, 0, false, false); err != nil {
 		log.WithFields(logrus.Fields{
-			"host":       hostname,
-			"error":      err,
-			"repository": b.job.Repository,
+			"host":  hostname,
+			"error": err,
+			"repo":  b.job.Repository,
 		}).Error("Unable to write builddb")
 
 		return err
@@ -358,6 +363,7 @@ func (b *builder) SendNotifications() {
 		log.WithFields(logrus.Fields{
 			"host":  hostname,
 			"error": err,
+			"repo":  b.job.Repository,
 		}).Error("Unable to send notification")
 	}
 }
@@ -366,9 +372,9 @@ func (b *builder) TriggerSubBuilds() {
 	if len(b.buildConfig.Triggers) > 20 {
 		// Flood / DDoS protection
 		log.WithFields(logrus.Fields{
-			"host":               hostname,
-			"repository":         b.job.Repository,
-			"number_of_triggers": len(b.buildConfig.Triggers),
+			"host":         hostname,
+			"repo":         b.job.Repository,
+			"num_triggers": len(b.buildConfig.Triggers),
 		}).Error("Too many triggers passed")
 		return
 	}
@@ -380,10 +386,10 @@ func (b *builder) TriggerSubBuilds() {
 			})
 			if err != nil {
 				log.WithFields(logrus.Fields{
-					"host":       hostname,
-					"repository": b.job.Repository,
-					"subrepo":    repo,
-					"error":      fmt.Sprintf("%v", err),
+					"host":    hostname,
+					"repo":    b.job.Repository,
+					"subrepo": repo,
+					"error":   fmt.Sprintf("%v", err),
 				}).Error("Could not queue SubBuild")
 			} else {
 				defer resp.Body.Close()
@@ -397,8 +403,8 @@ func (b *builder) Cleanup() {
 	_ = os.RemoveAll(b.tmpDir)
 
 	log.WithFields(logrus.Fields{
-		"host":       hostname,
-		"repository": b.job.Repository,
+		"host": hostname,
+		"repo": b.job.Repository,
 	}).Info("Finished build")
 }
 
@@ -407,6 +413,7 @@ func (b *builder) UpdateBuildStatus(status string, expire int) {
 		log.WithFields(logrus.Fields{
 			"host": hostname,
 			"err":  err,
+			"repo": b.job.Repository,
 		}).Error("Failed to set the build status to 'queued'")
 	}
 }

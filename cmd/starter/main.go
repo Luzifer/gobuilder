@@ -183,6 +183,7 @@ func doBuildProcess() {
 		log.WithFields(logrus.Fields{
 			"host": hostname,
 			"err":  err,
+			"repo": builder.job.Repository,
 		}).Error("PrepareBuild failed")
 
 		builder.PutBackJob(false)
@@ -197,6 +198,7 @@ func doBuildProcess() {
 		log.WithFields(logrus.Fields{
 			"host": hostname,
 			"err":  err,
+			"repo": builder.job.Repository,
 		}).Error("Build failed")
 
 		builder.PutBackJob(true)
@@ -208,6 +210,7 @@ func doBuildProcess() {
 		log.WithFields(logrus.Fields{
 			"host": hostname,
 			"err":  err,
+			"repo": builder.job.Repository,
 		}).Error("Was unable to fetch the log from the container")
 
 		builder.PutBackJob(false)
@@ -218,6 +221,7 @@ func doBuildProcess() {
 		log.WithFields(logrus.Fields{
 			"host": hostname,
 			"err":  err,
+			"repo": builder.job.Repository,
 		}).Error("Was unable to store the build log")
 	}
 
@@ -228,11 +232,13 @@ func doBuildProcess() {
 		if ib {
 			log.WithFields(logrus.Fields{
 				"host": hostname,
+				"repo": builder.job.Repository,
 			}).Error("Build was marked as failed, requeuing now.")
 			builder.PutBackJob(true)
 		} else {
 			log.WithFields(logrus.Fields{
 				"host": hostname,
+				"repo": builder.job.Repository,
 			}).Errorf("Build failed and is not buildable: %s", builder.AbortReason)
 			builder.UpdateBuildStatus(BuildStatusFailed, 0)
 		}
@@ -246,6 +252,7 @@ func doBuildProcess() {
 			log.WithFields(logrus.Fields{
 				"host": hostname,
 				"err":  err,
+				"repo": builder.job.Repository,
 			}).Error("Was unable to upload the build assets")
 
 			builder.PutBackJob(false)
@@ -260,6 +267,7 @@ func doBuildProcess() {
 			log.WithFields(logrus.Fields{
 				"host": hostname,
 				"err":  err,
+				"repo": builder.job.Repository,
 			}).Error("There was an error while updating metadata")
 
 			builder.PutBackJob(false)

@@ -1,4 +1,11 @@
 
+1.26.0 / 2015-07-22
+==================
+
+  * Unified starter logs; log repo on all messages
+  * Set number of concurrent builds to number of CPU cores
+  * Fix: Starter crashed on failed build
+
 1.25.0 / 2015-07-21
 ==================
 

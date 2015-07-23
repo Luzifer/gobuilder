@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"runtime"
+	"strings"
 
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -57,14 +58,7 @@ func init() {
 		}).Info("Failed to read papertrail_port, using only STDERR")
 	}
 
-	redisClient, err = goredis.DialURL(conf.RedisURL)
-	if err != nil {
-		log.WithFields(logrus.Fields{
-			"url":  conf.RedisURL,
-			"host": hostname,
-		}).Panic("Unable to connect to Redis")
-		os.Exit(1)
-	}
+	connectRedis()
 
 	awsAuth, err := aws.EnvAuth()
 	if err != nil {
@@ -88,6 +82,18 @@ func init() {
 	currentJobs = make(chan bool, maxConcurrentBuilds)
 
 	hostname, err = os.Hostname()
+}
+
+func connectRedis() {
+	var err error
+	redisClient, err = goredis.DialURL(conf.RedisURL)
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"url":  conf.RedisURL,
+			"host": hostname,
+		}).Panic("Unable to connect to Redis")
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -143,6 +149,11 @@ func doBuildProcess() {
 
 	queueLength, err := redisClient.LLen("build-queue")
 	if err != nil {
+		if strings.Contains(err.Error(), "broken pipe") {
+			// Somehow we lost connection to redis, try reconnecting
+			connectRedis()
+		}
+
 		log.WithFields(logrus.Fields{
 			"host":  hostname,
 			"error": err.Error(),

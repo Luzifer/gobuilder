@@ -151,6 +151,15 @@ for tag in master ${tags}; do
     echo >> .hashes_${tag}.txt
   done
 
+  echo "---" >> .hashes_${tag}.yaml
+  for artifact in ${product}_${tag}_*.zip; do
+    echo "${artifact}:" >> .hashes_${tag}.yaml
+    for hasher in md5sum sha1sum sha256sum sha384sum; do
+      echo "  ${hasher}: $(${hasher} ${artifact} | awk {'print $1'})" >> .hashes_${tag}.yaml
+    done
+    echo >> .hashes_${tag}.yaml
+  done
+
   if [ $SIGNING -eq 1 ]; then
     gpg --clearsign --output sig .hashes_${tag}.txt
     mv sig .hashes_${tag}.txt

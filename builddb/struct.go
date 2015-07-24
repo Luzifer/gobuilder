@@ -34,3 +34,11 @@ type BranchSortEntryByBuildDate []BranchSortEntry
 func (b BranchSortEntryByBuildDate) Len() int           { return len(b) }
 func (b BranchSortEntryByBuildDate) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
 func (b BranchSortEntryByBuildDate) Less(i, j int) bool { return b[i].BuildDate.Before(b[j].BuildDate) }
+
+type HashDB map[string]Hashes
+type Hashes struct {
+	MD5    string `json:"md5sum" yaml:"md5sum"`
+	SHA1   string `json:"sha1sum" yaml:"sha1sum"`
+	SHA256 string `json:"sha256sum" yaml:"sha256sum"`
+	SHA384 string `json:"sha384sum" yaml:"sha384sum"`
+}

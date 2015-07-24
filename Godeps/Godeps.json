@@ -125,6 +125,10 @@
 			"Rev": "567b2bfa514e796916c4747494d6ff5132a1dfce"
 		},
 		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "49c95bdc21843256fb6c4e0d370a05f24a0bf213"
+		},
+		{
 			"ImportPath": "launchpad.net/goamz/aws",
 			"Comment": "49",
 			"Rev": "martin.packman@canonical.com-20140813150539-umttn7s536u85eiz"

@@ -297,6 +297,13 @@ func (b *builder) UpdateMetaData() error {
 		} else {
 			redisClient.Del(fmt.Sprintf("project::%s::hashes::%s", b.job.Repository, tag))
 		}
+
+		hashes, err = ioutil.ReadFile(fmt.Sprintf("%s/.hashes_%s.yaml", b.tmpDir, tag))
+		if err == nil {
+			redisClient.Set(fmt.Sprintf("project::%s::hashes_yml::%s", b.job.Repository, tag), string(hashes), 0, 0, false, false)
+		} else {
+			redisClient.Del(fmt.Sprintf("project::%s::hashes_yml::%s", b.job.Repository, tag))
+		}
 	}
 
 	// Log last build

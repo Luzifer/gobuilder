@@ -1,13 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/Luzifer/go-openssl"
+	"github.com/Luzifer/gobuilder/builddb"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/satori/go.uuid"
+	"gopkg.in/yaml.v2"
 )
 
 func registerAPIv1(router *mux.Router) {
@@ -21,6 +24,7 @@ func registerAPIv1(router *mux.Router) {
 
 	r.HandleFunc("/{repo:.+}/last-build", apiV1HandlerLastBuild).Methods("GET")
 	r.HandleFunc("/{repo:.+}/signed-hashes/{tag}", apiV1HandlerSignedHashes).Methods("GET")
+	r.HandleFunc("/{repo:.+}/hashes/{tag}.{format:[a-z]+}", apiV1HandlerHashes).Methods("GET")
 	r.HandleFunc("/{repo:.+}/rebuild", apiV1HandlerRebuild).Methods("GET")
 	r.HandleFunc("/{repo:.+}/build.db", apiV1HandlerBuildDb).Methods("GET")
 	r.HandleFunc("/{repo:.+}/encrypt", apiV1HandlerEncrypt).Methods("POST")
@@ -86,6 +90,44 @@ func apiV1HandlerSignedHashes(res http.ResponseWriter, r *http.Request) {
 	res.Header().Add("Content-Type", "text/plain")
 	res.Header().Add("Cache-Control", "no-cache")
 	res.Write(hashList)
+}
+
+func apiV1HandlerHashes(res http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	redisKey := fmt.Sprintf("project::%s::hashes_yml::%s", vars["repo"], vars["tag"])
+	hashList, err := redisClient.Get(redisKey)
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"error": err,
+			"repo":  vars["repo"],
+		}).Error("Failed to get hash list")
+		http.Error(res, "Could not read hash list", http.StatusInternalServerError)
+		return
+	}
+
+	switch vars["format"] {
+	case "yaml":
+		res.Header().Add("Content-Type", "application/x-yaml")
+		res.Header().Add("Cache-Control", "no-cache")
+		res.Write(hashList)
+	case "json":
+		out := builddb.HashDB{}
+		if err := yaml.Unmarshal(hashList, &out); err != nil {
+			http.Error(res, "Could not parse hash list", http.StatusInternalServerError)
+			return
+		}
+		data, err := json.Marshal(out)
+		if err != nil {
+			http.Error(res, "Could not encode hash list", http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Add("Content-Type", "application/json")
+		res.Header().Add("Cache-Control", "no-cache")
+		res.Write(data)
+	default:
+		http.Error(res, "Not found", http.StatusNotFound)
+	}
 }
 
 func apiV1HandlerBuildDb(res http.ResponseWriter, r *http.Request) {

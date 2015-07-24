@@ -32,6 +32,8 @@ func main() {
 	app.AddCommand(
 		getBuildCommand(),
 		getEncryptCommand(),
+		getGetCommand(),
+		getGetAllCommand(),
 	)
 
 	app.Execute()

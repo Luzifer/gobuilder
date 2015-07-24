@@ -13,14 +13,14 @@ func getBuildCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "build",
 		Short:  "Trigger a build for this repository",
-		Run:    cmdRun,
+		Run:    cmdBuild,
 		PreRun: checkRepoPresent,
 	}
 
 	return cmd
 }
 
-func cmdRun(cmd *cobra.Command, args []string) {
+func cmdBuild(cmd *cobra.Command, args []string) {
 	resp, err := http.PostForm("https://gobuilder.me/api/v1/webhook/cli", url.Values{
 		"repository": []string{config.Repo},
 	})

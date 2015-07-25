@@ -78,10 +78,6 @@ else
   echo "No valid signature for master"
 fi
 
-if ! ( configreader checkEmpty artifacts ); then
-  configreader read artifacts > /tmp/go-build/.artifact_files
-fi
-
 log "Collecting build matrix..."
 platforms=$(configreader read arch_matrix)
 echo ${platforms}
@@ -102,10 +98,8 @@ for platform in ${platforms}; do
     mv /tmp/go-build/${product}/${product} /tmp/go-build/${product}/${product}.exe
   fi
 
-  if [ -e /tmp/go-build/.artifact_files ]; then
-    log "Collecting artifacts..."
-    rsync -arv --files-from=/tmp/go-build/.artifact_files ./ /tmp/go-build/${product}/
-  fi
+  log "Collecting artifacts..."
+  asset-sync $(pwd) /tmp/go-build/${product}/
 
   if ! ( configreader checkEmpty version_file ); then
     version_file="/tmp/go-build/${product}/$(configreader read version_file)"

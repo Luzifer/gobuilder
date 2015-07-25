@@ -95,8 +95,6 @@ func handleCommand(context *cli.Context, filter func(string)) {
 		filter(cfg.ReadmeFile)
 	case "triggers":
 		filter(strings.Join(cfg.Triggers, "\n"))
-	case "artifacts":
-		filter(strings.Join(cfg.Artifacts, "\n"))
 	case "version_file":
 		filter(cfg.VersionFile)
 	case "arch_matrix":

@@ -60,7 +60,8 @@ readme_file: frontend/help.md
 triggers:
   - github.com/Luzifer/gobuilder/cmd/starter
 artifacts:
-  - frontend/*
+  frontend: frontend
+  README.md: docs/help.md
 version_file: VERSION
 notify:
   - type: dockerhub

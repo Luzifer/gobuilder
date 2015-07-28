@@ -1,6 +1,7 @@
 package buildconfig
 
 import (
+	"fmt"
 	"io/ioutil"
 
 	"github.com/Luzifer/gobuilder/notifier"
@@ -39,23 +40,25 @@ func LoadFromFile(filepath string) (*BuildConfig, error) {
 	}
 
 	for {
-		var t interface{}
-		if err := yaml.Unmarshal(buf, &t); err != nil {
-			return nil, err
-		}
-
-		if tmp, ok := t.(BuildConfig); ok {
+		tmp := BuildConfig{}
+		if err := yaml.Unmarshal(buf, &tmp); err == nil {
 			return &tmp, nil
 		}
 
-		if tmp0, ok := t.(buildConfigV0); ok {
+		tmp0 := buildConfigV0{}
+		if err := yaml.Unmarshal(buf, &tmp0); err == nil {
 			buf, err = upgradeConfigV0(tmp0)
+			continue
 		}
+
+		return nil, fmt.Errorf("Unable to parse BuildConfig")
 	}
 }
 
 func upgradeConfigV0(i buildConfigV0) ([]byte, error) {
-	o := buildConfigV1{}
+	o := buildConfigV1{
+		Artifacts: make(map[string]string),
+	}
 	o.BuildMatrix = i.BuildMatrix
 	o.Notify = i.Notify
 	o.ReadmeFile = i.ReadmeFile

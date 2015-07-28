@@ -79,7 +79,7 @@ func filterCheckEmpty(varContent string) {
 func handleCommand(context *cli.Context, filter func(string)) {
 	cfg, err := buildconfig.LoadFromFile(context.GlobalString("config"))
 	if err != nil {
-		fmt.Printf("Unable to open / parse .gobuilder.yml file: \"%s\"\n", context.GlobalString("config"))
+		fmt.Printf("Unable to open / parse .gobuilder.yml file: \"%s\" - %s\n", context.GlobalString("config"), err)
 		os.Exit(1)
 	}
 

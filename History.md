@@ -1,4 +1,12 @@
 
+1.27.0 / 2015-07-28
+==================
+
+  * Implemented own asset-sync instead of rsync
+  * Implemented `gobuilder-cli get(-all)`
+  * Added yaml hash database generation
+  * Fix: Try reconnecting redis instead of err-loop
+
 1.26.0 / 2015-07-22
 ==================
 

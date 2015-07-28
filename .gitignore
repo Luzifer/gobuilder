@@ -6,3 +6,4 @@ build-starter/build-starter
 Godeps/_workspace
 cmd/configreader/configreader
 cmd/starter/starter
+cmd/asset-sync/asset-sync

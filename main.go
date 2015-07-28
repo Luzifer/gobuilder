@@ -252,11 +252,6 @@ func getBuildDBWithFallback(repo string) ([]byte, error) {
 		// Fall back to old storage method
 		buildDB, err = s3Bucket.Get(fmt.Sprintf("%s/build.db", repo))
 		if err != nil {
-			// Just log an info level message as this is handled later in the code
-			log.WithFields(logrus.Fields{
-				"error": err,
-				"repo":  repo,
-			}).Info("Failed to load build.db")
 			return []byte{}, fmt.Errorf("Unable to load build.db: %s", err)
 		}
 	}

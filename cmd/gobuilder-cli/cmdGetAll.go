@@ -27,6 +27,8 @@ func cmdGetAll(cmd *cobra.Command, args []string) {
 		args = append(args, "master")
 	}
 
+	os.MkdirAll(args[1], 0755)
+
 	if err := downloadBuildResult(args[0], args[2], "", args[1]); err != nil {
 		switch err.(type) {
 		case noDownloadFoundError:

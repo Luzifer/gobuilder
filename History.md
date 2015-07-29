@@ -1,4 +1,10 @@
 
+1.28.0 / 2015-07-30
+==================
+
+  * Fix: Set modes
+  * Added scroll to line and range mark in log
+
 1.27.0 / 2015-07-28
 ==================
 

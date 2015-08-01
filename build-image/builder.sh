@@ -17,7 +17,7 @@ unset GPG_DECRYPT_KEY
 
 log "Fetching GO repository ${REPO}"
 gopath=${REPO}
-go get -v -u ${REPO}
+go get -d -v -u ${REPO}
 
 cd /go/src/${gopath}
 

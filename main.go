@@ -8,6 +8,8 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
+	"time"
 
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -113,13 +115,34 @@ func main() {
 	r.HandleFunc("/{repo:.+}/log/{logid}", handlerBuildLog).Methods("GET")
 	r.HandleFunc("/{repo:.+}", handlerRepositoryView).Methods("GET")
 
-	http.Handle("/", r)
+	http.Handle("/", httpAccessLog(r))
 
 	if cfg.Port > 0 {
 		cfg.Listen = fmt.Sprintf(":%d", cfg.Port)
 	}
 
 	http.ListenAndServe(cfg.Listen, nil)
+}
+
+func httpAccessLog(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, r *http.Request) {
+		wrappedResponseWriter := newAccessLogResponseWriter(res)
+		start := time.Now()
+
+		next.ServeHTTP(wrappedResponseWriter, r)
+
+		duration := time.Now().Sub(start)
+		log.Infof("=> %s [%s] \"%s\" %d %d %.2fms \"%s\" \"%s\"",
+			strings.SplitN(r.RemoteAddr, ":", 2)[0],
+			time.Now().Format("2006-01-02 15:04:05 -0700"),
+			fmt.Sprintf("%s %s", r.Method, r.RequestURI),
+			wrappedResponseWriter.StatusCode,
+			wrappedResponseWriter.Size,
+			float64(duration.Nanoseconds())/1000000.0,
+			r.Referer(),
+			r.UserAgent(),
+		)
+	})
 }
 
 func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {

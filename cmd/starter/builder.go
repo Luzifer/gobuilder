@@ -138,6 +138,7 @@ func (b *builder) Build() error {
 		Env: []string{
 			fmt.Sprintf("REPO=%s", b.job.Repository),
 			fmt.Sprintf("GPG_DECRYPT_KEY=%s", conf.BuildImage.GPGDecryptKey),
+			fmt.Sprintf("COMMIT=%s", b.job.Commit),
 		},
 	}
 	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{

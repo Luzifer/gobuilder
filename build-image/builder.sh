@@ -42,7 +42,7 @@ fi
 go fmt ./...
 
 mkdir -p /tmp/go-build
-wget -qO /tmp/go-build/.build_commit "https://gobuilder.me/api/v1/${gopath}/already_built?commit=${short_commit}" || touch /tmp/go-build/.build_commit
+wget -qO /tmp/go-build/.build_commit "https://gobuilder.me/api/v1/${gopath}/already-built?commit=${short_commit}" || touch /tmp/go-build/.build_commit
 wget -qO /tmp/go-build/.build.db https://gobuilder.me/api/v1/${gopath}/build.db || bash -c 'echo "{}" > /tmp/go-build/.build.db'
 
 if [ ! -f .gobuilder.yml ]; then

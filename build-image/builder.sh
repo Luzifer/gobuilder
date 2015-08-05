@@ -21,8 +21,16 @@ go get -d -v -u ${REPO}
 
 cd /go/src/${gopath}
 
+if [ ! -z ${COMMIT} ]; then
+  git checkout ${COMMIT}
+fi
+
+# Fetch all refs from origin for tag / branch detection
+git fetch origin
+
 short_commit=$(git rev-parse --short HEAD)
-tags=$(git tag -l --contains HEAD)
+tags=$(git show-ref --tags -d | grep "^${short_commit}" | sed -e 's,.* refs/tags/,,' -e 's/\^{}//')
+branches=$(git show-ref -d --heads | grep "^${short_commit}" | sed -e 's,.* refs/heads/,,')
 
 # GoDeps support
 if [ -f Godeps/Godeps.json ]; then
@@ -34,7 +42,7 @@ fi
 go fmt ./...
 
 mkdir -p /tmp/go-build
-wget -qO /tmp/go-build/build_master https://gobuilder.me/api/v1/${gopath}/last-build || touch /tmp/go-build/build_master
+wget -qO /tmp/go-build/.build_commit "https://gobuilder.me/api/v1/${gopath}/already_built?commit=${short_commit}" || touch /tmp/go-build/.build_commit
 wget -qO /tmp/go-build/.build.db https://gobuilder.me/api/v1/${gopath}/build.db || bash -c 'echo "{}" > /tmp/go-build/.build.db'
 
 if [ ! -f .gobuilder.yml ]; then
@@ -46,7 +54,7 @@ cp .gobuilder.yml /artifacts/
 sync
 
 if ! ( test "${FORCE_BUILD}" == "true" ); then
-  if [ "$(cat /tmp/go-build/build_master)" == "${short_commit}" ]; then
+  if [ "$(cat /tmp/go-build/.build_commit)" == "${short_commit}" ]; then
     log "Commit ${short_commit} was already built. Skipping."
     exit 130
   fi
@@ -73,9 +81,12 @@ done
 
 log "Verifying commit signature..."
 if ( LANG=C git show --show-signature HEAD | grep "Good signature" ); then
-  LANG=C git show --show-signature HEAD | grep "gpg:" > /tmp/go-build/.signature_master
+  LANG=C git show --show-signature HEAD | grep "gpg:" > /tmp/go-build/.signature_${short_commit}
+  for branch in ${branches}; do
+    ln /tmp/go-build/.signature_${short_commit} /tmp/go-build/.signature_${branch}
+  done
 else
-  echo "No valid signature for master"
+  echo "No valid signature for ${short_commit}"
 fi
 
 log "Collecting build matrix..."
@@ -109,9 +120,9 @@ for platform in ${platforms}; do
 
   log "Compressing artifacts..."
   cd /tmp/go-build/
-  zip -r ${product}_master_${GOOS}-${GOARCH}.zip ${product}
-  for tag in ${tags}; do
-    ln ${product}_master_${GOOS}-${GOARCH}.zip ${product}_${tag/\//_}_${GOOS}-${GOARCH}.zip
+  zip -r ${product}_${short_commit}_${GOOS}-${GOARCH}.zip ${product}
+  for tag in ${branches} ${tags}; do
+    ln ${product}_${short_commit}_${GOOS}-${GOARCH}.zip ${product}_${tag/\//_}_${GOOS}-${GOARCH}.zip
   done
   cd -
 
@@ -120,23 +131,23 @@ done
 
 log "Checking README-File..."
 if ! ( configreader checkEmpty readme_file ) && [ -f "$(configreader read readme_file)" ]; then
-  cp "$(configreader read readme_file)" /tmp/go-build/master_README.md
+  cp "$(configreader read readme_file)" /tmp/go-build/${short_commit}_README.md
 else
   if [ -f README.md ]; then
-    cp README.md /tmp/go-build/master_README.md
+    cp README.md /tmp/go-build/${short_commit}_README.md
   fi
 fi
-if [ -f /tmp/go-build/master_README.md ]; then
+if [ -f /tmp/go-build/${short_commit}_README.md ]; then
   cd /tmp/go-build/
-  for tag in ${tags}; do
-    ln master_README.md ${tag/\//_}_README.md
+  for tag in ${branches} ${tags}; do
+    ln ${short_commit}_README.md ${tag/\//_}_README.md
   done
   cd -
 fi
 
 log "Building file hashes..."
 cd /tmp/go-build/
-for tag in master ${tags}; do
+for tag in ${branches} ${tags}; do
   for artifact in ${product}_${tag}_*.zip; do
     echo "[${artifact}]" >> .hashes_${tag}.txt
     for hasher in md5sum sha1sum sha256sum sha384sum; do
@@ -164,7 +175,7 @@ done
 cd -
 
 log "Preparing metadata..."
-echo ${short_commit} > /tmp/go-build/.build_master
+echo ${short_commit} > /tmp/go-build/.build_commit
 go version > /tmp/go-build/.goversion
 
 log "Uploading assets..."

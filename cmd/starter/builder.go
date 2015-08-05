@@ -307,7 +307,7 @@ func (b *builder) UpdateMetaData() error {
 	}
 
 	// Log last build
-	gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/.build_master", b.tmpDir))
+	gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/.build_commit", b.tmpDir))
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"host":  hostname,
@@ -316,7 +316,9 @@ func (b *builder) UpdateMetaData() error {
 		}).Error("Unable to read gitHash")
 		gitHash = []byte("000000")
 	}
-	if err := redisClient.Set(fmt.Sprintf("project::%s::last-build", b.job.Repository), string(gitHash), 0, 0, false, false); err != nil {
+	if _, err := redisClient.ZAdd(fmt.Sprintf("project::%s::built-commits", b.job.Repository), map[string]float64{
+		string(gitHash): float64(time.Now().Unix()),
+	}); err != nil {
 		log.WithFields(logrus.Fields{
 			"host":  hostname,
 			"error": err,

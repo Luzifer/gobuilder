@@ -129,7 +129,7 @@ func webhookCLI(res http.ResponseWriter, r *http.Request) {
 }
 
 func isValidRepositorySource(repository string) bool {
-	regex := regexp.MustCompile(`^[a-zA-Z0-9/_\.-]+[^/]$`)
+	regex := regexp.MustCompile(`^[a-zA-Z0-9/_\.-]+/[a-zA-Z0-9/_\.-]+[^/]$`)
 	return regex.Match([]byte(repository))
 }
 

@@ -58,8 +58,8 @@ func apiV1HandlerEncrypt(res http.ResponseWriter, r *http.Request) {
 
 func apiV1HandlerLastBuild(res http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	redisKey := fmt.Sprintf("project::%s::last-build", vars["repo"])
-	lastBuild, err := redisClient.Get(redisKey)
+	redisKey := fmt.Sprintf("project::%s::built-commits", vars["repo"])
+	commits, err := redisClient.ZRevRangeByScore(redisKey, "+inf", "-inf", true, true, 0, 1)
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"error": err,
@@ -71,7 +71,7 @@ func apiV1HandlerLastBuild(res http.ResponseWriter, r *http.Request) {
 
 	res.Header().Add("Content-Type", "text/plain")
 	res.Header().Add("Cache-Control", "no-cache")
-	res.Write(lastBuild)
+	res.Write([]byte(commits[0]))
 }
 
 func apiV1HandlerSignedHashes(res http.ResponseWriter, r *http.Request) {

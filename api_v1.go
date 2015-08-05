@@ -174,7 +174,7 @@ func apiV1HandlerBuildDb(res http.ResponseWriter, r *http.Request) {
 
 func apiV1HandlerRebuild(res http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sendToQueue(vars["repo"])
+	sendToQueue(parseRepoCommit(vars["repo"]))
 
 	http.Redirect(res, r, fmt.Sprintf("/%s", vars["repo"]), http.StatusFound)
 }

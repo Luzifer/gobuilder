@@ -25,6 +25,7 @@ func webhookGitHub(res http.ResponseWriter, r *http.Request) {
 	var tmp interface{}
 	json.Unmarshal([]byte(data), &tmp)
 	repoName := tmp.(map[string]interface{})["repository"].(map[string]interface{})["full_name"].(string)
+	commit := tmp.(map[string]interface{})["after"].(string)
 
 	ref := tmp.(map[string]interface{})["ref"].(string)
 	if ref != "refs/heads/master" {
@@ -33,7 +34,7 @@ func webhookGitHub(res http.ResponseWriter, r *http.Request) {
 	}
 
 	repo := fmt.Sprintf("github.com/%s", repoName)
-	err = sendToQueue(repo)
+	err = sendToQueue(repo, commit)
 	if err != nil {
 		http.Error(res, "Could not submit build job", http.StatusInternalServerError)
 	} else {
@@ -50,7 +51,7 @@ func webhookBitBucket(res http.ResponseWriter, r *http.Request) {
 	repoName = strings.Trim(repoName, "/")
 
 	repo := fmt.Sprintf("bitbucket.org/%s", repoName)
-	err := sendToQueue(repo)
+	err := sendToQueue(parseRepoCommit(repo))
 	if err != nil {
 		http.Error(res, "Could not submit build job", http.StatusInternalServerError)
 	} else {
@@ -60,7 +61,7 @@ func webhookBitBucket(res http.ResponseWriter, r *http.Request) {
 
 func webhookInterface(res http.ResponseWriter, r *http.Request) {
 	sess, _ := sessionStore.Get(r, "GoBuilderSession")
-	repo := r.FormValue("repository")
+	repo, commit := parseRepoCommit(r.FormValue("repository"))
 
 	// No repository was given, just submitted
 	if len(repo) == 0 {
@@ -84,7 +85,7 @@ func webhookInterface(res http.ResponseWriter, r *http.Request) {
 
 	addGithubWebhook(res, r, repo)
 
-	err := sendToQueue(repo)
+	err := sendToQueue(repo, commit)
 	if err != nil {
 		sess.AddFlash("An unknown error occured while queueing the repository.", "alert_error")
 		sess.Save(r, res)
@@ -119,7 +120,7 @@ func webhookCLI(res http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := sendToQueue(repo)
+	err := sendToQueue(parseRepoCommit(repo))
 	if err != nil {
 		http.Error(res, "An unknown error occured while queueing the repository.", http.StatusInternalServerError)
 		return
@@ -133,7 +134,7 @@ func isValidRepositorySource(repository string) bool {
 	return regex.Match([]byte(repository))
 }
 
-func sendToQueue(repository string) error {
+func sendToQueue(repository, commit string) error {
 	job := buildjob.BuildJob{
 		Repository:         repository,
 		NumberOfExecutions: 0,
@@ -153,4 +154,12 @@ func sendToQueue(repository string) error {
 	}
 
 	return nil
+}
+
+func parseRepoCommit(repo string) (string, string) {
+	t := strings.Split(repo, "@")
+	if len(t) == 1 {
+		return repo, ""
+	}
+	return t[0], t[1]
 }

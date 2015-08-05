@@ -325,6 +325,8 @@ func (b *builder) UpdateMetaData() error {
 			"repo":  b.job.Repository,
 		}).Error("Unable to write last-build")
 	}
+	// Migration: Remove old storage type of last-build
+	redisClient.Del(fmt.Sprintf("project::%s::last-build", b.job.Repository))
 
 	// Upload build.db
 	builddbCreator.GenerateBuildDB(b.tmpDir)

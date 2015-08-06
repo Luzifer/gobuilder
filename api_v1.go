@@ -23,11 +23,41 @@ func registerAPIv1(router *mux.Router) {
 	r.HandleFunc("/webhook/cli", webhookCLI).Methods("POST")
 
 	r.HandleFunc("/{repo:.+}/last-build", apiV1HandlerLastBuild).Methods("GET")
+	r.HandleFunc("/{repo:.+}/already-built", apiV1HandlerAlreadyBuilt).Methods("GET")
 	r.HandleFunc("/{repo:.+}/signed-hashes/{tag}", apiV1HandlerSignedHashes).Methods("GET")
 	r.HandleFunc("/{repo:.+}/hashes/{tag}.{format:[a-z]+}", apiV1HandlerHashes).Methods("GET")
 	r.HandleFunc("/{repo:.+}/rebuild", apiV1HandlerRebuild).Methods("GET")
 	r.HandleFunc("/{repo:.+}/build.db", apiV1HandlerBuildDb).Methods("GET")
 	r.HandleFunc("/{repo:.+}/encrypt", apiV1HandlerEncrypt).Methods("POST")
+}
+
+func apiV1HandlerAlreadyBuilt(res http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	redisKey := fmt.Sprintf("project::%s::built-commits", vars["repo"])
+	commit := r.URL.Query().Get("commit")
+
+	if len(commit) == 0 {
+		http.Error(res, "You must pass a commit!", http.StatusBadRequest)
+		return
+	}
+
+	rank, err := redisClient.ZRank(redisKey, commit)
+	if err != nil {
+		http.Error(res, "An error ocurred.", http.StatusInternalServerError)
+		log.WithFields(logrus.Fields{
+			"error":  err,
+			"repo":   vars["repo"],
+			"commit": commit,
+		}).Error("Failed to read commit rank")
+		return
+	}
+
+	res.Header().Set("Content-Type", "text/plain")
+	if rank == -1 {
+		res.Write([]byte("false"))
+	} else {
+		res.Write([]byte(commit))
+	}
 }
 
 func apiV1HandlerEncrypt(res http.ResponseWriter, r *http.Request) {
@@ -58,8 +88,8 @@ func apiV1HandlerEncrypt(res http.ResponseWriter, r *http.Request) {
 
 func apiV1HandlerLastBuild(res http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	redisKey := fmt.Sprintf("project::%s::last-build", vars["repo"])
-	lastBuild, err := redisClient.Get(redisKey)
+	redisKey := fmt.Sprintf("project::%s::built-commits", vars["repo"])
+	commits, err := redisClient.ZRevRangeByScore(redisKey, "+inf", "-inf", true, true, 0, 1)
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"error": err,
@@ -71,7 +101,7 @@ func apiV1HandlerLastBuild(res http.ResponseWriter, r *http.Request) {
 
 	res.Header().Add("Content-Type", "text/plain")
 	res.Header().Add("Cache-Control", "no-cache")
-	res.Write(lastBuild)
+	res.Write([]byte(commits[0]))
 }
 
 func apiV1HandlerSignedHashes(res http.ResponseWriter, r *http.Request) {
@@ -144,7 +174,7 @@ func apiV1HandlerBuildDb(res http.ResponseWriter, r *http.Request) {
 
 func apiV1HandlerRebuild(res http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sendToQueue(vars["repo"])
+	sendToQueue(parseRepoCommit(vars["repo"]))
 
 	http.Redirect(res, r, fmt.Sprintf("/%s", vars["repo"]), http.StatusFound)
 }

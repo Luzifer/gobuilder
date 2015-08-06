@@ -9,6 +9,7 @@ import (
 // repository and a number of tries already made to build it
 type BuildJob struct {
 	Repository         string
+	Commit             string
 	NumberOfExecutions int
 }
 

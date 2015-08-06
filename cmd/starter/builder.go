@@ -138,6 +138,7 @@ func (b *builder) Build() error {
 		Env: []string{
 			fmt.Sprintf("REPO=%s", b.job.Repository),
 			fmt.Sprintf("GPG_DECRYPT_KEY=%s", conf.BuildImage.GPGDecryptKey),
+			fmt.Sprintf("COMMIT=%s", b.job.Commit),
 		},
 	}
 	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{
@@ -307,7 +308,7 @@ func (b *builder) UpdateMetaData() error {
 	}
 
 	// Log last build
-	gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/.build_master", b.tmpDir))
+	gitHash, err := ioutil.ReadFile(fmt.Sprintf("%s/.build_commit", b.tmpDir))
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"host":  hostname,
@@ -316,13 +317,17 @@ func (b *builder) UpdateMetaData() error {
 		}).Error("Unable to read gitHash")
 		gitHash = []byte("000000")
 	}
-	if err := redisClient.Set(fmt.Sprintf("project::%s::last-build", b.job.Repository), string(gitHash), 0, 0, false, false); err != nil {
+	if _, err := redisClient.ZAdd(fmt.Sprintf("project::%s::built-commits", b.job.Repository), map[string]float64{
+		string(gitHash): float64(time.Now().Unix()),
+	}); err != nil {
 		log.WithFields(logrus.Fields{
 			"host":  hostname,
 			"error": err,
 			"repo":  b.job.Repository,
 		}).Error("Unable to write last-build")
 	}
+	// Migration: Remove old storage type of last-build
+	redisClient.Del(fmt.Sprintf("project::%s::last-build", b.job.Repository))
 
 	// Upload build.db
 	builddbCreator.GenerateBuildDB(b.tmpDir)

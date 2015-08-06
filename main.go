@@ -133,9 +133,8 @@ func httpAccessLog(next http.Handler) http.Handler {
 		next.ServeHTTP(wrappedResponseWriter, r)
 
 		duration := time.Now().Sub(start)
-		log.Infof("=> %s [%s] \"%s\" %d %d %.2fms \"%s\" \"%s\"",
+		log.Infof("=> %s \"%s\" %d %d %.2fms \"%s\" \"%s\"",
 			strings.SplitN(r.RemoteAddr, ":", 2)[0],
-			time.Now().Format("2006-01-02 15:04:05 -0700"),
 			fmt.Sprintf("%s %s", r.Method, r.RequestURI),
 			wrappedResponseWriter.StatusCode,
 			wrappedResponseWriter.Size,

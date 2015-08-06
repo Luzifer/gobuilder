@@ -22,7 +22,10 @@ go get -d -v -u ${REPO}
 cd /go/src/${gopath}
 
 if [ ! -z ${COMMIT} ]; then
+  log "Checking out forced commit ${COMMIT}..."
   git checkout ${COMMIT}
+else
+  log "No commit specified, building latest."
 fi
 
 # Fetch all refs from origin for tag / branch detection

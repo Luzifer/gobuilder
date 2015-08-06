@@ -126,8 +126,9 @@ func (b *builder) PrepareBuild() error {
 
 func (b *builder) Build() error {
 	log.WithFields(logrus.Fields{
-		"host": hostname,
-		"repo": b.job.Repository,
+		"host":   hostname,
+		"repo":   b.job.Repository,
+		"commit": b.job.Commit,
 	}).Info("Beginning to process repo")
 
 	cfg := &docker.Config{

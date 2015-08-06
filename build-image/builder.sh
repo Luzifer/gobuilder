@@ -178,6 +178,9 @@ log "Preparing metadata..."
 echo ${short_commit} > /tmp/go-build/.build_commit
 go version > /tmp/go-build/.goversion
 
+log "Removing temporary build artifacts..."
+rm -f /tmp/go-build/${short_commit}_README.md /tmp/go-build/${product}_${short_commit}_*
+
 log "Uploading assets..."
 rsync -arv /tmp/go-build/ /artifacts/
 

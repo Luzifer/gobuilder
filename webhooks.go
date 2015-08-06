@@ -137,6 +137,7 @@ func isValidRepositorySource(repository string) bool {
 func sendToQueue(repository, commit string) error {
 	job := buildjob.BuildJob{
 		Repository:         repository,
+		Commit:             commit,
 		NumberOfExecutions: 0,
 	}
 	queueEntry, err := job.ToByte()

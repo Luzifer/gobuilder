@@ -1,4 +1,18 @@
 
+1.29.0 / 2015-08-06
+==================
+
+  * Search-Engines: Improved robot instructions
+  * Added @commit notation for builds
+  * Implemented already-built API method
+  * Use built-commits set to determine last build
+  * Remove old storage type from redis
+  * Add build commit to set instead of storing last commit
+  * Prepared build-image for dynamic branches / historic commits
+  * Added http logging
+  * Require at least one slash to prevent builds like "grafana"
+  * Only download, do not try to install before checking for Godeps
+
 1.28.0 / 2015-07-30
 ==================
 

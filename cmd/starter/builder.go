@@ -318,7 +318,7 @@ func (b *builder) UpdateMetaData() error {
 		gitHash = []byte("000000")
 	}
 	if _, err := redisClient.ZAdd(fmt.Sprintf("project::%s::built-commits", b.job.Repository), map[string]float64{
-		string(gitHash): float64(time.Now().Unix()),
+		strings.TrimSpace(string(gitHash)): float64(time.Now().Unix()),
 	}); err != nil {
 		log.WithFields(logrus.Fields{
 			"host":  hostname,

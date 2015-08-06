@@ -129,6 +129,12 @@ for platform in ${platforms}; do
   done
   cd -
 
+  if [ "${GOOS}" == "windows" ]; then
+    ln /tmp/go-build/${product}/${product}.exe /tmp/go-build/${product}_${tag/\//_}_${GOOS}-${GOARCH}.exe
+  else
+    ln /tmp/go-build/${product}/${product} /tmp/go-build/${product}_${tag/\//_}_${GOOS}-${GOARCH}
+  fi
+
   rm -rf /tmp/go-build/${product}/
 done
 
@@ -151,7 +157,7 @@ fi
 log "Building file hashes..."
 cd /tmp/go-build/
 for tag in ${branches} ${tags}; do
-  for artifact in ${product}_${tag}_*.zip; do
+  for artifact in ${product}_${tag}_*; do
     echo "[${artifact}]" >> .hashes_${tag}.txt
     for hasher in md5sum sha1sum sha256sum sha384sum; do
       echo "${hasher} = $(${hasher} ${artifact} | awk {'print $1'})" >> .hashes_${tag}.txt
@@ -160,7 +166,7 @@ for tag in ${branches} ${tags}; do
   done
 
   echo "---" >> .hashes_${tag}.yaml
-  for artifact in ${product}_${tag}_*.zip; do
+  for artifact in ${product}_${tag}_*; do
     echo "${artifact}:" >> .hashes_${tag}.yaml
     for hasher in md5sum sha1sum sha256sum sha384sum; do
       echo "  ${hasher}: $(${hasher} ${artifact} | awk {'print $1'})" >> .hashes_${tag}.yaml

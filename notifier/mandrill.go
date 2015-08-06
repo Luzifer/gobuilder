@@ -7,6 +7,8 @@ import (
 	"github.com/keighl/mandrill"
 )
 
+// NotifyEMail utilizes the Mandrill API to send a predefined template for the
+// current build
 func (n *NotifyEntry) NotifyEMail(metadata NotifyMetaData, cfg *config.Config) error {
 	verb := "successful"
 	if metadata.EventType == "error" {

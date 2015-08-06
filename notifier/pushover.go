@@ -7,6 +7,7 @@ import (
 	"github.com/thorduri/pushover"
 )
 
+// NotifyPushover uses the Pushover API to send notifications about the current build
 func (n *NotifyEntry) NotifyPushover(metadata NotifyMetaData, cfg *config.Config) error {
 	verb := "succeeded"
 	if metadata.EventType == "error" {

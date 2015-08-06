@@ -154,8 +154,8 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 		branch = "master"
 	}
 
-	build_status, err := redisClient.Get(fmt.Sprintf("project::%s::build-status", params["repo"]))
-	if err != nil || build_status == nil {
+	buildStatus, err := redisClient.Get(fmt.Sprintf("project::%s::build-status", params["repo"]))
+	if err != nil || buildStatus == nil {
 		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("%v", err),
 			"repo":  params["repo"],
@@ -194,7 +194,7 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 
 	file, err := getBuildDBWithFallback(params["repo"])
 	if err != nil {
-		buildDB["master"] = builddb.BuildDBBranch{}
+		buildDB["master"] = builddb.Branch{}
 		hasBuilds = false
 	} else {
 		err = json.Unmarshal(file, &buildDB)
@@ -245,7 +245,7 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 	ctx["branches"] = branches
 	ctx["repo"] = params["repo"]
 	ctx["mybranch"] = buildDB[branch]
-	ctx["build_status"] = string(build_status)
+	ctx["buildStatus"] = string(buildStatus)
 	ctx["readme"] = string(readmeContent)
 	ctx["hasbuilds"] = hasBuilds
 	ctx["buildDuration"] = buildDuration

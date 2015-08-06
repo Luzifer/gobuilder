@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// BuildConfig represents a .gobuilder.yml file
 type BuildConfig struct {
 	ReadmeFile  string                       `yaml:"readme_file,omitempty"`
 	Artifacts   map[string]string            `yaml:"artifacts,omitempty"`
@@ -28,11 +29,14 @@ type buildConfigV0 struct {
 
 type buildConfigV1 BuildConfig
 
+// ArchConfig contains BuildTags and LDFlags for the specific architecture
 type ArchConfig struct {
 	Tags    []string `yaml:"build_tags"`
 	LDFlags []string `yaml:"ldflags"`
 }
 
+// LoadFromFile retrieves the BuildConfig and transforms it into the latest
+// config version if required
 func LoadFromFile(filepath string) (*BuildConfig, error) {
 	buf, err := ioutil.ReadFile(filepath)
 	if err != nil {

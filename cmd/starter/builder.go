@@ -24,6 +24,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+// This block contains constant words used in Redis store for the current build status
 const (
 	BuildStatusQueued   = "queued"
 	BuildStatusStarted  = "building"

@@ -15,6 +15,8 @@ import (
 	"github.com/Luzifer/gobuilder/builddb"
 )
 
+// GenerateBuildDB is a helper to add new labels and files for those labels
+// to an existing BuildDB
 func GenerateBuildDB(basedir string) error {
 	var buildDB builddb.BuildDB
 
@@ -49,16 +51,16 @@ func GenerateBuildDB(basedir string) error {
 		}
 	}
 
-	for branch, files := range cache {
-		tmp := builddb.BuildDBBranch{
+	for branch, fileNames := range cache {
+		tmp := builddb.Branch{
 			GoVersion: string(goBuildVersion),
 			BuildDate: time.Now(),
-			Assets:    []builddb.BuildDBAsset{},
+			Assets:    []builddb.Asset{},
 		}
 
-		for _, f := range files {
+		for _, f := range fileNames {
 			md5sum, sha1sum, sha256sum := buildHashes(f.Name())
-			tmp.Assets = append(tmp.Assets, builddb.BuildDBAsset{
+			tmp.Assets = append(tmp.Assets, builddb.Asset{
 				Size:     f.Size(),
 				SHA1:     sha1sum,
 				SHA256:   sha256sum,

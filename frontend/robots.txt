@@ -3,3 +3,4 @@ Disallow:
 Disallow: /api
 Disallow: /metrics
 Disallow: /*/.subarch
+Disallow: /get

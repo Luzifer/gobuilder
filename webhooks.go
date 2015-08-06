@@ -102,7 +102,7 @@ func webhookInterface(res http.ResponseWriter, r *http.Request) {
 }
 
 func webhookCLI(res http.ResponseWriter, r *http.Request) {
-	repo := r.FormValue("repository")
+	repo, commit := parseRepoCommit(r.FormValue("repository"))
 
 	// No repository was given, just submitted
 	if len(repo) == 0 {
@@ -120,7 +120,7 @@ func webhookCLI(res http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := sendToQueue(parseRepoCommit(repo))
+	err := sendToQueue(repo, commit)
 	if err != nil {
 		http.Error(res, "An unknown error occured while queueing the repository.", http.StatusInternalServerError)
 		return

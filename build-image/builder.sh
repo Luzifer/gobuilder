@@ -126,14 +126,14 @@ for platform in ${platforms}; do
   zip -r ${product}_${short_commit}_${GOOS}-${GOARCH}.zip ${product}
   for tag in ${branches} ${tags}; do
     ln ${product}_${short_commit}_${GOOS}-${GOARCH}.zip ${product}_${tag/\//_}_${GOOS}-${GOARCH}.zip
+
+    if [ "${GOOS}" == "windows" ]; then
+      ln ${product}/${product}.exe ${product}_${tag/\//_}_${GOOS}-${GOARCH}.exe
+    else
+      ln ${product}/${product} ${product}_${tag/\//_}_${GOOS}-${GOARCH}
+    fi
   done
   cd -
-
-  if [ "${GOOS}" == "windows" ]; then
-    ln /tmp/go-build/${product}/${product}.exe /tmp/go-build/${product}_${tag/\//_}_${GOOS}-${GOARCH}.exe
-  else
-    ln /tmp/go-build/${product}/${product} /tmp/go-build/${product}_${tag/\//_}_${GOOS}-${GOARCH}
-  fi
 
   rm -rf /tmp/go-build/${product}/
 done

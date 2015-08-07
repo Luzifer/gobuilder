@@ -1,4 +1,12 @@
 
+1.30.0 / 2015-08-07
+==================
+
+  * Fix: Save binaries for all tags
+  * Added experimental autoupdate code
+  * Store binary as an addition to the ZIPs
+  * Followed linter advices
+
 1.29.0 / 2015-08-06
 ==================
 

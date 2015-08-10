@@ -63,7 +63,7 @@ func (g *Updater) Run() error {
 
 	for {
 		liveHash, err := g.getGoBuilderHash()
-		if err == nil && liveHash != g.currentHash {
+		if err == nil && len(liveHash) == 32 && liveHash != g.currentHash {
 			err := g.updateBinary()
 			if err == nil {
 				if g.SelfRestart {

@@ -1,7 +1,7 @@
 package autoupdate
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -25,6 +25,7 @@ type Updater struct {
 	label             string
 	runningFile       string
 	currentHash       string
+	liveHash          string
 	goBuilderFilename string
 }
 
@@ -59,7 +60,7 @@ func (g *Updater) Run() error {
 		return err
 	}
 
-	g.currentHash = fmt.Sprintf("%x", md5.Sum(bin))
+	g.currentHash = fmt.Sprintf("%x", sha256.Sum256(bin))
 
 	for {
 		liveHash, err := g.getGoBuilderHash()
@@ -103,7 +104,9 @@ func (g *Updater) getGoBuilderHash() (string, error) {
 		return "", fmt.Errorf("Could not find hashes for %s", g.goBuilderFilename)
 	}
 
-	return hashes.MD5, nil
+	g.liveHash = hashes.SHA256
+
+	return hashes.SHA256, nil
 }
 
 func (g *Updater) updateBinary() error {
@@ -112,6 +115,6 @@ func (g *Updater) updateBinary() error {
 		g.goBuilderFilename,
 	)
 
-	err, _ := update.New().FromUrl(dlURL)
+	err, _ := update.New().VerifyChecksum([]byte(g.liveHash)).FromUrl(dlURL)
 	return err
 }

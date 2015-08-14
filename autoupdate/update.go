@@ -115,6 +115,12 @@ func (g *Updater) updateBinary() error {
 		g.goBuilderFilename,
 	)
 
-	err, _ := update.New().VerifyChecksum([]byte(g.liveHash)).FromUrl(dlURL)
+	resp, err := http.Get(dlURL)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	err, _ = update.New().VerifyChecksum([]byte(g.liveHash)).FromStream(resp.Body)
 	return err
 }

@@ -2,6 +2,7 @@ package autoupdate
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -122,6 +123,9 @@ func (g *Updater) updateBinary() error {
 	}
 	defer resp.Body.Close()
 
-	err, _ = update.New().VerifyChecksum([]byte(g.liveHash)).FromStream(resp.Body)
-	return err
+	cs, _ := hex.DecodeString(g.liveHash)
+
+	return update.Apply(resp.Body, &update.Options{
+		Checksum: cs,
+	})
 }

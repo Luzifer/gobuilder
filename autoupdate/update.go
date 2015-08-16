@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
@@ -64,7 +65,7 @@ func (g *Updater) Run() error {
 
 	for {
 		liveHash, err := g.getGoBuilderHash()
-		if err == nil && len(liveHash) == 32 && liveHash != g.currentHash {
+		if err == nil && len(liveHash) == len(g.currentHash) && liveHash != g.currentHash {
 			err := g.updateBinary()
 			if err == nil {
 				if g.SelfRestart {
@@ -106,7 +107,7 @@ func (g *Updater) getGoBuilderHash() (string, error) {
 
 	g.liveHash = hashes.SHA256
 
-	return hashes.SHA256, nil
+	return strings.TrimSpace(hashes.SHA256), nil
 }
 
 func (g *Updater) updateBinary() error {

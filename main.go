@@ -96,6 +96,7 @@ func main() {
 	r.PathPrefix("/fonts/").Handler(http.FileServer(http.Dir("./frontend/")))
 	r.Handle("/favicon.ico", http.FileServer(http.Dir("./frontend/")))
 	r.Handle("/robots.txt", http.FileServer(http.Dir("./frontend/")))
+	r.HandleFunc("/sitemap.xml", handleXMLSitemap).Methods("GET")
 
 	// Static handlers
 	r.HandleFunc("/", handleFrontPage).Methods("GET")

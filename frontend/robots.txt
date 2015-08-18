@@ -4,3 +4,6 @@ Disallow: /api
 Disallow: /metrics
 Disallow: /*/.subarch
 Disallow: /get
+Disallow: /*/log/*
+
+Sitemap: https://gobuilder.me/sitemap.xml

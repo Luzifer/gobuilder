@@ -277,7 +277,7 @@ func (b *builder) UpdateMetaData() error {
 	// Only write build-duration if this was a build with assets
 	redisClient.Set(fmt.Sprintf("project::%s::build-duration", b.job.Repository), fmt.Sprintf("%d", int(time.Now().Sub(b.buildStartTime).Seconds())), 0, 0, false, false)
 	redisClient.ZAdd("last-builds", map[string]float64{
-		b.job.Repository: float64(time.Now().Unix()),
+		b.job.Repository: float64(time.Now().UTC().Unix()),
 	})
 
 	// Handle signature output

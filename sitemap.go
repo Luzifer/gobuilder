@@ -16,7 +16,7 @@ type xmlSitemap struct {
 type xmlSitemapURL struct {
 	Location     string         `xml:"loc"`
 	LastModified xmlSitemapTime `xml:"lastmod"`
-	Priority     float64        `xml:"priority,omitempty"`
+	Priority     float64        `xml:"priority"`
 }
 
 type xmlSitemapTime struct {

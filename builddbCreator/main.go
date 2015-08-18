@@ -59,7 +59,7 @@ func GenerateBuildDB(basedir string) error {
 		}
 
 		for _, f := range fileNames {
-			md5sum, sha1sum, sha256sum := buildHashes(f.Name())
+			md5sum, sha1sum, sha256sum := buildHashes(fmt.Sprintf("%s/%s", basedir, f.Name()))
 			tmp.Assets = append(tmp.Assets, builddb.Asset{
 				Size:     f.Size(),
 				SHA1:     sha1sum,

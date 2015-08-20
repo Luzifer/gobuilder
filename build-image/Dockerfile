@@ -1,4 +1,4 @@
-FROM golang:cross
+FROM golang:1.5
 
 MAINTAINER Knut Ahlers <knut@ahlers.me>
 

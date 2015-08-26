@@ -92,6 +92,9 @@ else
   echo "No valid signature for ${short_commit}"
 fi
 
+log "Building dependencies"
+go build -i
+
 log "Collecting build matrix..."
 platforms=$(configreader read arch_matrix)
 echo ${platforms}
@@ -102,14 +105,21 @@ for platform in ${platforms}; do
   log "Building ${product} for ${GOOS}-${GOARCH}..."
 
   mkdir -p /tmp/go-build/${product}/
-  echo "go build " \
+  echo "go get " \
     "-tags \"$(configreader read build_tags)\"" \
     "-ldflags \"$(configreader read ld_flags)\"" \
-    "-o /tmp/go-build/${product}/${product}" \
     "./" | bash -x || { log "Build for ${GOOS}-${GOARCH} failed."; continue; }
 
+ls -lh /go/bin
+
   if [ "${GOOS}" == "windows" ]; then
-    mv /tmp/go-build/${product}/${product} /tmp/go-build/${product}/${product}.exe
+    mv /go/bin/${GOOS}_${GOARCH}/${product}.exe /tmp/go-build/${product}/${product}.exe
+  else
+    if [ -f /go/bin/${GOOS}_${GOARCH}/${product} ]; then
+      mv /go/bin/${GOOS}_${GOARCH}/${product} /tmp/go-build/${product}/${product}
+    else
+      mv /go/bin/${product} /tmp/go-build/${product}/${product}
+    fi
   fi
 
   log "Collecting artifacts..."

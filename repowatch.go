@@ -172,5 +172,9 @@ func (r *repoWatch) getLastBuild(repo string) (string, error) {
 		return "", err
 	}
 
+	if len(commits) < 1 {
+		return "", nil
+	}
+
 	return commits[0], nil
 }

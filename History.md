@@ -1,4 +1,15 @@
 
+1.31.0 / 2015-09-26
+==================
+
+  * Added RepoWatch feature
+  * Change to go1.5
+  * Added sitemap.xml, disallowed indexing of logs
+  * Updated go-update & fixed checksum verification
+  * Use own download without that magic from go-update
+  * Verify download before patching
+  * Ensure the hash is not empty
+
 1.30.0 / 2015-08-07
 ==================
 

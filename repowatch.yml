@@ -1,0 +1,10 @@
+---
+watched_repos:
+  - repo: github.com/hashicorp/vault
+    interval: 10m
+  - repo: github.com/spf13/hugo
+    interval: 10m
+  - repo: github.com/prometheus/node_exporter
+    interval: 10m
+  - repo: github.com/prometheus/alertmanager
+    interval: 10m

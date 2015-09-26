@@ -1,4 +1,4 @@
-[![Circle CI](https://circleci.com/gh/Luzifer/rconfig.svg?style=svg)](https://circleci.com/gh/Luzifer/rconfig)
+[![Build Status](https://travis-ci.org/Luzifer/rconfig.svg?branch=master)](https://travis-ci.org/Luzifer/rconfig)
 [![License: Apache v2.0](https://badge.luzifer.io/v1/badge?color=5d79b5&title=license&text=Apache+v2.0)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Documentation](https://badge.luzifer.io/v1/badge?title=godoc&text=reference)](https://godoc.org/github.com/Luzifer/rconfig)
 
@@ -12,6 +12,12 @@ Install by running:
 
 ```
 go get -u github.com/Luzifer/rconfig
+```
+
+OR fetch a specific version:
+
+```
+go get -u gopkg.in/luzifer/rconfig.v1
 ```
 
 Run tests by running:
@@ -50,6 +56,35 @@ func main() {
   fmt.Printf("Hello %s, happy birthday for your %dth birthday.",
 		cfg.Username,
 		cfg.Details.Age)
+}
+```
+
+### Provide variable defaults by using a file
+
+Given you have a file `~/.myapp.yml` containing some secrets or usernames (for the example below username is assumed to be "luzifer") as a default configuration for your application you can use this source code to load the defaults from that file using the `vardefault` tag in your configuration struct.
+
+The order of the directives (lower number = higher precedence):
+
+1. Flags provided in command line
+1. Environment variables
+1. Variable defaults (`vardefault` tag in the struct)
+1. `default` tag in the struct
+
+```go
+type config struct {
+  Username string `vardefault:"username" flag:"username" description:"Your username"`
+}
+
+var cfg = config{}
+
+func init() {
+  rconfig.SetVariableDefaults(rconfig.VarDefaultsFromYAMLFile("~/.myapp.yml"))
+  rconfig.Parse(&cfg)
+}
+
+func main() {
+  fmt.Printf("Username = %s", cfg.Username)
+  // Output: Username = luzifer
 }
 ```
 

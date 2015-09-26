@@ -15,8 +15,7 @@ package blackfriday
 
 import (
 	"bytes"
-
-	"github.com/shurcooL/sanitized_anchor_name"
+	"unicode"
 )
 
 // Parse block-level data.
@@ -228,7 +227,7 @@ func (p *parser) prefixHeader(out *bytes.Buffer, data []byte) int {
 	}
 	if end > i {
 		if id == "" && p.flags&EXTENSION_AUTO_HEADER_IDS != 0 {
-			id = sanitized_anchor_name.Create(string(data[i:end]))
+			id = createSanitizedAnchorName(string(data[i:end]))
 		}
 		work := func() bool {
 			p.inline(out, data[i:end])
@@ -556,11 +555,8 @@ func (p *parser) isFencedCode(data []byte, syntax **string, oldmarker string) (s
 	skip = 0
 
 	// skip up to three spaces
-	for i < len(data) && i < 3 && data[i] == ' ' {
+	for i < 3 && data[i] == ' ' {
 		i++
-	}
-	if i >= len(data) {
-		return
 	}
 
 	// check for the marker characters: ~ or `
@@ -571,13 +567,9 @@ func (p *parser) isFencedCode(data []byte, syntax **string, oldmarker string) (s
 	c := data[i]
 
 	// the whole line must be the same char or whitespace
-	for i < len(data) && data[i] == c {
+	for data[i] == c {
 		size++
 		i++
-	}
-
-	if i >= len(data) {
-		return
 	}
 
 	// the marker char must occur at least 3 times
@@ -594,12 +586,8 @@ func (p *parser) isFencedCode(data []byte, syntax **string, oldmarker string) (s
 	if syntax != nil {
 		syn := 0
 
-		for i < len(data) && data[i] == ' ' {
+		for data[i] == ' ' {
 			i++
-		}
-
-		if i >= len(data) {
-			return
 		}
 
 		syntaxStart := i
@@ -608,12 +596,12 @@ func (p *parser) isFencedCode(data []byte, syntax **string, oldmarker string) (s
 			i++
 			syntaxStart++
 
-			for i < len(data) && data[i] != '}' && data[i] != '\n' {
+			for data[i] != '}' && data[i] != '\n' {
 				syn++
 				i++
 			}
 
-			if i >= len(data) || data[i] != '}' {
+			if data[i] != '}' {
 				return
 			}
 
@@ -630,7 +618,7 @@ func (p *parser) isFencedCode(data []byte, syntax **string, oldmarker string) (s
 
 			i++
 		} else {
-			for i < len(data) && !isspace(data[i]) {
+			for !isspace(data[i]) {
 				syn++
 				i++
 			}
@@ -640,10 +628,10 @@ func (p *parser) isFencedCode(data []byte, syntax **string, oldmarker string) (s
 		*syntax = &language
 	}
 
-	for i < len(data) && data[i] == ' ' {
+	for data[i] == ' ' {
 		i++
 	}
-	if i >= len(data) || data[i] != '\n' {
+	if data[i] != '\n' {
 		return
 	}
 
@@ -672,7 +660,7 @@ func (p *parser) fencedCode(out *bytes.Buffer, data []byte, doRender bool) int {
 
 		// copy the current line
 		end := beg
-		for end < len(data) && data[end] != '\n' {
+		for data[end] != '\n' {
 			end++
 		}
 		end++
@@ -1288,7 +1276,7 @@ func (p *parser) paragraph(out *bytes.Buffer, data []byte) int {
 
 				id := ""
 				if p.flags&EXTENSION_AUTO_HEADER_IDS != 0 {
-					id = sanitized_anchor_name.Create(string(data[prev:eol]))
+					id = createSanitizedAnchorName(string(data[prev:eol]))
 				}
 
 				p.r.Header(out, work, level, id)
@@ -1336,4 +1324,17 @@ func (p *parser) paragraph(out *bytes.Buffer, data []byte) int {
 
 	p.renderParagraph(out, data[:i])
 	return i
+}
+
+func createSanitizedAnchorName(text string) string {
+	var anchorName []rune
+	for _, r := range []rune(text) {
+		switch {
+		case r == ' ':
+			anchorName = append(anchorName, '-')
+		case unicode.IsLetter(r) || unicode.IsNumber(r):
+			anchorName = append(anchorName, unicode.ToLower(r))
+		}
+	}
+	return string(anchorName)
 }

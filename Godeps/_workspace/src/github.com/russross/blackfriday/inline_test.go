@@ -239,23 +239,6 @@ func TestEmphasisMix(t *testing.T) {
 	doTestsInline(t, tests)
 }
 
-func TestEmphasisLink(t *testing.T) {
-	var tests = []string{
-		"[first](before) *text[second] (inside)text* [third](after)\n",
-		"<p><a href=\"before\">first</a> <em>text<a href=\"inside\">second</a>text</em> <a href=\"after\">third</a></p>\n",
-
-		"*incomplete [link] definition*\n",
-		"<p><em>incomplete [link] definition</em></p>\n",
-
-		"*it's [emphasis*] (not link)\n",
-		"<p><em>it's [emphasis</em>] (not link)</p>\n",
-
-		"*it's [emphasis*] and *[asterisk]\n",
-		"<p><em>it's [emphasis</em>] and *[asterisk]</p>\n",
-	}
-	doTestsInline(t, tests)
-}
-
 func TestStrikeThrough(t *testing.T) {
 	var tests = []string{
 		"nothing inline\n",
@@ -814,46 +797,4 @@ func TestFootnotesWithParameters(t *testing.T) {
 	}
 
 	doTestsInlineParam(t, tests, EXTENSION_FOOTNOTES, HTML_FOOTNOTE_RETURN_LINKS, params)
-}
-
-func TestSmartDoubleQuotes(t *testing.T) {
-	var tests = []string{
-		"this should be normal \"quoted\" text.\n",
-		"<p>this should be normal &ldquo;quoted&rdquo; text.</p>\n",
-		"this \" single double\n",
-		"<p>this &ldquo; single double</p>\n",
-		"two pair of \"some\" quoted \"text\".\n",
-		"<p>two pair of &ldquo;some&rdquo; quoted &ldquo;text&rdquo;.</p>\n"}
-
-	doTestsInlineParam(t, tests, 0, HTML_USE_SMARTYPANTS, HtmlRendererParameters{})
-}
-
-func TestSmartAngledDoubleQuotes(t *testing.T) {
-	var tests = []string{
-		"this should be angled \"quoted\" text.\n",
-		"<p>this should be angled &laquo;quoted&raquo; text.</p>\n",
-		"this \" single double\n",
-		"<p>this &laquo; single double</p>\n",
-		"two pair of \"some\" quoted \"text\".\n",
-		"<p>two pair of &laquo;some&raquo; quoted &laquo;text&raquo;.</p>\n"}
-
-	doTestsInlineParam(t, tests, 0, HTML_USE_SMARTYPANTS|HTML_SMARTYPANTS_ANGLED_QUOTES, HtmlRendererParameters{})
-}
-
-func TestSmartFractions(t *testing.T) {
-	var tests = []string{
-		"1/2, 1/4 and 3/4; 1/4th and 3/4ths\n",
-		"<p>&frac12;, &frac14; and &frac34;; &frac14;th and &frac34;ths</p>\n",
-		"1/2/2015, 1/4/2015, 3/4/2015; 2015/1/2, 2015/1/4, 2015/3/4.\n",
-		"<p>1/2/2015, 1/4/2015, 3/4/2015; 2015/1/2, 2015/1/4, 2015/3/4.</p>\n"}
-
-	doTestsInlineParam(t, tests, 0, HTML_USE_SMARTYPANTS, HtmlRendererParameters{})
-
-	tests = []string{
-		"1/2, 2/3, 81/100 and 1000000/1048576.\n",
-		"<p><sup>1</sup>&frasl;<sub>2</sub>, <sup>2</sup>&frasl;<sub>3</sub>, <sup>81</sup>&frasl;<sub>100</sub> and <sup>1000000</sup>&frasl;<sub>1048576</sub>.</p>\n",
-		"1/2/2015, 1/4/2015, 3/4/2015; 2015/1/2, 2015/1/4, 2015/3/4.\n",
-		"<p>1/2/2015, 1/4/2015, 3/4/2015; 2015/1/2, 2015/1/4, 2015/3/4.</p>\n"}
-
-	doTestsInlineParam(t, tests, 0, HTML_USE_SMARTYPANTS|HTML_SMARTYPANTS_FRACTIONS, HtmlRendererParameters{})
 }

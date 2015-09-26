@@ -14,7 +14,14 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var fs *pflag.FlagSet
+var (
+	fs               *pflag.FlagSet
+	variableDefaults map[string]string
+)
+
+func init() {
+	variableDefaults = make(map[string]string)
+}
 
 // Parse takes the pointer to a struct filled with variables which should be read
 // from ENV, default or flag. The precedence in this is flag > ENV > default. So
@@ -25,6 +32,7 @@ var fs *pflag.FlagSet
 // the behavior of rconfig:
 //
 //     default: Set a default value
+//     vardefault: Read the default value from the variable defaults
 //     env: Read the value from this environment variable
 //     flag: Flag to read in format "long,short" (for example "listen,l")
 //     description: A help text for Usage output to guide your users
@@ -43,6 +51,12 @@ func Usage() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		fs.PrintDefaults()
 	}
+}
+
+// SetVariableDefaults presets the parser with a map of default values to be used
+// when specifying the vardefault tag
+func SetVariableDefaults(defaults map[string]string) {
+	variableDefaults = defaults
 }
 
 func parse(in interface{}, args []string) error {
@@ -77,7 +91,8 @@ func execTags(in interface{}, fs *pflag.FlagSet) error {
 			continue
 		}
 
-		value := envDefault(typeField.Tag.Get("env"), typeField.Tag.Get("default"))
+		value := varDefault(typeField.Tag.Get("vardefault"), typeField.Tag.Get("default"))
+		value = envDefault(typeField.Tag.Get("env"), value)
 		parts := strings.Split(typeField.Tag.Get("flag"), ",")
 
 		switch typeField.Type.Kind() {
@@ -275,6 +290,18 @@ func envDefault(env, def string) string {
 	if env != "" {
 		if e := os.Getenv(env); e != "" {
 			value = e
+		}
+	}
+
+	return value
+}
+
+func varDefault(name, def string) string {
+	value := def
+
+	if name != "" {
+		if v, ok := variableDefaults[name]; ok {
+			value = v
 		}
 	}
 

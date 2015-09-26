@@ -24,8 +24,8 @@ import (
 	"strings"
 	"unicode"
 
-	"golang.org/x/text/internal/triegen"
-	"golang.org/x/text/internal/ucd"
+	"code.google.com/p/go.text/internal/triegen"
+	"code.google.com/p/go.text/internal/ucd"
 )
 
 func main() {

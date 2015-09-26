@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/Luzifer/gobuilder",
-	"GoVersion": "go1.4.2",
+	"GoVersion": "go1.5",
 	"Deps": [
 		{
 			"ImportPath": "bitbucket.org/ww/goautoneg",
@@ -8,9 +8,14 @@
 			"Rev": "75cd24fc2f2c2a2088577d12123ddee5f54e0675"
 		},
 		{
+			"ImportPath": "code.google.com/p/go.text/transform",
+			"Comment": "null-104",
+			"Rev": "7ab6d3749429e2c62c53eecadf3e4ec5e715c11b"
+		},
+		{
 			"ImportPath": "code.google.com/p/go.text/unicode/norm",
-			"Comment": "null-116",
-			"Rev": "5b2527008a4c8988ca9dc6f010ebfb9dae67150b"
+			"Comment": "null-104",
+			"Rev": "7ab6d3749429e2c62c53eecadf3e4ec5e715c11b"
 		},
 		{
 			"ImportPath": "github.com/Luzifer/go-openssl",
@@ -18,7 +23,8 @@
 		},
 		{
 			"ImportPath": "github.com/Luzifer/rconfig",
-			"Rev": "0c78105a26af5663b6bb2c5be1fed4ed7d81d687"
+			"Comment": "v1.0.2",
+			"Rev": "d194dded1e1c7630486e642cacc09400f94f32a2"
 		},
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -30,6 +36,10 @@
 			"Rev": "b965b613227fddccbfffe13eae360ed3fa822f8d"
 		},
 		{
+			"ImportPath": "github.com/cenkalti/backoff",
+			"Rev": "9831e1e25c874e0a0601b6dc43641071414eec7a"
+		},
+		{
 			"ImportPath": "github.com/extemporalgenome/slug",
 			"Rev": "de70af6e24d0e6bdd6eaef276d2e9910e68a1397"
 		},
@@ -39,8 +49,8 @@
 		},
 		{
 			"ImportPath": "github.com/flosch/pongo2",
-			"Comment": "v1.0-rc1-154-g40edabd",
-			"Rev": "40edabd47a6af304367c79b67afaa57faf1b79c8"
+			"Comment": "v1.0-rc1-174-gf5d79aa",
+			"Rev": "f5d79aa0a914c08eb7f51a96cd7b2dbbe46fca46"
 		},
 		{
 			"ImportPath": "github.com/flosch/pongo2-addons",
@@ -48,15 +58,15 @@
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
-			"Rev": "aece6fb931241ad332956db4f62798dfbea944b3"
+			"Rev": "8df8a93c670173cd1d8737a507a253b94f2d0b5a"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
-			"Rev": "14f550f51af52180c2eefed15e5fd18d63c0a64a"
+			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "660d31f8602b95058fed6833debf113e85350868"
+			"Rev": "8096f47503459bcc74d1f4c487b7e6e42e5746b5"
 		},
 		{
 			"ImportPath": "github.com/gorilla/securecookie",
@@ -71,19 +81,9 @@
 			"Rev": "fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a"
 		},
 		{
-			"ImportPath": "github.com/prometheus/client_golang/model",
-			"Comment": "0.6.0-17-g3b16b46",
-			"Rev": "3b16b46a713f181888e5e9a1205ccc34d6917fb9"
-		},
-		{
 			"ImportPath": "github.com/prometheus/client_golang/prometheus",
-			"Comment": "0.6.0-17-g3b16b46",
-			"Rev": "3b16b46a713f181888e5e9a1205ccc34d6917fb9"
-		},
-		{
-			"ImportPath": "github.com/prometheus/client_golang/text",
-			"Comment": "0.6.0-17-g3b16b46",
-			"Rev": "3b16b46a713f181888e5e9a1205ccc34d6917fb9"
+			"Comment": "0.7.0-39-g3b78d7a",
+			"Rev": "3b78d7a77f51ccbc364d4bc170920153022cfd08"
 		},
 		{
 			"ImportPath": "github.com/prometheus/client_model/go",
@@ -91,33 +91,38 @@
 			"Rev": "fa8ad6fec33561be4280a8f0514318c79d7f6cb6"
 		},
 		{
+			"ImportPath": "github.com/prometheus/common/expfmt",
+			"Rev": "ffd5d0f2976124c788687ec2ac194f5479e1f9c2"
+		},
+		{
+			"ImportPath": "github.com/prometheus/common/model",
+			"Rev": "ffd5d0f2976124c788687ec2ac194f5479e1f9c2"
+		},
+		{
 			"ImportPath": "github.com/prometheus/procfs",
-			"Rev": "c91d8eefde16bd047416409eb56353ea84a186e4"
+			"Rev": "3b231703e7dd0ca93302b5242ad6aeb4b5c603a2"
+		},
+		{
+			"ImportPath": "github.com/robfig/cron",
+			"Comment": "v1-2-g67823cd",
+			"Rev": "67823cd24dece1b04cced3a0a0b3ca2bc84d875e"
 		},
 		{
 			"ImportPath": "github.com/russross/blackfriday",
-			"Comment": "v1.2-42-g77efab5",
-			"Rev": "77efab57b2f74dd3f9051c79752b2e8995c8b789"
+			"Comment": "v1.2-21-g7c8f3c1",
+			"Rev": "7c8f3c1dcc7e0f87c62af34ee193fc3251f6d8a4"
 		},
 		{
 			"ImportPath": "github.com/satori/go.uuid",
 			"Rev": "242673bbc820e051ef00033e274d32e08ece9e15"
 		},
 		{
-			"ImportPath": "github.com/shurcooL/sanitized_anchor_name",
-			"Rev": "9a8b7d4e8f347bfa230879db9d7d4e4d9e19f962"
-		},
-		{
 			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "67cbc198fd11dab704b214c1e629a97af392c085"
+			"Rev": "8e7dc108ab3a1ab6ce6d922bbaff5657b88e8e49"
 		},
 		{
 			"ImportPath": "github.com/xuyu/goredis",
 			"Rev": "300f7e8cf453e2ea44337b3969d3aecf1a92ebe3"
-		},
-		{
-			"ImportPath": "golang.org/x/text/transform",
-			"Rev": "dadbda34c6a86c65cacce7b470b5d838d660c347"
 		},
 		{
 			"ImportPath": "gopkg.in/bufio.v1",

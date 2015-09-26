@@ -23,7 +23,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"golang.org/x/text/unicode/norm"
+	"code.google.com/p/go.text/unicode/norm"
 )
 
 func main() {

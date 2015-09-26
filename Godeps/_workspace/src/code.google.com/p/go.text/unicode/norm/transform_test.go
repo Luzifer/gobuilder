@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"golang.org/x/text/transform"
+	"code.google.com/p/go.text/transform"
 )
 
 func TestTransform(t *testing.T) {

@@ -25,22 +25,21 @@ import (
 
 // Html renderer configuration options.
 const (
-	HTML_SKIP_HTML                 = 1 << iota // skip preformatted HTML blocks
-	HTML_SKIP_STYLE                            // skip embedded <style> elements
-	HTML_SKIP_IMAGES                           // skip embedded images
-	HTML_SKIP_LINKS                            // skip all links
-	HTML_SAFELINK                              // only link to trusted protocols
-	HTML_NOFOLLOW_LINKS                        // only link with rel="nofollow"
-	HTML_HREF_TARGET_BLANK                     // add a blank target
-	HTML_TOC                                   // generate a table of contents
-	HTML_OMIT_CONTENTS                         // skip the main contents (for a standalone table of contents)
-	HTML_COMPLETE_PAGE                         // generate a complete HTML page
-	HTML_USE_XHTML                             // generate XHTML output instead of HTML
-	HTML_USE_SMARTYPANTS                       // enable smart punctuation substitutions
-	HTML_SMARTYPANTS_FRACTIONS                 // enable smart fractions (with HTML_USE_SMARTYPANTS)
-	HTML_SMARTYPANTS_LATEX_DASHES              // enable LaTeX-style dashes (with HTML_USE_SMARTYPANTS)
-	HTML_SMARTYPANTS_ANGLED_QUOTES             // enable angled double quotes (with HTML_USE_SMARTYPANTS) for double quotes rendering
-	HTML_FOOTNOTE_RETURN_LINKS                 // generate a link at the end of a footnote to return to the source
+	HTML_SKIP_HTML                = 1 << iota // skip preformatted HTML blocks
+	HTML_SKIP_STYLE                           // skip embedded <style> elements
+	HTML_SKIP_IMAGES                          // skip embedded images
+	HTML_SKIP_LINKS                           // skip all links
+	HTML_SAFELINK                             // only link to trusted protocols
+	HTML_NOFOLLOW_LINKS                       // only link with rel="nofollow"
+	HTML_HREF_TARGET_BLANK                    // add a blank target
+	HTML_TOC                                  // generate a table of contents
+	HTML_OMIT_CONTENTS                        // skip the main contents (for a standalone table of contents)
+	HTML_COMPLETE_PAGE                        // generate a complete HTML page
+	HTML_USE_XHTML                            // generate XHTML output instead of HTML
+	HTML_USE_SMARTYPANTS                      // enable smart punctuation substitutions
+	HTML_SMARTYPANTS_FRACTIONS                // enable smart fractions (with HTML_USE_SMARTYPANTS)
+	HTML_SMARTYPANTS_LATEX_DASHES             // enable LaTeX-style dashes (with HTML_USE_SMARTYPANTS)
+	HTML_FOOTNOTE_RETURN_LINKS                // generate a link at the end of a footnote to return to the source
 )
 
 var (
@@ -63,11 +62,6 @@ type HtmlRendererParameters struct {
 	// HTML_FOOTNOTE_RETURN_LINKS flag is enabled. If blank, the string
 	// <sup>[return]</sup> is used.
 	FootnoteReturnLinkContents string
-	// If set, add this text to the front of each Header ID, to ensure
-	// uniqueness.
-	HeaderIDPrefix string
-	// If set, add this text to the back of each Header ID, to ensure uniqueness.
-	HeaderIDSuffix string
 }
 
 // Html is a type that implements the Renderer interface for HTML output.
@@ -86,9 +80,6 @@ type Html struct {
 	headerCount  int
 	currentLevel int
 	toc          *bytes.Buffer
-
-	// Track header IDs to prevent ID collision in a single generation.
-	headerIDs map[string]int
 
 	smartypants *smartypantsRenderer
 }
@@ -131,8 +122,6 @@ func HtmlRendererWithParameters(flags int, title string,
 		headerCount:  0,
 		currentLevel: 0,
 		toc:          new(bytes.Buffer),
-
-		headerIDs: make(map[string]int),
 
 		smartypants: smartypants(flags),
 	}
@@ -201,22 +190,11 @@ func (options *Html) Header(out *bytes.Buffer, text func() bool, level int, id s
 	marker := out.Len()
 	doubleSpace(out)
 
-	if id == "" && options.flags&HTML_TOC != 0 {
-		id = fmt.Sprintf("toc_%d", options.headerCount)
-	}
-
 	if id != "" {
-		id = options.ensureUniqueHeaderID(id)
-
-		if options.parameters.HeaderIDPrefix != "" {
-			id = options.parameters.HeaderIDPrefix + id
-		}
-
-		if options.parameters.HeaderIDSuffix != "" {
-			id = id + options.parameters.HeaderIDSuffix
-		}
-
 		out.WriteString(fmt.Sprintf("<h%d id=\"%s\">", level, id))
+	} else if options.flags&HTML_TOC != 0 {
+		// headerCount is incremented in htmlTocHeader
+		out.WriteString(fmt.Sprintf("<h%d id=\"toc_%d\">", level, options.headerCount))
 	} else {
 		out.WriteString(fmt.Sprintf("<h%d>", level))
 	}
@@ -874,23 +852,4 @@ func isRelativeLink(link []byte) (yes bool) {
 		yes = true
 	}
 	return
-}
-
-func (options *Html) ensureUniqueHeaderID(id string) string {
-	for count, found := options.headerIDs[id]; found; count, found = options.headerIDs[id] {
-		tmp := fmt.Sprintf("%s-%d", id, count+1)
-
-		if _, tmpFound := options.headerIDs[tmp]; !tmpFound {
-			options.headerIDs[id] = count + 1
-			id = tmp
-		} else {
-			id = id + "-1"
-		}
-	}
-
-	if _, found := options.headerIDs[id]; !found {
-		options.headerIDs[id] = 0
-	}
-
-	return id
 }

@@ -8,3 +8,5 @@ watched_repos:
     interval: 10m
   - repo: github.com/prometheus/alertmanager
     interval: 10m
+  - repo: github.com/harbur/captain/cmd/captain
+    interval: 10m

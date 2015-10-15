@@ -42,8 +42,6 @@ if [ -f Godeps/Godeps.json ]; then
   godep restore
 fi
 
-go fmt ./...
-
 mkdir -p /tmp/go-build
 wget -qO /tmp/go-build/.build_commit "https://gobuilder.me/api/v1/${gopath}/already-built?commit=${short_commit}" || touch /tmp/go-build/.build_commit
 wget -qO /tmp/go-build/.build.db https://gobuilder.me/api/v1/${gopath}/build.db || bash -c 'echo "{}" > /tmp/go-build/.build.db'
@@ -55,6 +53,11 @@ fi
 # Upload .gobuilder.yml to enable notifications even when script fails while build
 cp .gobuilder.yml /artifacts/
 sync
+
+if [ "$(configreader read no_go_fmt)" != "true" ]
+then
+	go fmt ./...
+fi
 
 if ! ( test "${FORCE_BUILD}" == "true" ); then
   if [ "$(cat /tmp/go-build/.build_commit)" == "${short_commit}" ]; then

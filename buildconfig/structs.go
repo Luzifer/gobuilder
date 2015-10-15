@@ -16,6 +16,7 @@ type BuildConfig struct {
 	VersionFile string                       `yaml:"version_file,omitempty"`
 	Notify      notifier.NotifyConfiguration `yaml:"notify,omitempty"`
 	BuildMatrix map[string]ArchConfig        `yaml:"build_matrix,omitempty"`
+	NoGoFmt     string                       `yaml:"no_go_fmt,omitempty"`
 }
 
 type buildConfigV0 struct {

@@ -103,6 +103,8 @@ func handleCommand(context *cli.Context, filter func(string)) {
 		filter(getBuildTags(cfg))
 	case "ld_flags":
 		filter(getLDFlags(cfg))
+	case "no_go_fmt":
+		filter(cfg.NoGoFmt)
 	}
 }
 

@@ -33,6 +33,10 @@ func webhookGitHub(res http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.URL.Query().Get("override") != "" {
+		repoName = r.URL.Query().Get("override")
+	}
+
 	repo := fmt.Sprintf("github.com/%s", repoName)
 	err = sendToQueue(repo, commit)
 	if err != nil {

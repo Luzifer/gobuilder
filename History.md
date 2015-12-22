@@ -1,4 +1,13 @@
 
+1.32.0 / 2015-12-23
+==================
+
+  * Enhancement: Check whether an entry is in the queue before adding it
+  * Enhancement: Added a config setting to disable `go fmt` runs
+  * Fix: Fail unbuildable jobs way faster
+  * Fix: Limit graphics in markdown files to 100% width
+  * Fix: Do not crash if there is no previous build
+
 1.31.0 / 2015-09-26
 ==================
 

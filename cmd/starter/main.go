@@ -32,7 +32,7 @@ var (
 )
 
 const (
-	maxJobRetries = 5
+	maxJobRetries = 2
 )
 
 func init() {

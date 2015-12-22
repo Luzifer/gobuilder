@@ -150,6 +150,27 @@ func sendToQueue(repository, commit string) error {
 		return err
 	}
 
+	// Check the queue does not contain this job already
+	queueLength, err := redisClient.LLen("build-queue")
+	if err != nil {
+		return err
+	}
+	queueItems, err := redisClient.LRange("build-queue", 0, int(queueLength))
+	if err != nil {
+		return err
+	}
+
+	for _, item := range queueItems {
+		j, err := buildjob.FromBytes([]byte(item))
+		if err != nil {
+			return err
+		}
+		if j.Repository == job.Repository && j.Commit == job.Commit {
+			// We have a matching entry in the queue, will not add!
+			return nil
+		}
+	}
+
 	// Put the job into the queue and give it a time to run of 900 secs
 	redisClient.RPush("build-queue", string(queueEntry))
 

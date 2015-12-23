@@ -7,7 +7,8 @@ VOLUME /artifacts
 RUN apt-get update \
  && apt-get install -y openssh-client rsync zip wget gnupg \
  && go get -u github.com/Luzifer/gobuilder/cmd/configreader \
- && go get -u github.com/Luzifer/gobuilder/cmd/asset-sync
+ && go get -u github.com/Luzifer/gobuilder/cmd/asset-sync \
+ && rm -rf /go/src/*
 
 ADD ./builder.sh /usr/bin/builder.sh
 ADD ./gpgkey.asc.enc /root/gpgkey.asc.enc

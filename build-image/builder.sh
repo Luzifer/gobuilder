@@ -15,14 +15,14 @@ if [ ${SIGNING} -eq 1 ]; then
 fi
 unset GPG_DECRYPT_KEY
 
-log "Fetching GO repository ${REPO}"
-gopath=${REPO}
-go get -d -v -u ${REPO}
-
 # Support vendored dependencies by setting GOPATH accordingly
 export GOPATH=/go
-export GOPATH=${GOPATH}:/go/src/${gopath}/vendor
-export GOPATH=${GOPATH}:/go/src/${gopath}/Godeps/_workspace
+export GOPATH=${GOPATH}:/go/src/${REPO}/vendor
+export GOPATH=${GOPATH}:/go/src/${REPO}/Godeps/_workspace
+
+log "Fetching missing code for GO repository ${REPO}"
+gopath=${REPO}
+go get -d -v ${REPO}
 
 cd /go/src/${gopath}
 

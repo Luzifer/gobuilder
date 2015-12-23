@@ -1,0 +1,99 @@
+{
+	"ImportPath": "github.com/Luzifer/gobuilder/cmd/starter",
+	"GoVersion": "go1.5.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Luzifer/go-openssl",
+			"Rev": "52f8120aba0f1e3a9685a17d916f4b4c917654a2"
+		},
+		{
+			"ImportPath": "github.com/Luzifer/gobuilder/buildconfig",
+			"Comment": "v1.33.1",
+			"Rev": "5aaf4ae3a220ad7b805cc34b21d783f64788a35f"
+		},
+		{
+			"ImportPath": "github.com/Luzifer/gobuilder/builddb",
+			"Comment": "v1.33.1",
+			"Rev": "5aaf4ae3a220ad7b805cc34b21d783f64788a35f"
+		},
+		{
+			"ImportPath": "github.com/Luzifer/gobuilder/builddbCreator",
+			"Comment": "v1.33.1",
+			"Rev": "5aaf4ae3a220ad7b805cc34b21d783f64788a35f"
+		},
+		{
+			"ImportPath": "github.com/Luzifer/gobuilder/buildjob",
+			"Comment": "v1.33.1",
+			"Rev": "5aaf4ae3a220ad7b805cc34b21d783f64788a35f"
+		},
+		{
+			"ImportPath": "github.com/Luzifer/gobuilder/config",
+			"Comment": "v1.33.1",
+			"Rev": "5aaf4ae3a220ad7b805cc34b21d783f64788a35f"
+		},
+		{
+			"ImportPath": "github.com/Luzifer/gobuilder/notifier",
+			"Comment": "v1.33.1",
+			"Rev": "5aaf4ae3a220ad7b805cc34b21d783f64788a35f"
+		},
+		{
+			"ImportPath": "github.com/Luzifer/rconfig",
+			"Comment": "v1.0.3",
+			"Rev": "d8a62bd35f1209cb76d62eec3161e02ab5a76f4a"
+		},
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.7",
+			"Rev": "418b41d23a1bf978c06faea5313ba194650ac088"
+		},
+		{
+			"ImportPath": "github.com/cenkalti/backoff",
+			"Rev": "9831e1e25c874e0a0601b6dc43641071414eec7a"
+		},
+		{
+			"ImportPath": "github.com/fsouza/go-dockerclient",
+			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
+		},
+		{
+			"ImportPath": "github.com/keighl/mandrill",
+			"Comment": "1.0.0-14-g5d7133f",
+			"Rev": "5d7133fb578a9504f8ab549737c993422f65a000"
+		},
+		{
+			"ImportPath": "github.com/robfig/cron",
+			"Comment": "v1-2-g67823cd",
+			"Rev": "67823cd24dece1b04cced3a0a0b3ca2bc84d875e"
+		},
+		{
+			"ImportPath": "github.com/satori/go.uuid",
+			"Rev": "08f0718b61e95ddba0ade3346725fe0e4bf28ca6"
+		},
+		{
+			"ImportPath": "github.com/spf13/pflag",
+			"Rev": "b084184666e02084b8ccb9b704bf0d79c466eb1d"
+		},
+		{
+			"ImportPath": "github.com/thorduri/pushover",
+			"Comment": "1.0.0-2-g17d5a1a",
+			"Rev": "17d5a1a1b4b73225c996d696b6e78f22a8beb5c6"
+		},
+		{
+			"ImportPath": "github.com/xuyu/goredis",
+			"Rev": "300f7e8cf453e2ea44337b3969d3aecf1a92ebe3"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "53feefa2559fb8dfa8d81baad31be332c97d6c77"
+		},
+		{
+			"ImportPath": "launchpad.net/goamz/aws",
+			"Comment": "49",
+			"Rev": "martin.packman@canonical.com-20140813150539-umttn7s536u85eiz"
+		},
+		{
+			"ImportPath": "launchpad.net/goamz/s3",
+			"Comment": "49",
+			"Rev": "martin.packman@canonical.com-20140813150539-umttn7s536u85eiz"
+		}
+	]
+}

@@ -1,4 +1,10 @@
 
+1.33.2 / 2015-12-23
+==================
+
+  * Remove code used during installation
+  * Added Godeps for starter to fix build
+
 1.33.1 / 2015-12-23
 ==================
 

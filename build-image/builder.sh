@@ -19,6 +19,11 @@ log "Fetching GO repository ${REPO}"
 gopath=${REPO}
 go get -d -v -u ${REPO}
 
+# Support vendored dependencies by setting GOPATH accordingly
+export GOPATH=/go
+export GOPATH=${GOPATH}:/go/src/${gopath}/vendor
+export GOPATH=${GOPATH}:/go/src/${gopath}/Godeps/_workspace
+
 cd /go/src/${gopath}
 
 if [ ! -z ${COMMIT} ]; then
@@ -34,13 +39,6 @@ git fetch origin
 short_commit=$(git rev-parse --short HEAD)
 tags=$(git show-ref --tags -d | grep "^${short_commit}" | sed -e 's,.* refs/tags/,,' -e 's/\^{}//')
 branches=$(git show-ref -d --heads | grep "^${short_commit}" | sed -e 's,.* refs/heads/,,')
-
-# GoDeps support
-if [ -f Godeps/Godeps.json ]; then
-  log "Found Godeps. Restoring them"
-  go get github.com/tools/godep
-  godep restore
-fi
 
 mkdir -p /tmp/go-build
 wget -qO /tmp/go-build/.build_commit "https://gobuilder.me/api/v1/${gopath}/already-built?commit=${short_commit}" || touch /tmp/go-build/.build_commit

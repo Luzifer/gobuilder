@@ -1,4 +1,9 @@
 
+1.33.0 / 2015-12-23
+==================
+
+  * Enhancement: Support more vendoring systems without having to install additional tools
+
 1.32.0 / 2015-12-23
 ==================
 

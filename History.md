@@ -1,4 +1,9 @@
 
+1.33.1 / 2015-12-23
+==================
+
+  * Fix: Do not download code before setting GOPATH
+
 1.33.0 / 2015-12-23
 ==================
 

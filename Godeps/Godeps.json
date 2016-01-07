@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/Luzifer/gobuilder",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.5.2",
 	"Deps": [
 		{
 			"ImportPath": "bitbucket.org/ww/goautoneg",
@@ -115,6 +115,10 @@
 		{
 			"ImportPath": "github.com/satori/go.uuid",
 			"Rev": "242673bbc820e051ef00033e274d32e08ece9e15"
+		},
+		{
+			"ImportPath": "github.com/shurcooL/sanitized_anchor_name",
+			"Rev": "244f5ac324cb97e1987ef901a0081a77bfd8e845"
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",

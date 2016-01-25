@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Luzifer/gobuilder/buildconfig"
+	"gopkg.in/codegangsta/cli.v1"
 )
 
 var (

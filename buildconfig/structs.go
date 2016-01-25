@@ -17,6 +17,7 @@ type BuildConfig struct {
 	Notify      notifier.NotifyConfiguration `yaml:"notify,omitempty"`
 	BuildMatrix map[string]ArchConfig        `yaml:"build_matrix,omitempty"`
 	NoGoFmt     string                       `yaml:"no_go_fmt,omitempty"`
+	AllowCGO    string                       `yaml:"allow_cgo,omitempty"`
 }
 
 type buildConfigV0 struct {

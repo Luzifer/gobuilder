@@ -15,9 +15,6 @@ if [ ${SIGNING} -eq 1 ]; then
 fi
 unset GPG_DECRYPT_KEY
 
-# Force using the go compiler instead of cgo
-export CGO_ENABLED=0
-
 # Support vendored dependencies by setting GOPATH accordingly
 export GOPATH=/go
 export GOPATH=${GOPATH}:/go/src/${REPO}/vendor
@@ -55,8 +52,13 @@ fi
 cp .gobuilder.yml /artifacts/
 sync
 
-if [ "$(configreader read no_go_fmt)" != "true" ]
-then
+
+if [ "$(configreader read allow_cgo)" != "true" ]; then
+  # Force using the go compiler instead of cgo
+  export CGO_ENABLED=0
+fi
+
+if [ "$(configreader read no_go_fmt)" != "true" ]; then
 	go fmt ./...
 fi
 

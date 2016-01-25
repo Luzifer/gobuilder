@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Luzifer/gobuilder/buildconfig"
-	"gopkg.in/codegangsta/cli.v1"
 )
 
 var (
@@ -105,6 +104,8 @@ func handleCommand(context *cli.Context, filter func(string)) {
 		filter(getLDFlags(cfg))
 	case "no_go_fmt":
 		filter(cfg.NoGoFmt)
+	case "allow_cgo":
+		filter(cfg.AllowCGO)
 	}
 }
 

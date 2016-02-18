@@ -162,6 +162,7 @@ fi
 
 log "Building file hashes..."
 cd /tmp/go-build/
+touch /tmp/go-build/.built_tags
 for tag in ${branches} ${tags}; do
   for artifact in ${product}_${tag}_*; do
     echo "[${artifact}]" >> .hashes_${tag}.txt

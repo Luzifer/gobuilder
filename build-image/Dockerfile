@@ -1,4 +1,4 @@
-FROM golang:1.5
+FROM golang:1.6
 
 MAINTAINER Knut Ahlers <knut@ahlers.me>
 

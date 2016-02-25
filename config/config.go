@@ -33,8 +33,8 @@ type Config struct {
 		GPGDecryptKey string `env:"GPG_DECRYPT_KEY" flag:"gpg-decrypt-key"`
 	}
 
-	Mandrill struct {
-		MandrillAPIKey string `flag:"mandrill-key"`
+	MailGun struct {
+		MailGunAPIKey string `flag:"mailgun-key"`
 	}
 }
 

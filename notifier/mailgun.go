@@ -2,7 +2,6 @@ package notifier
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -54,7 +53,7 @@ func (n *NotifyEntry) NotifyEMail(metadata NotifyMetaData, cfg *config.Config) e
 
 	if resp.StatusCode >= 300 {
 		body, _ := ioutil.ReadAll(resp.Body)
-		return errors.New("Non successfull mail delivery (code = %d) +++ %s", resp.StatusCode, string(body))
+		return fmt.Errorf("Non successfull mail delivery (code = %d) +++ %s", resp.StatusCode, string(body))
 	}
 
 	return nil

@@ -43,6 +43,7 @@ func (n *NotifyEntry) NotifyEMail(metadata NotifyMetaData, cfg *config.Config) e
 		"subject": []string{"Information for your build of " + metadata.Repository},
 	}
 	req, _ := http.NewRequest("POST", "https://api.mailgun.net/v3/gobuilder.me/messages", bytes.NewBuffer([]byte(params.Encode())))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth("api", cfg.MailGun.MailGunAPIKey)
 
 	resp, err := http.DefaultClient.Do(req)

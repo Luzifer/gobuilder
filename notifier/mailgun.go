@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"github.com/Luzifer/gobuilder/config"
+	"github.com/Luzifer/gobuilder/frontend"
 	"github.com/flosch/pongo2"
 )
 
@@ -25,7 +26,11 @@ func (n *NotifyEntry) NotifyEMail(metadata NotifyMetaData, cfg *config.Config) e
 		"email":     n.Target,
 		"repo_link": fmt.Sprintf("https://gobuilder.me/%s", metadata.Repository),
 	}
-	template := pongo2.Must(pongo2.FromFile("frontend/repository.html"))
+	tpl, err := frontend.Asset("mailgun_notifier.html")
+	if err != nil {
+		return err
+	}
+	template := pongo2.Must(pongo2.FromString(string(tpl)))
 	mailContent, err := template.Execute(ctx)
 	if err != nil {
 		return err

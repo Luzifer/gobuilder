@@ -29,8 +29,13 @@
 		},
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.6.5",
-			"Rev": "c0f7e35ed2e48f188c37581b4b743cf7383f85c6"
+			"Comment": "v0.8.7",
+			"Rev": "418b41d23a1bf978c06faea5313ba194650ac088"
+		},
+		{
+			"ImportPath": "github.com/Sirupsen/logrus/hooks/papertrail",
+			"Comment": "v0.8.7",
+			"Rev": "418b41d23a1bf978c06faea5313ba194650ac088"
 		},
 		{
 			"ImportPath": "github.com/beorn7/perks/quantile",
@@ -116,10 +121,6 @@
 		{
 			"ImportPath": "github.com/satori/go.uuid",
 			"Rev": "242673bbc820e051ef00033e274d32e08ece9e15"
-		},
-		{
-			"ImportPath": "github.com/shurcooL/sanitized_anchor_name",
-			"Rev": "244f5ac324cb97e1987ef901a0081a77bfd8e845"
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",

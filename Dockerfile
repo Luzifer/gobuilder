@@ -1,17 +1,16 @@
-FROM golang:latest
+FROM golang:alpine
 
 MAINTAINER Knut Ahlers <knut@ahlers.me>
 
-ENV GOPATH /go:/go/src/github.com/Luzifer/gobuilder/Godeps/_workspace
-
 ADD . /go/src/github.com/Luzifer/gobuilder
-
 WORKDIR /go/src/github.com/Luzifer/gobuilder
 
-RUN go build
-
-ENV PORT 3000
+RUN set -ex \
+ && apk add --update git \
+ && go install -ldflags "-X main.version=$(git describe --tags || git rev-parse --short HEAD || echo dev)" \
+ && apk del --purge git
 
 EXPOSE 3000
 
-ENTRYPOINT ["./gobuilder"]
+ENTRYPOINT ["/go/bin/gobuilder"]
+CMD ["--"]

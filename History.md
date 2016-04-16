@@ -1,4 +1,17 @@
 
+1.34.0 / 2016-04-16
+==================
+
+  * Enhancement: Add functionality to block repositories
+  * Enhancement: Do not depend on godeps tool
+  * Enhancement: Build static binaries instead of dynamic linked ones
+  * Fix: Set right content types
+  * Fix: Do not use errors package with format strings
+  * Fix: Be a bit more verbose with sending errors
+  * Fix: Fixed ".built\_tags not found" error
+  * Switched to MailGun
+  * Removed prometheus repos; they are not longer buildable on GoBuilder
+
 1.33.2 / 2015-12-23
 ==================
 

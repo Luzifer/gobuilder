@@ -1,0 +1,4 @@
+---
+blocked:
+  - name: github.com/vegberg
+    reason: User tried to use GoBuilder to build / distribute brute-force tools

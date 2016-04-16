@@ -1,0 +1,24 @@
+{% extends "global.html" %}
+
+{% block content %}
+        <div class="row">
+
+          <div class="col-lg-6  col-lg-offset-3">
+            <div class="panel panel-danger">
+              <div class="panel-heading">Repository access blocked</div>
+              <div class="panel-body">
+                <p>
+                  Access to this repository was administratively blocked. Most likely the reason for this is that it contained unwanted material and/or served the purpose to harm others.
+                </p>
+                <p>
+                  <strong>Recorded reason:</strong> {{ block_reason }}
+                </p>
+                <p>
+                  If this is your repository and you think the access was blocked by mistake use the contact form reachable at the left side of the screen to contact an administrator.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+{% endblock %}

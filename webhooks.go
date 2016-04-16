@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -139,6 +140,10 @@ func isValidRepositorySource(repository string) bool {
 }
 
 func sendToQueue(repository, commit string) error {
+	if blocked, reason := blockedRepos.IsBlocked(repository); blocked {
+		return errors.New("This repository is blocked: " + reason)
+	}
+
 	job := buildjob.BuildJob{
 		Repository:         repository,
 		Commit:             commit,

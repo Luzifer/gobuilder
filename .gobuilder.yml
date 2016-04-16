@@ -7,6 +7,7 @@ triggers:
   - github.com/Luzifer/gobuilder/cmd/gobuilder-cli
 artifacts:
   - frontend
+  - blockedRepos.yml
 notify:
   - type: pushover
     target: U2FsdGVkX1+lhqGpqB/a9C300iOul5tdRcg1Fb7vwivoJA64eNfFVTL+QwDl5wT8

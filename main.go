@@ -155,6 +155,17 @@ func handlerRepositoryView(res http.ResponseWriter, r *http.Request) {
 		branch = "master"
 	}
 
+	if blocked, reason := blockedRepos.IsBlocked(params["repo"]); blocked {
+		ctx := getBasicContext(res, r)
+		ctx["block_reason"] = reason
+
+		template := pongo2.Must(pongo2.FromFile("frontend/blocked_repo.html"))
+
+		res.WriteHeader(http.StatusNotFound)
+		template.ExecuteWriter(ctx, res)
+		return
+	}
+
 	buildStatus, err := redisClient.Get(fmt.Sprintf("project::%s::build-status", params["repo"]))
 	if err != nil || buildStatus == nil {
 		log.WithFields(logrus.Fields{

@@ -46,6 +46,12 @@ func handleXMLSitemap(res http.ResponseWriter, r *http.Request) {
 	for i < len(l) {
 		repo := l[i]
 		i++
+
+		if blocked, _ := blockedRepos.IsBlocked(repo); blocked {
+			i++
+			continue
+		}
+
 		t, err := strconv.ParseInt(l[i], 10, 64)
 		if err != nil {
 			http.Error(res, "An error ocurred", http.StatusInternalServerError)

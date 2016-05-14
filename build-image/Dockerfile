@@ -4,10 +4,13 @@ MAINTAINER Knut Ahlers <knut@ahlers.me>
 
 VOLUME /artifacts
 
-RUN apt-get update \
+RUN set -ex \
+ && apt-get update \
  && apt-get install -y openssh-client rsync zip wget gnupg \
- && go get -u github.com/Luzifer/gobuilder/cmd/configreader \
- && go get -u github.com/Luzifer/gobuilder/cmd/asset-sync \
+ && mkdir -p /go/src/github.com/Luzifer \
+ && git clone https://github.com/Luzifer/gobuilder.git /go/src/github.com/Luzifer/gobuilder \
+ && go install github.com/Luzifer/gobuilder/cmd/configreader \
+ && go install github.com/Luzifer/gobuilder/cmd/asset-sync \
  && rm -rf /go/src/*
 
 ADD ./builder.sh /usr/bin/builder.sh

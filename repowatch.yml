@@ -4,5 +4,3 @@ watched_repos:
     interval: 10m
   - repo: github.com/spf13/hugo
     interval: 10m
-  - repo: github.com/harbur/captain/cmd/captain
-    interval: 10m

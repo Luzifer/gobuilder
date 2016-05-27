@@ -5,13 +5,14 @@ import (
 	"runtime"
 	"strings"
 
+	"gopkg.in/polds/logrus-papertrail-hook.v2"
+
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
 
 	"github.com/Luzifer/gobuilder/buildjob"
 	"github.com/Luzifer/gobuilder/config"
 	"github.com/Sirupsen/logrus"
-	"github.com/Sirupsen/logrus/hooks/papertrail"
 	"github.com/cenkalti/backoff"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/robfig/cron"
@@ -43,7 +44,12 @@ func init() {
 
 	// Add Papertrail connection for logging
 	if conf.Papertrail.Port != 0 {
-		hook, err := logrus_papertrail.NewPapertrailHook(conf.Papertrail.Host, conf.Papertrail.Port, "GoBuilder Starter")
+		hook, err := logrus_papertrail.NewPapertrailHook(&logrus_papertrail.Hook{
+			Host:     conf.Papertrail.Host,
+			Port:     conf.Papertrail.Port,
+			Hostname: "GoBuilder",
+			Appname:  "Starter",
+		})
 		if err != nil {
 			log.WithFields(logrus.Fields{
 				"host": hostname,

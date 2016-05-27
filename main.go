@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/polds/logrus-papertrail-hook.v2"
+
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
 
@@ -25,7 +27,6 @@ import (
 	"github.com/xuyu/goredis"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/Sirupsen/logrus/hooks/papertrail"
 
 	_ "github.com/Luzifer/gobuilder/filters"
 	_ "github.com/flosch/pongo2-addons"
@@ -49,7 +50,12 @@ func init() {
 	cfg = config.Load()
 
 	if cfg.Papertrail.Port != 0 {
-		hook, err := logrus_papertrail.NewPapertrailHook(cfg.Papertrail.Host, cfg.Papertrail.Port, "GoBuilder Frontend")
+		hook, err := logrus_papertrail.NewPapertrailHook(&logrus_papertrail.Hook{
+			Host:     cfg.Papertrail.Host,
+			Port:     cfg.Papertrail.Port,
+			Hostname: "GoBuilder",
+			Appname:  "Frontend",
+		})
 		if err != nil {
 			log.Panic("Unable to create papertrail connection")
 			os.Exit(1)

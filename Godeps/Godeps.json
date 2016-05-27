@@ -36,11 +36,6 @@
 			"Rev": "418b41d23a1bf978c06faea5313ba194650ac088"
 		},
 		{
-			"ImportPath": "github.com/Sirupsen/logrus/hooks/papertrail",
-			"Comment": "v0.8.7",
-			"Rev": "418b41d23a1bf978c06faea5313ba194650ac088"
-		},
-		{
 			"ImportPath": "github.com/beorn7/perks/quantile",
 			"Rev": "b965b613227fddccbfffe13eae360ed3fa822f8d"
 		},
@@ -52,6 +47,66 @@
 			"ImportPath": "github.com/cpuguy83/go-md2man/md2man",
 			"Comment": "v1.0.4",
 			"Rev": "71acacd42f85e5e82f70a55327789582a5200a90"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/opts",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/archive",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/fileutils",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/homedir",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/idtools",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/ioutils",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/longpath",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/pools",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/promise",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/stdcopy",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/system",
+			"Comment": "v1.4.1-12118-g4c68381",
+			"Rev": "4c6838137c10e322ce2bd64ce6db0df652e14267"
+		},
+		{
+			"ImportPath": "github.com/docker/go-units",
+			"Comment": "v0.3.0",
+			"Rev": "5d2041e26a699eaca682e2ea41c8f891e1060444"
 		},
 		{
 			"ImportPath": "github.com/extemporalgenome/slug",
@@ -72,67 +127,7 @@
 		},
 		{
 			"ImportPath": "github.com/fsouza/go-dockerclient",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/Sirupsen/logrus",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/opts",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/archive",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/fileutils",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/homedir",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/ioutils",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/parsers",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/pools",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/promise",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/stdcopy",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/system",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/ulimit",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/pkg/units",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/docker/docker/volume",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
-		},
-		{
-			"ImportPath": "github.com/fsouza/go-dockerclient/external/github.com/opencontainers/runc/libcontainer/user",
-			"Rev": "c0187cbf588c59709e8881fd2bba082b02231356"
+			"Rev": "3134ad4ea8f8a04974cde3ef3958e265c605b0c1"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
@@ -157,6 +152,10 @@
 		{
 			"ImportPath": "github.com/gorilla/sessions",
 			"Rev": "aa5e036e6c44aec69a32eb41097001978b29ad31"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/go-cleanhttp",
+			"Rev": "ad28ea4487f05916463e2423a55166280e8254b5"
 		},
 		{
 			"ImportPath": "github.com/inconshreveable/go-update",
@@ -313,6 +312,11 @@
 			"Rev": "6331bf5a5b5e7a832348789eb3cedff7a6917103"
 		},
 		{
+			"ImportPath": "github.com/opencontainers/runc/libcontainer/user",
+			"Comment": "v0.1.1-107-gfdc9fb8",
+			"Rev": "fdc9fb841ee16714a3fa46bb85d6c42660588e3d"
+		},
+		{
 			"ImportPath": "github.com/prometheus/client_golang/prometheus",
 			"Comment": "0.7.0-39-g3b78d7a",
 			"Rev": "3b78d7a77f51ccbc364d4bc170920153022cfd08"
@@ -358,7 +362,7 @@
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "8e7dc108ab3a1ab6ce6d922bbaff5657b88e8e49"
+			"Rev": "b084184666e02084b8ccb9b704bf0d79c466eb1d"
 		},
 		{
 			"ImportPath": "github.com/thorduri/pushover",
@@ -368,6 +372,14 @@
 		{
 			"ImportPath": "github.com/xuyu/goredis",
 			"Rev": "300f7e8cf453e2ea44337b3969d3aecf1a92ebe3"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "ef00b378c73f107bf44d5c9b69875255ce89b79a"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "d4feaf1a7e61e1d9e79e6c4e76c6349e9cab0a03"
 		},
 		{
 			"ImportPath": "gopkg.in/bufio.v1",
@@ -382,6 +394,11 @@
 			"ImportPath": "gopkg.in/codegangsta/cli.v1",
 			"Comment": "1.2.0",
 			"Rev": "565493f259bf868adb54d45d5f4c68d405117adf"
+		},
+		{
+			"ImportPath": "gopkg.in/polds/logrus-papertrail-hook.v2",
+			"Comment": "v2.2",
+			"Rev": "dfa4a9f9a7b1d4cced6f29b140a767162a2dceaa"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

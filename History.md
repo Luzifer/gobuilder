@@ -1,3 +1,8 @@
+# 1.34.3 / 2016-05-27
+
+  * Updated dockerclient and dependent libraries
+  * Removing captain as they broke their repo
+
 # 1.34.2 / 2016-05-14
 
   * Fix: Vendored libs for commands

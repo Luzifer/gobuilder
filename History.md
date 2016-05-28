@@ -1,3 +1,7 @@
+# 1.34.5 / 2016-05-28
+
+  * Fix: Do not mess around with docker auth info
+
 # 1.34.4 / 2016-05-27
 
   * Use better readable version info

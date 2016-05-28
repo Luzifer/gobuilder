@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -39,7 +38,7 @@ func pullLatestImage() error {
 	reginfo := strings.SplitN(conf.BuildImage.ImageName, "/", 2)
 	if len(reginfo) == 2 {
 		for s, a := range authConfig.Configs {
-			if strings.Contains(s, fmt.Sprintf("://%s/", reginfo[0])) {
+			if strings.Contains(s, reginfo[0]) {
 				auth = a
 			}
 		}

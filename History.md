@@ -1,3 +1,8 @@
+# 1.34.6 / 2016-05-31
+
+  * Print go version into build log
+  * Enabled travis builds for build-image
+
 # 1.34.5 / 2016-05-28
 
   * Fix: Do not mess around with docker auth info

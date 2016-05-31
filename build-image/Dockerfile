@@ -5,6 +5,7 @@ MAINTAINER Knut Ahlers <knut@ahlers.me>
 VOLUME /artifacts
 
 RUN set -ex \
+ && go version \
  && apt-get update \
  && apt-get install -y openssh-client rsync zip wget gnupg \
  && mkdir -p /go/src/github.com/Luzifer \

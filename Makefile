@@ -11,3 +11,8 @@ build_test:
 																				  && go build github.com/Luzifer/gobuilder/cmd/configreader \
 																				  && go build github.com/Luzifer/gobuilder/cmd/gobuilder-cli \
 																				  && go build github.com/Luzifer/gobuilder/cmd/starter'
+
+travis:
+		@docker login -e="." -u="$(DOCKER_USERNAME)" -p="$(DOCKER_PASSWORD)" quay.io
+		docker build --pull --no-cache -t quay.io/gobuilder/build-image ./build-image
+		docker push quay.io/gobuilder/build-image

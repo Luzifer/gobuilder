@@ -252,7 +252,7 @@ func (b *builder) WriteBuildLog() error {
 			for _, meta := range metas {
 				m, err := buildjob.LogFromString(meta)
 				if err != nil {
-					return err
+					continue // There are old build logs which can't be parsed
 				}
 
 				redisClient.Del(fmt.Sprintf("%s::%s", projectLog, m.ID))

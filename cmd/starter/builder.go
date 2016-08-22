@@ -213,8 +213,10 @@ func (b *builder) FetchBuildLog() error {
 }
 
 func (b *builder) WriteBuildLog() error {
+	projectLog := fmt.Sprintf("project::%s::logs", b.job.Repository)
+
 	buildID := fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.FormatInt(time.Now().UnixNano(), 10))))[0:16]
-	if err := redisClient.Set(fmt.Sprintf("project::%s::logs::%s", b.job.Repository, buildID), b.BuildLog, 0, 0, false, false); err != nil {
+	if err := redisClient.Set(fmt.Sprintf("%s::%s", projectLog, buildID), b.BuildLog, 0, 0, false, false); err != nil {
 		return err
 	}
 
@@ -228,10 +230,33 @@ func (b *builder) WriteBuildLog() error {
 		return err
 	}
 
-	if _, err := redisClient.ZAdd(fmt.Sprintf("project::%s::logs", b.job.Repository), map[string]float64{
+	if _, err := redisClient.ZAdd(projectLog, map[string]float64{
 		meta: float64(time.Now().Unix()),
 	}); err != nil {
 		return err
+	}
+
+	if count, err := redisClient.ZCount(projectLog, "-inf", "+inf"); err != nil {
+		return err
+	} else {
+		if count > 100 {
+			metas, err := redisClient.ZRange(projectLog, 0, int(count-100), false)
+			if err != nil {
+				return err
+			}
+			for _, meta := range metas {
+				m, err := buildjob.LogFromString(meta)
+				if err != nil {
+					return err
+				}
+
+				redisClient.Del(fmt.Sprintf("%s::%s", projectLog, m.ID))
+
+				if _, err := redisClient.ZRem(projectLog, meta); err != nil {
+					return err
+				}
+			}
+		}
 	}
 
 	return nil

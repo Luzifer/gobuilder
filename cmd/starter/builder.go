@@ -240,21 +240,9 @@ func (b *builder) WriteBuildLog() error {
 		return err
 	} else {
 		if count > 100 {
-			metas, err := redisClient.ZRange(projectLog, 0, int(count-100), false)
+			_, err := redisClient.ZRemRangeByRank(projectLog, 0, int(count-100))
 			if err != nil {
 				return err
-			}
-			for _, meta := range metas {
-				m, err := buildjob.LogFromString(meta)
-				if err != nil {
-					return err
-				}
-
-				redisClient.Del(fmt.Sprintf("%s::%s", projectLog, m.ID))
-
-				if _, err := redisClient.ZRem(projectLog, meta); err != nil {
-					return err
-				}
 			}
 		}
 	}

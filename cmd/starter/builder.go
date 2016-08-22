@@ -239,8 +239,13 @@ func (b *builder) WriteBuildLog() error {
 	if count, err := redisClient.ZCount(projectLog, "-inf", "+inf"); err != nil {
 		return err
 	} else {
-		if count > 100 {
-			metas, err := redisClient.ZRange(projectLog, 0, int(count-100), false)
+		for count > 100 {
+			fetch := count - 100
+			if fetch > 100 {
+				fetch = 100
+			}
+
+			metas, err := redisClient.ZRange(projectLog, 0, int(fetch), false)
 			if err != nil {
 				return err
 			}
@@ -255,6 +260,11 @@ func (b *builder) WriteBuildLog() error {
 				if _, err := redisClient.ZRem(projectLog, meta); err != nil {
 					return err
 				}
+			}
+
+			count, err = redisClient.ZCount(projectLog, "-inf", "+inf")
+			if err != nil {
+				return err
 			}
 		}
 	}

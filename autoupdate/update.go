@@ -55,8 +55,21 @@ func New(repo, label string) *Updater {
 }
 
 // Run starts a permanent loop (better start as a go-routine) looking for updates
-// to the current binary and will execute the update if required
+// to the current binary and will execute the update if required. This is intended
+// for long running processes like daemons
 func (g *Updater) Run() error {
+
+	for range time.Tick(g.UpdateInterval) {
+		if err := g.SingleRun(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// SingleRun checks for an update and updates the binary when required.
+func (g *Updater) SingleRun() error {
 	bin, err := ioutil.ReadFile(g.runningFile)
 	if err != nil {
 		return err
@@ -64,20 +77,18 @@ func (g *Updater) Run() error {
 
 	g.currentHash = fmt.Sprintf("%x", sha256.Sum256(bin))
 
-	for {
-		liveHash, err := g.getGoBuilderHash()
-		if err == nil && len(liveHash) == len(g.currentHash) && liveHash != g.currentHash {
-			err := g.updateBinary()
-			if err == nil {
-				if g.SelfRestart {
-					syscall.Exec(os.Args[0], os.Args[1:], []string{})
-				}
-			} else {
-				fmt.Printf("Update failed: %s\n", err)
+	liveHash, err := g.getGoBuilderHash()
+	if err == nil && len(liveHash) == len(g.currentHash) && liveHash != g.currentHash {
+		if err := g.updateBinary(); err == nil {
+			if g.SelfRestart {
+				syscall.Exec(os.Args[0], os.Args[1:], []string{})
 			}
+		} else {
+			return fmt.Errorf("Update failed: %s", err)
 		}
-		<-time.After(g.UpdateInterval)
 	}
+
+	return nil
 }
 
 func (g *Updater) getGoBuilderHash() (string, error) {

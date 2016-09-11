@@ -11,7 +11,6 @@ import (
 	"path"
 	"runtime"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/Luzifer/gobuilder/builddb"
@@ -46,7 +45,6 @@ func New(repo, label string) *Updater {
 
 	return &Updater{
 		UpdateInterval:    time.Minute * 60,
-		SelfRestart:       false,
 		repository:        repo,
 		label:             label,
 		runningFile:       os.Args[0],
@@ -70,25 +68,35 @@ func (g *Updater) Run() error {
 
 // SingleRun checks for an update and updates the binary when required.
 func (g *Updater) SingleRun() error {
-	bin, err := ioutil.ReadFile(g.runningFile)
+	hasUpdate, err := g.HasUpdate()
 	if err != nil {
 		return err
 	}
 
-	g.currentHash = fmt.Sprintf("%x", sha256.Sum256(bin))
-
-	liveHash, err := g.getGoBuilderHash()
-	if err == nil && len(liveHash) == len(g.currentHash) && liveHash != g.currentHash {
-		if err := g.updateBinary(); err == nil {
-			if g.SelfRestart {
-				syscall.Exec(os.Args[0], os.Args[1:], os.Environ())
-			}
-		} else {
+	if hasUpdate {
+		if err := g.updateBinary(); err != nil {
 			return fmt.Errorf("Update failed: %s", err)
 		}
 	}
 
 	return nil
+}
+
+// HasUpdate checks whether a new version is available
+func (g *Updater) HasUpdate() (bool, error) {
+	bin, err := ioutil.ReadFile(g.runningFile)
+	if err != nil {
+		return false, err
+	}
+
+	g.currentHash = fmt.Sprintf("%x", sha256.Sum256(bin))
+
+	liveHash, err := g.getGoBuilderHash()
+	if err != nil {
+		return false, err
+	}
+
+	return len(liveHash) == len(g.currentHash) && liveHash != g.currentHash, nil
 }
 
 func (g *Updater) getGoBuilderHash() (string, error) {

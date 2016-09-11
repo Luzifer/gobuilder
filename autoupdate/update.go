@@ -81,7 +81,7 @@ func (g *Updater) SingleRun() error {
 	if err == nil && len(liveHash) == len(g.currentHash) && liveHash != g.currentHash {
 		if err := g.updateBinary(); err == nil {
 			if g.SelfRestart {
-				syscall.Exec(os.Args[0], os.Args[1:], []string{})
+				syscall.Exec(os.Args[0], os.Args[1:], os.Environ())
 			}
 		} else {
 			return fmt.Errorf("Update failed: %s", err)

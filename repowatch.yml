@@ -6,3 +6,5 @@ watched_repos:
     interval: 10m
   - repo: github.com/github/hub
     interval: 10m
+  - repo: github.com/coreos/rkt/rkt
+    interval: 10m

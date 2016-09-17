@@ -4,7 +4,7 @@ services:
   - docker
 
 before_install:
-  - curl -sSLo vault2env https://gobuilder.me/get/github.com/Luzifer/vault2env/vault2env_v0.3.1_linux-amd64
+  - curl -sSLo vault2env https://gobuilder.me/get/github.com/Luzifer/vault2env/vault2env_v0.5.0_linux-amd64
   - chmod +x vault2env
 
 script:

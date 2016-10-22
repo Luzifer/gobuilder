@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/Luzifer/gobuilder",
 	"GoVersion": "go1.6",
-	"GodepVersion": "v62",
+	"GodepVersion": "v74",
 	"Packages": [
 		"./..."
 	],
@@ -127,7 +127,7 @@
 		},
 		{
 			"ImportPath": "github.com/fsouza/go-dockerclient",
-			"Rev": "3134ad4ea8f8a04974cde3ef3958e265c605b0c1"
+			"Rev": "f11b05a99bc1ddf41d2a61e1fcb150568c87c964"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
@@ -423,6 +423,21 @@
 			"ImportPath": "launchpad.net/goamz/testutil",
 			"Comment": "49",
 			"Rev": "martin.packman@canonical.com-20140813150539-umttn7s536u85eiz"
+		},
+		{
+			"ImportPath": "github.com/Microsoft/go-winio",
+			"Comment": "v0.3.5-2-gce2922f",
+			"Rev": "ce2922f643c8fd76b46cadc7f404a06282678b34"
+		},
+		{
+			"ImportPath": "github.com/docker/engine-api/types/swarm",
+			"Comment": "v0.4.0-66-g4290f40",
+			"Rev": "4290f40c056686fcaa5c9caf02eac1dde9315adf"
+		},
+		{
+			"ImportPath": "github.com/docker/engine-api/types/mount",
+			"Comment": "v0.4.0-66-g4290f40",
+			"Rev": "4290f40c056686fcaa5c9caf02eac1dde9315adf"
 		}
 	]
 }

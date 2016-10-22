@@ -143,8 +143,16 @@ func (b *builder) Build() error {
 			fmt.Sprintf("COMMIT=%s", b.job.Commit),
 		},
 	}
+
+	hcfg := &docker.HostConfig{
+		Binds:        []string{fmt.Sprintf("%s:/artifacts", b.tmpDir)},
+		Privileged:   false,
+		PortBindings: make(map[docker.Port][]docker.PortBinding),
+	}
+
 	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{
-		Config: cfg,
+		Config:     cfg,
+		HostConfig: hcfg,
 	})
 	if err != nil {
 		return err
@@ -152,11 +160,7 @@ func (b *builder) Build() error {
 
 	b.container = container
 
-	err = dockerClient.StartContainer(container.ID, &docker.HostConfig{
-		Binds:        []string{fmt.Sprintf("%s:/artifacts", b.tmpDir)},
-		Privileged:   false,
-		PortBindings: make(map[docker.Port][]docker.PortBinding),
-	})
+	err = dockerClient.StartContainer(container.ID, nil)
 	if err != nil {
 		return err
 	}

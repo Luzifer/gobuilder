@@ -1,3 +1,11 @@
+# 1.35.0 / 2016-10-23
+
+  * Fix: HostConfig now needs to be passed at create
+  * Update go-dockerclient to work with docker 1.12
+  * Update vault2env to v0.5.0
+  * Remove all but 100 log entries
+  * Update to go1.7 builder
+
 # 1.34.6 / 2016-05-31
 
   * Print go version into build log

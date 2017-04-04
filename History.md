@@ -1,3 +1,7 @@
+# 1.36.1 / 2017-04-05
+
+  * Change mount path
+
 # 1.36.0 / 2017-04-04
 
   * Allow tmpdir to be configured

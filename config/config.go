@@ -8,6 +8,7 @@ type Config struct {
 	RedisURL string `env:"redis_url" flag:"redis-url"`
 	Listen   string `flag:"listen" default:":3000"`
 	Port     int    `env:"PORT"` // Deprecated, only for gin
+	TmpDir   string `flag:"tmp-dir" default:""`
 
 	GitHub struct {
 		ClientID     string `env:"github_client_id" flag:"github-client-id"`

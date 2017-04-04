@@ -196,7 +196,7 @@ func doBuildProcess() {
 	}
 
 	// Prepare everything for the build or put back the job and stop if we can't
-	if err = builder.PrepareBuild(); err != nil {
+	if err = builder.PrepareBuild(conf.TmpDir); err != nil {
 		log.WithFields(logrus.Fields{
 			"host": hostname,
 			"err":  err,

@@ -113,8 +113,8 @@ func (b *builder) PutBackJob(increaseFails bool) {
 	b.UpdateBuildStatus(BuildStatusQueued, 0)
 }
 
-func (b *builder) PrepareBuild() error {
-	tmpDir, err := ioutil.TempDir("", "gobuild")
+func (b *builder) PrepareBuild(baseTmpDir string) error {
+	tmpDir, err := ioutil.TempDir(baseTmpDir, "gobuild")
 	if err != nil {
 		return err
 	}

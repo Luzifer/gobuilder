@@ -12,5 +12,7 @@ RUN set -ex \
  && apt-get remove -y --purge git \
  && apt-get autoremove -y
 
+VOLUME /data/gobuilder-starter
+
 ENTRYPOINT ["/go/bin/starter"]
 CMD ["--"]

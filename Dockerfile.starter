@@ -13,6 +13,7 @@ RUN set -ex \
  && apt-get autoremove -y
 
 VOLUME /data/gobuilder-starter
+VOLUME /var/run/docker.sock
 
 ENTRYPOINT ["/go/bin/starter"]
 CMD ["--"]

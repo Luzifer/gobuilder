@@ -21,7 +21,7 @@ This example shows how to update a program remotely from a URL.
 			return err
 		}
 		defer resp.Body.Close()
-		err := update.Apply(resp.Body, &update.Options{})
+		err := update.Apply(resp.Body, update.Options{})
 		if err != nil {
 			if rerr := update.RollbackError(err); rerr != nil {
 				fmt.Println("Failed to rollback from bad update: %v", rerr)
@@ -47,7 +47,7 @@ may be applied by implementing the Patcher interface.
 	)
 
 	func updateWithPatch(patch io.Reader) error {
-		err := update.Apply(patch, &update.Options{
+		err := update.Apply(patch, update.Options{
 			Patcher: update.NewBSDiffPatcher()
 		})
 		if err != nil {
@@ -71,7 +71,8 @@ have an appropriate checksum (that was otherwise retrived via a secure channel)
 specified as a hex string.
 
 	import (
-		"crypto/sha256"
+		"crypto"
+		_ "crypto/sha256"
 		"encoding/hex"
 		"io"
 
@@ -83,8 +84,8 @@ specified as a hex string.
 		if err != nil {
 			return err
 		}
-		err = update.Apply(binary, &update.Options{
-			Hash: sha256.New(), 	// this is the default, you don't need to specify it
+		err = update.Apply(binary, update.Options{
+			Hash: crypto.SHA256, 	// this is the default, you don't need to specify it
 			Checksum: checksum,
 		})
 		if err != nil {
@@ -107,7 +108,8 @@ into their application. When they issue a new release, the issuer must sign the 
 with the private key and distribute the signature along with the update.
 
 	import (
-		"crypto/sha256"
+		"crypto"
+		_ "crypto/sha256"
 		"encoding/hex"
 		"io"
 
@@ -130,10 +132,10 @@ with the private key and distribute the signature along with the update.
 		if err != nil {
 			return err
 		}
-		opts := &update.Options{
+		opts := update.Options{
 			Checksum: checksum,
 			Signature: signature,
-			Hash: sha256.New(), 	               // this is the default, you don't need to specify it
+			Hash: crypto.SHA256, 	                 // this is the default, you don't need to specify it
 			Verifier: update.NewECDSAVerifier(),   // this is the default, you don't need to specify it
 		}
 		err = opts.SetPublicKeyPEM(publicKey)

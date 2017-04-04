@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/spf13/pflag"
 )
@@ -42,6 +43,11 @@ func init() {
 //
 func Parse(config interface{}) error {
 	return parse(config, nil)
+}
+
+// Args returns the non-flag command-line arguments.
+func Args() []string {
+	return fs.Args()
 }
 
 // Usage prints a basic usage with the corresponding defaults for the flags to
@@ -94,6 +100,29 @@ func execTags(in interface{}, fs *pflag.FlagSet) error {
 		value := varDefault(typeField.Tag.Get("vardefault"), typeField.Tag.Get("default"))
 		value = envDefault(typeField.Tag.Get("env"), value)
 		parts := strings.Split(typeField.Tag.Get("flag"), ",")
+
+		switch typeField.Type {
+		case reflect.TypeOf(time.Duration(0)):
+			v, err := time.ParseDuration(value)
+			if err != nil {
+				if value == "" {
+					v = time.Duration(0)
+				} else {
+					return err
+				}
+			}
+
+			if typeField.Tag.Get("flag") != "" {
+				if len(parts) == 1 {
+					fs.DurationVar(valField.Addr().Interface().(*time.Duration), parts[0], v, typeField.Tag.Get("description"))
+				} else {
+					fs.DurationVarP(valField.Addr().Interface().(*time.Duration), parts[0], parts[1], v, typeField.Tag.Get("description"))
+				}
+			} else {
+				valField.Set(reflect.ValueOf(v))
+			}
+			continue
+		}
 
 		switch typeField.Type.Kind() {
 		case reflect.String:

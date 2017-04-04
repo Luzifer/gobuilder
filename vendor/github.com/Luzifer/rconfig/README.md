@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/Luzifer/rconfig.svg?branch=master)](https://travis-ci.org/Luzifer/rconfig)
 [![License: Apache v2.0](https://badge.luzifer.io/v1/badge?color=5d79b5&title=license&text=Apache+v2.0)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Documentation](https://badge.luzifer.io/v1/badge?title=godoc&text=reference)](https://godoc.org/github.com/Luzifer/rconfig)
+[![Go Report](http://goreportcard.com/badge/Luzifer/rconfig)](http://goreportcard.com/report/Luzifer/rconfig)
 
 ## Description
 

@@ -15,6 +15,10 @@ import (
 	"github.com/inconshreveable/go-update/internal/osext"
 )
 
+var (
+	openFile = os.OpenFile
+)
+
 // Apply performs an update of the current executable (or opts.TargetFile, if set) with the contents of the given io.Reader.
 //
 // Apply performs the following actions to ensure a safe cross-platform update:
@@ -41,7 +45,7 @@ import (
 // there is no new executable file and the old executable file could not be be moved to its original location. In this
 // case you should notify the user of the bad news and ask them to recover manually. Applications can determine whether
 // the rollback failed by calling RollbackError, see the documentation on that function for additional detail.
-func Apply(update io.Reader, opts *Options) error {
+func Apply(update io.Reader, opts Options) error {
 	// validate
 	verify := false
 	switch {
@@ -101,21 +105,29 @@ func Apply(update io.Reader, opts *Options) error {
 	updateDir := filepath.Dir(opts.TargetPath)
 	filename := filepath.Base(opts.TargetPath)
 
-	// Copy the contents of of newbinary to a the new executable file
+	// Copy the contents of newbinary to a new executable file
 	newPath := filepath.Join(updateDir, fmt.Sprintf(".%s.new", filename))
-	fp, err := os.OpenFile(newPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, opts.TargetMode)
+	fp, err := openFile(newPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, opts.TargetMode)
 	if err != nil {
 		return err
 	}
 	defer fp.Close()
+
 	_, err = io.Copy(fp, bytes.NewReader(newBytes))
+	if err != nil {
+		return err
+	}
 
 	// if we don't call fp.Close(), windows won't let us move the new executable
 	// because the file will still be "in use"
 	fp.Close()
 
 	// this is where we'll move the executable to so that we can swap in the updated replacement
-	oldPath := filepath.Join(updateDir, fmt.Sprintf(".%s.old", filename))
+	oldPath := opts.OldSavePath
+	removeOld := opts.OldSavePath == ""
+	if removeOld {
+		oldPath = filepath.Join(updateDir, fmt.Sprintf(".%s.old", filename))
+	}
 
 	// delete any existing old exec file - this is necessary on Windows for two reasons:
 	// 1. after a successful update, Windows can't remove the .old file because the process is still running
@@ -147,12 +159,14 @@ func Apply(update io.Reader, opts *Options) error {
 		return err
 	}
 
-	// move successful, remove the old binary
-	errRemove := os.Remove(oldPath)
+	// move successful, remove the old binary if needed
+	if removeOld {
+		errRemove := os.Remove(oldPath)
 
-	// windows has trouble with removing old binaries, so hide it instead
-	if errRemove != nil {
-		_ = hideFile(oldPath)
+		// windows has trouble with removing old binaries, so hide it instead
+		if errRemove != nil {
+			_ = hideFile(oldPath)
+		}
 	}
 
 	return nil
@@ -205,6 +219,10 @@ type Options struct {
 	// If nil, treat the update as a complete replacement for the contents of the file at TargetPath.
 	// If non-nil, treat the update contents as a patch and use this object to apply the patch.
 	Patcher Patcher
+
+	// Store the old executable file at this path after a successful update.
+	// The empty string means the old executable file will be removed after the update.
+	OldSavePath string
 }
 
 // CheckPermissions determines whether the process has the correct permissions to
@@ -222,7 +240,7 @@ func (o *Options) CheckPermissions() error {
 
 	// attempt to open a file in the file's directory
 	newPath := filepath.Join(fileDir, fmt.Sprintf(".%s.new", fileName))
-	fp, err := os.OpenFile(newPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, o.TargetMode)
+	fp, err := openFile(newPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, o.TargetMode)
 	if err != nil {
 		return err
 	}

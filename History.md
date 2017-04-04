@@ -1,3 +1,8 @@
+# 1.36.0 / 2017-04-04
+
+  * Allow tmpdir to be configured
+  * Dockerize starter
+
 # 1.35.0 / 2016-10-23
 
   * Fix: HostConfig now needs to be passed at create

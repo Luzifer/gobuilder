@@ -1,3 +1,8 @@
+# 1.36.2 / 2017-04-05
+
+  * Enable /root mount
+  * Allow mounting docker sock
+
 # 1.36.1 / 2017-04-05
 
   * Change mount path

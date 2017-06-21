@@ -1,10 +1,2 @@
 ---
 watched_repos:
-  - repo: github.com/hashicorp/vault
-    interval: 10m
-  - repo: github.com/spf13/hugo
-    interval: 10m
-  - repo: github.com/github/hub
-    interval: 10m
-  - repo: github.com/coreos/rkt/rkt
-    interval: 10m

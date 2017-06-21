@@ -1,3 +1,7 @@
+# 1.37.1 / 2017-06-22
+
+  * Fix: Needed to re-render bindata
+
 # 1.37.0 / 2017-06-21
 
   * Remove all repository watches

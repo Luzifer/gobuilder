@@ -1,3 +1,7 @@
+# 1.37.0 / 2017-06-21
+
+  * Remove all repository watches
+
 # 1.36.2 / 2017-04-05
 
   * Enable /root mount

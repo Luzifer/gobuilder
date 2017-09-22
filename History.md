@@ -1,3 +1,7 @@
+# 1.38.0 / 2017-09-22
+
+  * Add deprecation notice
+
 # 1.37.1 / 2017-06-22
 
   * Fix: Needed to re-render bindata
